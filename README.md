@@ -1,4 +1,4 @@
-## Hi there 👋
+The Real Vacations All-inclusive group trips + flights, hotels & more — all in one place. Curated all-inclusive group trips to concerts, wine country, and cultural celebrations. No planning stress. No logistics headaches. Just unforgettable experiences with the people who matter most.
 
 <!--
 **therealvacations/therealvacations** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
