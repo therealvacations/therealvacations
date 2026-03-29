@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Dashboard | The Real Vacations</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f8f7f4; color: #2c2c2a; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* Header */
+    .header {
+      background: white;
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e8e6e1;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo { display: flex; align-items: center; gap: 12px; }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #D85A30, #F5C4B3);
+      border-radius: 10px;
+    }
+    .logo-text { font-weight: 600; font-size: 18px; }
+    
+    .nav { display: flex; gap: 28px; }
+    .nav a { font-size: 14px; color: #5f5e5a; transition: color 0.2s; }
+    .nav a:hover { color: #D85A30; }
+    .nav a.active { color: #D85A30; font-weight: 500; }
+    
+    .header-actions { display: flex; align-items: center; gap: 16px; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-spin { background: #e6f1fb; color: #185fa5; }
+    .btn-spin:hover { background: #b5d4f4; }
+    
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      padding: 6px 12px;
+      border-radius: 30px;
+      transition: background 0.2s;
+    }
+    .user-menu:hover { background: #f8f7f4; }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      background: #7F77DD;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .user-name { font-weight: 500; font-size: 14px; }
+    .user-menu span:last-child { font-size: 10px; color: #888780; }
+    
+    /* Main */
+    .main { padding: 40px; max-width: 1200px; margin: 0 auto; }
+    
+    /* Welcome Section */
+    .welcome {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .welcome h1 { font-size: 28px; font-weight: 600; }
+    .welcome p { font-size: 15px; color: #5f5e5a; margin-top: 4px; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #d3d1c7;
+      color: #2c2c2a;
+    }
+    .btn-outline:hover { border-color: #D85A30; color: #D85A30; }
+    
+    /* Trip Countdown Card */
+    .countdown-card {
+      background: linear-gradient(135deg, #7F77DD 0%, #AFA9EC 50%, #D4537E 100%);
+      border-radius: 20px;
+      padding: 32px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 30px;
+    }
+    .countdown-card::before {
+      content: '🎤';
+      position: absolute;
+      top: -30px;
+      right: -30px;
+      font-size: 180px;
+      opacity: 0.15;
+    }
+    .countdown-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+    }
+    .trip-badge {
+      background: rgba(255,255,255,0.25);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: inline-block;
+      margin-bottom: 16px;
+    }
+    .countdown-card h2 { font-size: 32px; font-weight: 600; margin-bottom: 8px; }
+    .countdown-card p { font-size: 16px; opacity: 0.9; }
+    
+    .countdown-box {
+      text-align: center;
+      background: rgba(255,255,255,0.15);
+      padding: 20px 32px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .countdown-box .number { font-size: 48px; font-weight: 600; line-height: 1; }
+    .countdown-box .label { font-size: 13px; opacity: 0.9; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+    
+    .countdown-detail {
+      display: flex;
+      gap: 32px;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(255,255,255,0.2);
+    }
+    .countdown-detail > div { text-align: center; }
+    .countdown-detail .num { font-size: 28px; font-weight: 600; }
+    .countdown-detail .lbl { font-size: 12px; opacity: 0.8; }
+    
+    .btn-white {
+      background: white;
+      color: #534AB7;
+      margin-left: auto;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 500;
+    }
+    .btn-white:hover { background: #f8f7f4; }
+    
+    /* Grid */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 30px;
+    }
+    
+    /* Payment Card */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #e8e6e1;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+    .card-header h3 { font-size: 16px; font-weight: 600; }
+    .card-header p { font-size: 13px; color: #5f5e5a; margin-top: 2px; }
+    .status-badge {
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+    .status-badge.success { background: #E1F5EE; color: #0F6E56; }
+    .status-badge.warning { background: #FAEEDA; color: #854F0B; }
+    
+    /* Progress Bar */
+    .progress-section { margin-bottom: 20px; }
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .progress-header span:first-child { color: #5f5e5a; }
+    .progress-header span:last-child { font-weight: 500; }
+    .progress-bar {
+      height: 10px;
+      background: #f1efe8;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #0F6E56, #1D9E75);
+      border-radius: 5px;
+      transition: width 0.5s ease;
+    }
+    
+    /* Payment Schedule */
+    .payment-schedule { margin-bottom: 20px; }
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #f1efe8;
+      font-size: 13px;
+    }
+    .payment-row:last-child { border-bottom: none; }
+    .payment-row.completed { color: #5f5e5a; }
+    .payment-row.completed span:first-child::before { content: '✓ '; color: #0F6E56; }
+    .payment-row.current { color: #2c2c2a; font-weight: 500; }
+    .payment-row.current span:first-child::before { content: '◯ '; }
+    .payment-row.pending { color: #888780; }
+    .payment-row.pending span:first-child::before { content: '◯ '; }
+    
+    .btn-payment {
+      width: 100%;
+      background: #0F6E56;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .btn-payment:hover { background: #085041; }
+    
+    /* Quick Actions */
+    .quick-actions { display: flex; flex-direction: column; gap: 12px; }
+    .action-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px;
+      background: #f8f7f4;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .action-btn:hover { background: #f1efe8; transform: translateX(4px); }
+    .action-btn span { font-size: 24px; }
+    .action-btn strong { font-size: 14px; display: block; }
+    .action-btn small { font-size: 12px; color: #5f5e5a; }
+    
+    /* Trip Checklist */
+    .checklist-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      border: 1px solid #e8e6e1;
+    }
+    .checklist-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .checklist-header h3 { font-size: 16px; font-weight: 600; }
+    .checklist-header p { font-size: 13px; color: #5f5e5a; }
+    .progress-ring {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: conic-gradient(#D85A30 0deg 180deg, #f1efe8 180deg 360deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .progress-ring-inner {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .checklist-item {
+      padding: 14px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+    .checklist-item.complete { background: #E1F5EE; }
+    .checklist-item.complete .status { color: #0F6E56; font-size: 11px; }
+    .checklist-item.complete .status::before { content: '✓ '; }
+    .checklist-item.pending { background: #FAEEDA; }
+    .checklist-item.pending .status { color: #854F0B; font-size: 11px; }
+    .checklist-item.pending .status::before { content: '◯ '; }
+    .checklist-item.optional { background: #f8f7f4; }
+    .checklist-item.optional .status { color: #5f5e5a; font-size: 11px; }
+    .checklist-item.optional .status::before { content: '◯ '; }
+    .checklist-item strong { display: block; margin-top: 6px; }
+    
+    /* Deals Section */
+    .deals-section { margin-top: 30px; }
+    .deals-section h3 { font-size: 18px; font-weight: 600; margin-bottom: 16px; }
+    .deals-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .deal-card {
+      background: white;
+      border: 1px solid #e8e6e1;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.2s;
+    }
+    .deal-card:hover { border-color: #D85A30; transform: translateY(-2px); }
+    .deal-card span { font-size: 32px; display: block; margin-bottom: 12px; }
+    .deal-card h4 { font-size: 15px; margin-bottom: 4px; }
+    .deal-card p { font-size: 13px; color: #5f5e5a; margin-bottom: 12px; }
+    .deal-card .price { font-size: 20px; font-weight: 600; color: #0F6E56; }
+    .deal-card small { font-size: 12px; color: #5f5e5a; }
+    .deal-card .link { display: block; margin-top: 12px; font-size: 12px; color: #D85A30; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <a href="therealvacations-homepage.html" class="logo">
+      <div class="logo-icon"></div>
+      <span class="logo-text">The Real Vacations</span>
+    </a>
+    <nav class="nav">
+      <a href="therealvacations-homepage.html">Home</a>
+      <a href="#">Flights</a>
+      <a href="#">Hotels</a>
+      <a href="#">Shop</a>
+      <a href="#" class="active">My Dashboard</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-spin">🎡 Spin & Save</button>
+      <div class="user-menu">
+        <div class="user-avatar">TJ</div>
+        <div>
+          <div class="user-name">Tamara J.</div>
+        </div>
+        <span>▼</span>
+      </div>
+    </div>
+  </header>
+  
+  <!-- Main -->
+  <main class="main">
+    
+    <!-- Welcome -->
+    <div class="welcome">
+      <div>
+        <h1>Welcome back, Tamara! 👋</h1>
+        <p>You have 1 upcoming trip</p>
+      </div>
+      <button class="btn btn-outline">+ Book another trip</button>
+    </div>
+    
+    <!-- Trip Countdown -->
+    <div class="countdown-card">
+      <div class="countdown-header">
+        <div>
+          <div class="trip-badge">Your upcoming trip</div>
+          <h2>Mary J Blige Residency Finale</h2>
+          <p>Las Vegas · July 17-20, 2026 · Dolby Live at Park MGM</p>
+        </div>
+        <div class="countdown-box">
+          <div class="number">112</div>
+          <div class="label">Days to go</div>
+        </div>
+      </div>
+      <div class="countdown-detail">
+        <div>
+          <div class="num">112</div>
+          <div class="lbl">Days</div>
+        </div>
+        <div>
+          <div class="num">14</div>
+          <div class="lbl">Hours</div>
+        </div>
+        <div>
+          <div class="num">32</div>
+          <div class="lbl">Minutes</div>
+        </div>
+        <button class="btn btn-white">View trip details →</button>
+      </div>
+    </div>
+    
+    <!-- Dashboard Grid -->
+    <div class="dashboard-grid">
+      
+      <!-- Payment Status -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>Payment Progress</h3>
+            <p>Balance due by June 1, 2026</p>
+          </div>
+          <span class="status-badge success">On track</span>
+        </div>
+        
+        <div class="progress-section">
+          <div class="progress-header">
+            <span>$1,000 of $2,400 paid</span>
+            <span>42%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: 42%;"></div>
+          </div>
+        </div>
+        
+        <div class="payment-schedule">
+          <div class="payment-row completed">
+            <span>Deposit paid</span>
+            <span>$500 · Mar 15</span>
+          </div>
+          <div class="payment-row completed">
+            <span>Payment 2</span>
+            <span>$500 · Apr 15</span>
+          </div>
+          <div class="payment-row current">
+            <span>Payment 3 (next)</span>
+            <span>$700 · May 15</span>
+          </div>
+          <div class="payment-row pending">
+            <span>Final payment</span>
+            <span>$700 · Jun 1</span>
+          </div>
+        </div>
+        
+        <button class="btn-payment">Make a payment →</button>
+      </div>
+      
+      <!-- Quick Actions -->
+      <div class="card">
+        <div class="card-header">
+          <h3>Quick Actions</h3>
+        </div>
+        
+        <div class="quick-actions">
+          <button class="action-btn">
+            <span>📋</span>
+            <div>
+              <strong>View full itinerary</strong>
+              <small>Schedule, activities, details</small>
+            </div>
+          </button>
+          
+          <a href="therealvacations-homepage.html#flights" class="action-btn">
+            <span>✈️</span>
+            <div>
+              <strong>Book my flight</strong>
+              <small>ATL → LAS from $127</small>
+            </div>
+          </a>
+          
+          <button class="action-btn">
+            <span>👥</span>
+            <div>
+              <strong>Meet your group</strong>
+              <small>12 travelers booked</small>
+            </div>
+          </button>
+          
+          <button class="action-btn">
+            <span>🛡️</span>
+            <div>
+              <strong>Add trip protection</strong>
+              <small>From $89 — recommended</small>
+            </div>
+          </button>
+        </div>
+      </div>
+      
+    </div>
+    
+    <!-- Trip Checklist -->
+    <div class="checklist-card">
+      <div class="checklist-header">
+        <div>
+          <h3>Trip Prep Checklist</h3>
+          <p>3 of 6 complete</p>
+        </div>
+        <div class="progress-ring">
+          <div class="progress-ring-inner">50%</div>
+        </div>
+      </div>
+      
+      <div class="checklist-grid">
+        <div class="checklist-item complete">
+          <div class="status">Complete</div>
+          <strong>Book trip</strong>
+        </div>
+        <div class="checklist-item complete">
+          <div class="status">Complete</div>
+          <strong>Submit info</strong>
+        </div>
+        <div class="checklist-item complete">
+          <div class="status">Complete</div>
+          <strong>Join group chat</strong>
+        </div>
+        <div class="checklist-item pending">
+          <div class="status">Pending</div>
+          <strong>Book flight</strong>
+        </div>
+        <div class="checklist-item optional">
+          <div class="status">Optional</div>
+          <strong>Trip insurance</strong>
+        </div>
+        <div class="checklist-item optional">
+          <div class="status">Coming soon</div>
+          <strong>Packing list</strong>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Personalized Deals -->
+    <div class="deals-section">
+      <h3>Deals for Your Trip</h3>
+      <div class="deals-grid">
+        <div class="deal-card">
+          <span>✈️</span>
+          <h4>ATL → LAS Flight</h4>
+          <p>Direct · Delta · Jul 17-20</p>
+          <div class="price">$127</div>
+          <small>Round trip</small>
+          <a href="#" class="link">Book flight →</a>
+        </div>
+        <div class="deal-card">
+          <span>🏨</span>
+          <h4>Park MGM</h4>
+          <p>Strip view · 0.2 mi from venue</p>
+          <div class="price">$189</div>
+          <small>Per night · Save 35%</small>
+          <a href="https://www.booking.com/hotel/us/park-mgm-las-vegas.html" target="_blank" class="link">View on Booking.com →</a>
+        </div>
+        <div class="deal-card">
+          <span>🚁</span>
+          <h4>Grand Canyon Tour</h4>
+          <p>Helicopter · 4 hours</p>
+          <div class="price">$299</div>
+          <small>Per person</small>
+          <a href="https://www.viator.com/Las-Vegas-tours/Helicopter-Tours/d684-g1-c22" target="_blank" class="link">View on Viator →</a>
+        </div>
+      </div>
+    </div>
+    
+  </main>
+</body>
+</html>

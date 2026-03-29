@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Real Vacations | Group Travel + Flights, Hotels & More</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #f8f7f4; color: #2c2c2a; line-height: 1.6; }
+    a { text-decoration: none; color: inherit; }
+    
+    /* Promo Bar */
+    .promo-bar {
+      background: linear-gradient(90deg, #D85A30, #e86a42);
+      color: white;
+      text-align: center;
+      padding: 12px 20px;
+      font-size: 14px;
+    }
+    .promo-bar a { color: white; text-decoration: underline; margin-left: 8px; }
+    
+    /* Header */
+    .header {
+      background: white;
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e8e6e1;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #D85A30, #F5C4B3);
+      border-radius: 10px;
+    }
+    .logo-text { font-weight: 600; font-size: 18px; }
+    
+    .nav { display: flex; gap: 28px; }
+    .nav a { font-size: 14px; color: #5f5e5a; transition: color 0.2s; }
+    .nav a:hover { color: #D85A30; }
+    .nav a.active { color: #2c2c2a; font-weight: 500; }
+    
+    .header-actions { display: flex; align-items: center; gap: 12px; }
+    .btn { padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-ghost { background: transparent; color: #5f5e5a; }
+    .btn-ghost:hover { color: #2c2c2a; }
+    .btn-spin { background: #e6f1fb; color: #185fa5; }
+    .btn-spin:hover { background: #b5d4f4; }
+    .btn-primary { background: #D85A30; color: white; }
+    .btn-primary:hover { background: #c04828; }
+    .btn-outline { background: transparent; border: 1px solid #d3d1c7; color: #2c2c2a; }
+    .btn-outline:hover { border-color: #D85A30; color: #D85A30; }
+    
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      padding: 50px 40px 30px;
+      background: white;
+    }
+    .hero-tagline {
+      font-size: 12px;
+      color: #888780;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .hero p { font-size: 16px; color: #5f5e5a; }
+    
+    /* Search Widget */
+    .search-container {
+      background: white;
+      padding: 0 40px 40px;
+    }
+    .search-widget {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid #e8e6e1;
+      border-radius: 50px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .search-tabs {
+      display: flex;
+      background: #f1efe8;
+      border-radius: 40px;
+      padding: 4px;
+    }
+    .search-tab {
+      padding: 10px 18px;
+      border-radius: 30px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border: none;
+      background: transparent;
+      color: #5f5e5a;
+      transition: all 0.2s;
+    }
+    .search-tab.active {
+      background: white;
+      color: #2c2c2a;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .search-fields {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+    }
+    .search-field input {
+      border: none;
+      font-size: 14px;
+      width: 100px;
+      outline: none;
+      font-family: inherit;
+    }
+    .search-divider { width: 1px; height: 24px; background: #e8e6e1; }
+    .search-field span { color: #888780; }
+    .search-btn {
+      background: #D85A30;
+      color: white;
+      border: none;
+      padding: 14px 32px;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-btn:hover { background: #c04828; }
+    
+    /* Quick Links */
+    .quick-links {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px 40px;
+      background: white;
+    }
+    .quick-link {
+      background: #f8f7f4;
+      border: 1px solid #e8e6e1;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .quick-link:hover { border-color: #D85A30; }
+    .quick-link.highlight { background: #e6f1fb; border-color: #b5d4f4; color: #185fa5; }
+    
+    /* Main Content */
+    .main { padding: 30px 40px; max-width: 1200px; margin: 0 auto; }
+    
+    /* Group Trips Section - The Anchor */
+    .anchor-section {
+      background: white;
+      border: 2px solid #D85A30;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    .anchor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .anchor-badge {
+      background: #D85A30;
+      color: white;
+      font-size: 11px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 500;
+    }
+    .anchor-title { font-size: 20px; font-weight: 600; margin-left: 12px; }
+    .anchor-subtitle { font-size: 13px; color: #5f5e5a; margin-top: 4px; }
+    .carousel-nav { display: flex; gap: 8px; }
+    .carousel-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid #d3d1c7;
+      background: white;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .carousel-btn:hover { border-color: #D85A30; color: #D85A30; }
+    
+    /* Trip Cards */
+    .trips-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    .trip-card {
+      background: #f8f7f4;
+      border-radius: 12px;
+      overflow: hidden;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .trip-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.12); }
+    .trip-image {
+      height: 140px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .trip-image.vegas { background: linear-gradient(135deg, #7F77DD 0%, #D4537E 100%); }
+    .trip-image.atlanta { background: linear-gradient(135deg, #1D9E75 0%, #BA7517 100%); }
+    .trip-image span { font-size: 56px; }
+    .trip-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(0,0,0,0.6);
+      color: white;
+      font-size: 11px;
+      padding: 5px 12px;
+      border-radius: 6px;
+    }
+    .trip-date {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: white;
+      font-size: 12px;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+    .trip-content { padding: 20px; }
+    .trip-content h3 { font-size: 18px; margin-bottom: 6px; }
+    .trip-content p { font-size: 14px; color: #5f5e5a; margin-bottom: 16px; }
+    .trip-includes {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #5f5e5a;
+      margin-bottom: 20px;
+    }
+    .trip-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      border-top: 1px solid #e8e6e1;
+    }
+    .trip-price { font-size: 12px; color: #5f5e5a; }
+    .trip-price strong { font-size: 20px; color: #2c2c2a; display: block; }
+    
+    /* Carousel Footer */
+    .carousel-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+    .carousel-dots { display: flex; gap: 8px; }
+    .carousel-dot { width: 24px; height: 4px; border-radius: 2px; background: #d3d1c7; }
+    .carousel-dot.active { background: #D85A30; }
+    .spin-cta {
+      border: 1px solid #D85A30;
+      color: #D85A30;
+      background: transparent;
+    }
+    .spin-cta:hover { background: #fef3f0; }
+    
+    /* Deals Section */
+    .deals-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 30px;
+    }
+    .deal-card {
+      padding: 16px 20px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .deal-card.flights { background: linear-gradient(135deg, #E1F5EE, #9FE1CB); }
+    .deal-card.hotels { background: linear-gradient(135deg, #EEEDFE, #CECBF6); }
+    .deal-card span { font-size: 32px; }
+    .deal-info { flex: 1; }
+    .deal-info strong { font-size: 14px; display: block; }
+    .deal-info small { font-size: 12px; opacity: 0.8; }
+    .deal-card.flights strong { color: #085041; }
+    .deal-card.flights small { color: #0F6E56; }
+    .deal-card.hotels strong { color: #3C3489; }
+    .deal-card.hotels small { color: #534AB7; }
+    .deal-btn { padding: 10px 18px; border-radius: 8px; font-size: 12px; font-weight: 500; border: none; cursor: pointer; }
+    .deal-card.flights .deal-btn { background: #0F6E56; color: white; }
+    .deal-card.hotels .deal-btn { background: #534AB7; color: white; }
+    
+    /* Vendor Shops Section */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-header h2 { font-size: 18px; font-weight: 600; }
+    .section-header a { font-size: 13px; color: #D85A30; }
+    
+    .vendors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .vendor-card {
+      background: white;
+      border: 1px solid #e8e6e1;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .vendor-card:hover { border-color: #D85A30; transform: translateY(-2px); }
+    .vendor-card span { font-size: 32px; display: block; margin-bottom: 10px; }
+    .vendor-card strong { font-size: 14px; }
+    .vendor-card small { font-size: 11px; color: #888780; display: block; margin-top: 4px; }
+    
+    /* Experiences Section - TripAdvisor/Viator Pre-Approval */
+    .experiences-section {
+      background: white;
+      border: 2px dashed #BA7517;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    .pre-approval-badge {
+      background: #BA7517;
+      color: white;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .experiences-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .exp-card {
+      background: #f8f7f4;
+      border-radius: 10px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .exp-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+    .exp-image {
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .exp-image span { font-size: 40px; }
+    .exp-content { padding: 14px; }
+    .exp-content h4 { font-size: 14px; margin-bottom: 4px; }
+    .exp-content p { font-size: 12px; color: #5f5e5a; margin-bottom: 8px; }
+    .exp-link { font-size: 10px; color: #BA7517; }
+    .pre-approval-note {
+      background: #FAEEDA;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #854F0B;
+      margin-top: 16px;
+    }
+    
+    /* Hotels Section - Booking.com Pre-Approval */
+    .hotels-section {
+      background: white;
+      border: 2px dashed #BA7517;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    .hotels-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .hotel-card {
+      background: #f8f7f4;
+      border-radius: 10px;
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .hotel-info h4 { font-size: 15px; margin-bottom: 4px; }
+    .hotel-info p { font-size: 12px; color: #5f5e5a; }
+    .hotel-info .link { font-size: 10px; color: #BA7517; margin-top: 8px; }
+    .hotel-price { text-align: right; }
+    .hotel-price strong { font-size: 20px; color: #0F6E56; }
+    .hotel-price small { font-size: 11px; color: #5f5e5a; display: block; }
+    
+    /* Travel Gear Section - Amazon Affiliate Ready */
+    .gear-section {
+      background: white;
+      border: 2px solid #0F6E56;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 30px;
+    }
+    .affiliate-badge {
+      background: #0F6E56;
+      color: white;
+      font-size: 10px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    .gear-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .gear-card {
+      background: #f8f7f4;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .gear-card:hover { background: #E1F5EE; }
+    .gear-card span { font-size: 36px; display: block; margin-bottom: 8px; }
+    .gear-card strong { font-size: 13px; display: block; margin-bottom: 4px; }
+    .gear-card small { font-size: 10px; color: #0F6E56; }
+    .affiliate-note {
+      background: #E1F5EE;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 11px;
+      color: #085041;
+      margin-top: 16px;
+    }
+    
+    /* Insurance Section */
+    .insurance-section {
+      background: linear-gradient(135deg, #E1F5EE, #9FE1CB);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .insurance-section span { font-size: 48px; }
+    .insurance-info { flex: 1; }
+    .insurance-info h3 { font-size: 18px; color: #085041; margin-bottom: 6px; }
+    .insurance-info p { font-size: 13px; color: #0F6E56; }
+    .insurance-section .btn { background: #0F6E56; color: white; }
+    
+    /* Trust Bar */
+    .trust-bar {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 30px;
+      border-top: 1px solid #e8e6e1;
+      font-size: 13px;
+      color: #5f5e5a;
+    }
+    
+    /* Footer */
+    .footer {
+      background: #2c2c2a;
+      color: white;
+      padding: 60px 40px 30px;
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto 40px;
+    }
+    .footer-brand p { color: #b4b2a9; font-size: 14px; margin-top: 16px; line-height: 1.7; }
+    .footer h4 { font-size: 14px; margin-bottom: 16px; }
+    .footer ul { list-style: none; }
+    .footer li { margin-bottom: 10px; }
+    .footer a { color: #b4b2a9; font-size: 14px; transition: color 0.2s; }
+    .footer a:hover { color: white; }
+    .footer-bottom {
+      border-top: 1px solid #444441;
+      padding-top: 30px;
+      text-align: center;
+      font-size: 13px;
+      color: #888780;
+    }
+  </style>
+</head>
+<body>
+  <!-- Promo Bar -->
+  <div class="promo-bar">
+    🎉 <strong>Vegas flash sale:</strong> Flights from $127 RT + spin the wheel for up to $500 off your group trip!
+    <a href="#deals">Shop now →</a>
+  </div>
+  
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon"></div>
+      <span class="logo-text">The Real Vacations</span>
+    </div>
+    <nav class="nav">
+      <a href="#" class="active">Group Trips</a>
+      <a href="#flights">Flights</a>
+      <a href="#hotels">Hotels</a>
+      <a href="#cars">Cars</a>
+      <a href="#shop">Shop</a>
+      <a href="#deals">Deals</a>
+    </nav>
+    <div class="header-actions">
+      <button class="btn btn-spin">🎡 Spin & Save</button>
+      <button class="btn btn-ghost">Log in</button>
+      <button class="btn btn-primary">My Trips</button>
+    </div>
+  </header>
+  
+  <!-- Hero -->
+  <section class="hero">
+    <p class="hero-tagline">Born from family · Built for community</p>
+    <h1>Your people. Your trip. The lowest prices.</h1>
+    <p>All-inclusive group trips + flights, hotels & more — all in one place</p>
+  </section>
+  
+  <!-- Search Widget -->
+  <div class="search-container">
+    <div class="search-widget">
+      <div class="search-tabs">
+        <button class="search-tab active">✈️ Flights</button>
+        <button class="search-tab">🏨 Hotels</button>
+        <button class="search-tab">🚗 Cars</button>
+        <button class="search-tab">📦 Packages</button>
+      </div>
+      <div class="search-fields">
+        <div class="search-field">
+          <input type="text" placeholder="From" value="Atlanta">
+        </div>
+        <span>→</span>
+        <div class="search-field">
+          <input type="text" placeholder="To" value="Las Vegas">
+        </div>
+        <div class="search-divider"></div>
+        <div class="search-field">
+          <input type="text" placeholder="Dates" value="Jul 17-20">
+        </div>
+        <div class="search-divider"></div>
+        <span>1 guest</span>
+      </div>
+      <button class="search-btn">Search</button>
+    </div>
+  </div>
+  
+  <!-- Quick Links -->
+  <div class="quick-links">
+    <button class="quick-link">🎤 Vegas Jul 17-20</button>
+    <button class="quick-link">🎷 ATL Aug 28-30</button>
+    <button class="quick-link">🔥 Today's deals</button>
+    <button class="quick-link highlight">🎡 Spin to win</button>
+  </div>
+  
+  <!-- Main Content -->
+  <main class="main">
+    
+    <!-- Group Trips - The Anchor Store -->
+    <section class="anchor-section">
+      <div class="anchor-header">
+        <div>
+          <span class="anchor-badge">⭐ Main Event</span>
+          <span class="anchor-title">All-Inclusive Group Trips</span>
+          <p class="anchor-subtitle">20+ years experience · Flexible payments · Everything handled</p>
+        </div>
+        <div class="carousel-nav">
+          <button class="carousel-btn">←</button>
+          <button class="carousel-btn">→</button>
+        </div>
+      </div>
+      
+      <div class="trips-grid">
+        <!-- Vegas Trip -->
+        <div class="trip-card">
+          <div class="trip-image vegas">
+            <span>🎤</span>
+            <div class="trip-badge">🔥 Limited spots</div>
+            <div class="trip-date">July 18, 2026</div>
+          </div>
+          <div class="trip-content">
+            <h3>Mary J Blige Residency Finale</h3>
+            <p>Las Vegas · Dolby Live at Park MGM · "My Life, My Story" final night</p>
+            <div class="trip-includes">
+              <span>✓ Concert tickets</span>
+              <span>✓ Hotel</span>
+              <span>✓ Group activities</span>
+            </div>
+            <div class="trip-footer">
+              <div class="trip-price">
+                Starting at
+                <strong>$500 deposit</strong>
+              </div>
+              <button class="btn btn-primary">Book now →</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Atlanta Trip -->
+        <div class="trip-card">
+          <div class="trip-image atlanta">
+            <span>🎷</span>
+            <div class="trip-badge">⏰ Opening soon</div>
+            <div class="trip-date">Aug 29, 2026</div>
+          </div>
+          <div class="trip-content">
+            <h3>Keith Sweat R&B Lovers Tour</h3>
+            <p>Atlanta · Keith Sweat, Joe, Dru Hill, Ginuwine & Kut Klose</p>
+            <div class="trip-includes">
+              <span>✓ VIP Meet & Greet</span>
+              <span>✓ Hotel</span>
+              <span>✓ Group dinner</span>
+            </div>
+            <div class="trip-footer">
+              <div class="trip-price">
+                Starting at
+                <strong>$500 deposit</strong>
+              </div>
+              <button class="btn btn-primary">Reserve →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="carousel-footer">
+        <div class="carousel-dots">
+          <div class="carousel-dot active"></div>
+          <div class="carousel-dot"></div>
+        </div>
+        <button class="btn spin-cta">🎡 Spin the wheel — win up to $500 off</button>
+      </div>
+    </section>
+    
+    <!-- Deals Row -->
+    <section class="deals-row" id="deals">
+      <div class="deal-card flights">
+        <span>✈️</span>
+        <div class="deal-info">
+          <strong>ATL → LAS from $127</strong>
+          <small>Round trip · Direct flights</small>
+        </div>
+        <button class="deal-btn">View deal →</button>
+      </div>
+      <div class="deal-card hotels">
+        <span>🏨</span>
+        <div class="deal-info">
+          <strong>Park MGM from $189/nt</strong>
+          <small>Save 35% · Strip view rooms</small>
+        </div>
+        <button class="deal-btn">View deal →</button>
+      </div>
+    </section>
+    
+    <!-- Vendor Shops -->
+    <section id="shop">
+      <div class="section-header">
+        <h2>Shop by Category</h2>
+        <a href="#">View all partners →</a>
+      </div>
+      <div class="vendors-grid">
+        <div class="vendor-card">
+          <span>💼</span>
+          <strong>Travel Gear</strong>
+          <small>Luggage & tech</small>
+        </div>
+        <div class="vendor-card">
+          <span>👗</span>
+          <strong>Style Shop</strong>
+          <small>Concert outfits</small>
+        </div>
+        <div class="vendor-card">
+          <span>💅</span>
+          <strong>Beauty Bar</strong>
+          <small>Hair & glam</small>
+        </div>
+        <div class="vendor-card">
+          <span>🎭</span>
+          <strong>Experiences</strong>
+          <small>Shows & dining</small>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Things to Do - TripAdvisor/Viator (PRE-APPROVAL) -->
+    <section class="experiences-section">
+      <div>
+        <span class="pre-approval-badge">PRE-APPROVAL</span>
+        <strong>Things to Do in Las Vegas</strong>
+        <span style="font-size: 12px; color: #5f5e5a; margin-left: 10px;">Links to TripAdvisor / Viator</span>
+      </div>
+      
+      <div class="experiences-grid">
+        <a href="https://www.viator.com/Las-Vegas-tours/Walking-Tours/d684-g11-c47" target="_blank" class="exp-card">
+          <div class="exp-image" style="background: linear-gradient(135deg, #7F77DD, #AFA9EC);">
+            <span>🎰</span>
+          </div>
+          <div class="exp-content">
+            <h4>Vegas Strip Walking Tour</h4>
+            <p>From $29 · 2 hours</p>
+            <div class="exp-link">→ viator.com/Las-Vegas-tours</div>
+          </div>
+        </a>
+        
+        <a href="https://www.viator.com/Las-Vegas-tours/Helicopter-Tours/d684-g1-c22" target="_blank" class="exp-card">
+          <div class="exp-image" style="background: linear-gradient(135deg, #D85A30, #F5C4B3);">
+            <span>🚁</span>
+          </div>
+          <div class="exp-content">
+            <h4>Grand Canyon Helicopter</h4>
+            <p>From $299 · 4 hours</p>
+            <div class="exp-link">→ viator.com/Helicopter-Tours</div>
+          </div>
+        </a>
+        
+        <a href="https://www.tripadvisor.com/Restaurants-g45963-Las_Vegas_Nevada.html" target="_blank" class="exp-card">
+          <div class="exp-image" style="background: linear-gradient(135deg, #1D9E75, #9FE1CB);">
+            <span>🍽️</span>
+          </div>
+          <div class="exp-content">
+            <h4>Top-Rated Restaurants</h4>
+            <p>Reviews & reservations</p>
+            <div class="exp-link">→ tripadvisor.com/Restaurants</div>
+          </div>
+        </a>
+      </div>
+      
+      <div class="pre-approval-note">
+        🔒 Direct links to TripAdvisor/Viator pages — will convert to affiliate links after approval (8% commission)
+      </div>
+    </section>
+    
+    <!-- Hotels - Booking.com (PRE-APPROVAL) -->
+    <section class="hotels-section" id="hotels">
+      <div>
+        <span class="pre-approval-badge">PRE-APPROVAL</span>
+        <strong>Recommended Hotels Near Venue</strong>
+        <span style="font-size: 12px; color: #5f5e5a; margin-left: 10px;">Links to Booking.com</span>
+      </div>
+      
+      <div class="hotels-grid">
+        <a href="https://www.booking.com/hotel/us/park-mgm-las-vegas.html" target="_blank" class="hotel-card">
+          <div class="hotel-info">
+            <h4>Park MGM</h4>
+            <p>⭐ 4.5 · 0.2 mi from venue</p>
+            <div class="link">→ booking.com/hotel/us/park-mgm</div>
+          </div>
+          <div class="hotel-price">
+            <strong>$189</strong>
+            <small>/night</small>
+          </div>
+        </a>
+        
+        <a href="https://www.booking.com/hotel/us/aria-resort-casino.html" target="_blank" class="hotel-card">
+          <div class="hotel-info">
+            <h4>Aria Resort & Casino</h4>
+            <p>⭐ 4.7 · 0.4 mi from venue</p>
+            <div class="link">→ booking.com/hotel/us/aria</div>
+          </div>
+          <div class="hotel-price">
+            <strong>$229</strong>
+            <small>/night</small>
+          </div>
+        </a>
+      </div>
+      
+      <div class="pre-approval-note">
+        🔒 Direct links to Booking.com — will convert to affiliate links after approval (4-6% commission)
+      </div>
+    </section>
+    
+    <!-- Travel Gear - Amazon (AFFILIATE READY) -->
+    <section class="gear-section">
+      <div>
+        <span class="affiliate-badge">✓ AFFILIATE READY</span>
+        <strong>Pack for Your Trip</strong>
+        <span style="font-size: 12px; color: #5f5e5a; margin-left: 10px;">Amazon Associates</span>
+      </div>
+      
+      <div class="gear-grid">
+        <a href="https://www.amazon.com/s?k=carry+on+luggage&tag=YOUR-AFFILIATE-ID" target="_blank" class="gear-card">
+          <span>🧳</span>
+          <strong>Carry-on Bags</strong>
+          <small>✓ amzn.to/xxxxx</small>
+        </a>
+        <a href="https://www.amazon.com/s?k=travel+headphones&tag=YOUR-AFFILIATE-ID" target="_blank" class="gear-card">
+          <span>🎧</span>
+          <strong>Travel Headphones</strong>
+          <small>✓ amzn.to/xxxxx</small>
+        </a>
+        <a href="https://www.amazon.com/s?k=portable+charger&tag=YOUR-AFFILIATE-ID" target="_blank" class="gear-card">
+          <span>🔌</span>
+          <strong>Power Banks</strong>
+          <small>✓ amzn.to/xxxxx</small>
+        </a>
+        <a href="https://www.amazon.com/s?k=packing+cubes&tag=YOUR-AFFILIATE-ID" target="_blank" class="gear-card">
+          <span>👝</span>
+          <strong>Travel Organizers</strong>
+          <small>✓ amzn.to/xxxxx</small>
+        </a>
+      </div>
+      
+      <div class="affiliate-note">
+        ✓ Amazon Associates — instant approval, earning 4-8% per sale. Replace YOUR-AFFILIATE-ID with your Amazon tag.
+      </div>
+    </section>
+    
+    <!-- Travel Insurance (AFFILIATE READY) -->
+    <section class="insurance-section">
+      <span>🛡️</span>
+      <div class="insurance-info">
+        <h3>Protect Your Trip — Travel Insurance from $89</h3>
+        <p>Cancel for any reason · Medical coverage · 24/7 emergency assistance</p>
+      </div>
+      <a href="https://www.allianztravelinsurance.com/?AFFILIATE_ID=YOUR_ID" target="_blank">
+        <button class="btn">Get Quote →</button>
+      </a>
+    </section>
+    
+  </main>
+  
+  <!-- Trust Bar -->
+  <div class="trust-bar">
+    <span>✓ 20+ years experience</span>
+    <span>✓ Flexible payment plans</span>
+    <span>✓ 24/7 trip support</span>
+    <span>✓ Best price guarantee</span>
+  </div>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <span class="logo-text" style="color: white;">The Real Vacations</span>
+        </div>
+        <p>Creating unforgettable group travel experiences for over 20 years. Born from family, built for community.</p>
+      </div>
+      <div>
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#">Upcoming Trips</a></li>
+          <li><a href="#">How It Works</a></li>
+          <li><a href="#">Real Stories</a></li>
+          <li><a href="#">About Us</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Travel</h4>
+        <ul>
+          <li><a href="#">Flights</a></li>
+          <li><a href="#">Hotels</a></li>
+          <li><a href="#">Car Rentals</a></li>
+          <li><a href="#">Travel Insurance</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Contact</h4>
+        <ul>
+          <li><a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a></li>
+          <li><a href="tel:4049230017">404-923-0017</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">Facebook</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2026 The Real Vacations. All rights reserved.
+    </div>
+  </footer>
+</body>
+</html>
