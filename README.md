@@ -1,4 +1,7 @@
-The Real Vacations All-inclusive group trips + flights, hotels & more — all in one place. Curated all-inclusive group trips to concerts, wine country, and cultural celebrations. No planning stress. No logistics headaches. Just unforgettable experiences with the people who matter most.
+Born from Family. Built for Community.
+You Bring Your People.
+We Handle Everything Else.
+At The Real Vacations, we believe that the best memories are made when we step away from the chaos of life and come together to experience something extraordinary. We specialize in curated, all-inclusive group trips that make travel simple, affordable, and stress-free.
 
 <!--
 **therealvacations/therealvacations** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
