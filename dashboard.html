@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Dashboard | The Real Vacations</title>
+<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #faf5ff; }
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  nav a img { height: 52px; }
+  .nav-center { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; flex: 1; justify-content: center; }
+  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: #c084fc; }
+  .nav-auth { display: flex; gap: 10px; }
+  .nav-logout { border: 2px solid #ef4444; color: #ef4444; padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .nav-logout:hover { background: #ef4444; color: #fff; }
+
+  /* DASHBOARD */
+  .dash { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+  .welcome { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; padding: 32px; border-radius: 20px; margin-bottom: 32px; }
+  .welcome h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
+  .welcome p { font-size: 15px; color: #e9d5ff; }
+
+  /* TRIP CARD */
+  .trip-hero { background: #fff; border-radius: 20px; padding: 32px; margin-bottom: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .trip-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; border-bottom: 2px solid #f3e8ff; padding-bottom: 20px; }
+  .trip-info h2 { font-size: 24px; font-weight: 800; color: #1a0533; margin-bottom: 6px; }
+  .trip-info .date { font-size: 14px; color: #7c3aed; font-weight: 600; }
+  .countdown-big { text-align: right; }
+  .countdown-big .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  .countdown-big .time { font-size: 32px; font-weight: 900; color: #7c3aed; line-height: 1; font-family: 'Courier New', monospace; }
+
+  /* PAYMENT TRACKER */
+  .payment-section { margin-bottom: 28px; }
+  .payment-section h3 { font-size: 16px; font-weight: 700; color: #1a0533; margin-bottom: 12px; }
+  .payment-bar { background: #f3e8ff; height: 16px; border-radius: 50px; overflow: hidden; margin-bottom: 12px; }
+  .payment-fill { background: linear-gradient(90deg, #7c3aed, #c084fc); height: 100%; transition: width 0.5s ease; }
+  .payment-details { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #555; }
+  .payment-details strong { color: #1a0533; }
+  .pay-btn { display: inline-block; background: #7c3aed; color: #fff; padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 14px; transition: background 0.2s, transform 0.15s; margin-top: 8px; }
+  .pay-btn:hover { background: #6d28d9; transform: translateY(-2px); }
+
+  /* CHECKLIST */
+  .checklist-section { margin-bottom: 24px; }
+  .checklist-section h3 { font-size: 16px; font-weight: 700; color: #1a0533; margin-bottom: 12px; }
+  .checklist-item { background: #faf5ff; border: 2px solid #f3e8ff; border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; transition: all 0.2s; cursor: pointer; }
+  .checklist-item:hover { border-color: #c084fc; }
+  .checklist-item.done { background: #f0fdf4; border-color: #86efac; }
+  .checklist-item.done .checkbox { background: #22c55e; color: #fff; }
+  .checkbox { width: 24px; height: 24px; border: 2px solid #d1d5db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
+  .checklist-text { flex: 1; font-size: 14px; color: #1a0533; font-weight: 500; }
+
+  /* QUICK ACTIONS */
+  .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+  .action-btn { background: linear-gradient(135deg, #faf5ff, #f3e8ff); border: 2px solid #f3e8ff; padding: 20px; border-radius: 16px; text-align: center; transition: all 0.2s; cursor: pointer; }
+  .action-btn:hover { border-color: #c084fc; transform: translateY(-2px); }
+  .action-btn-icon { font-size: 28px; margin-bottom: 8px; }
+  .action-btn-text { font-size: 13px; font-weight: 600; color: #1a0533; }
+
+  /* PERKS GRID */
+  .perks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px; }
+  .perk-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  .perk-card h3 { font-size: 16px; font-weight: 700; color: #1a0533; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+  .perk-card p { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 16px; }
+  .perk-link { display: inline-block; background: #7c3aed; color: #fff; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 13px; transition: background 0.2s; }
+  .perk-link:hover { background: #6d28d9; }
+
+  footer { background: #0f0620; color: #888; text-align: center; padding: 20px; font-size: 12px; margin-top: 60px; }
+  footer a { color: #c084fc; }
+
+  @media (max-width: 768px) {
+    .nav-center { flex-direction: column; gap: 12px; }
+    .nav-links { display: none; }
+    .trip-header { flex-direction: column; }
+    .countdown-big { text-align: left; }
+    .perks-grid { grid-template-columns: 1fr; }
+    .actions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+  <div class="nav-center">
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html" style="color:#c084fc;">My Dashboard</a>
+      <a href="trips.html">Trips</a>
+      <a href="deals.html">Deals</a>
+      <a href="resources.html">Resources</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-auth">
+      <a href="login.html" class="nav-logout">Logout</a>
+    </div>
+  </div>
+</nav>
+
+<div class="dash">
+  
+  <!-- WELCOME -->
+  <div class="welcome">
+    <h1>Welcome Back, [User Name]!</h1>
+    <p>Your trips, perks, and everything you need — all in one place.</p>
+  </div>
+
+  <!-- TRIP CARD -->
+  <div class="trip-hero">
+    <div class="trip-header">
+      <div class="trip-info">
+        <h2>🎵 Essence Festival New Orleans</h2>
+        <p class="date">July 3–5, 2026 · New Orleans, LA</p>
+      </div>
+      <div class="countdown-big">
+        <div class="label">⏰ Countdown to Adventure</div>
+        <div class="time" id="tripCountdown">95 DAYS</div>
+      </div>
+    </div>
+
+    <!-- PAYMENT TRACKER -->
+    <div class="payment-section">
+      <h3>💳 Payment Status</h3>
+      <div class="payment-bar">
+        <div class="payment-fill" style="width: 25%;"></div>
+      </div>
+      <div class="payment-details">
+        <span><strong>$500</strong> paid of <strong>$2,000</strong> total</span>
+        <span>Next payment: <strong>$500 by May 1</strong></span>
+      </div>
+      <a href="https://book.stripe.com/fZueVc3Hgfaf7ZJaQz0Fi03" target="_blank" class="pay-btn">Make a Payment →</a>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="checklist-section">
+      <h3>✅ Trip Prep Checklist</h3>
+      <div class="checklist-item done">
+        <div class="checkbox">✓</div>
+        <div class="checklist-text">Reserve Your Spot</div>
+      </div>
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div class="checklist-text">Book Your Flight</div>
+      </div>
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div class="checklist-text">Add Travel Insurance</div>
+      </div>
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div class="checklist-text">Join Your Trip Group Chat</div>
+      </div>
+      <div class="checklist-item">
+        <div class="checkbox"></div>
+        <div class="checklist-text">Review Your Itinerary</div>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="actions">
+      <a href="#flights" class="action-btn">
+        <div class="action-btn-icon">✈️</div>
+        <div class="action-btn-text">Book Flight</div>
+      </a>
+      <a href="#itinerary" class="action-btn">
+        <div class="action-btn-icon">📅</div>
+        <div class="action-btn-text">View Itinerary</div>
+      </a>
+      <a href="#group" class="action-btn">
+        <div class="action-btn-icon">👥</div>
+        <div class="action-btn-text">Meet Your Group</div>
+      </a>
+      <a href="contact.html" class="action-btn">
+        <div class="action-btn-icon">📞</div>
+        <div class="action-btn-text">Contact Support</div>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- PERKS -->
+  <h2 style="font-size:24px; font-weight:800; color:#1a0533; margin-bottom:20px;">✈️ Your Trip Essentials</h2>
+  <div class="perks-grid">
+
+    <!-- FLIGHTS -->
+    <div class="perk-card" id="flights">
+      <h3>✈️ Flight Deals for Your Trip</h3>
+      <p>We found flights from Atlanta to New Orleans for <strong>$127 roundtrip</strong> on your trip dates (July 3-5).</p>
+      <a href="https://www.expedia.com/Flights" target="_blank" class="perk-link">Search Flights →</a>
+    </div>
+
+    <!-- HOTELS -->
+    <div class="perk-card">
+      <h3>🏨 Extend Your Stay?</h3>
+      <p>Hotels near Essence Festival from <strong>$99/night</strong>. Arrive early or stay late to explore NOLA.</p>
+      <a href="https://www.expedia.com/Hotels" target="_blank" class="perk-link">Browse Hotels →</a>
+    </div>
+
+    <!-- EXPERIENCES -->
+    <div class="perk-card">
+      <h3>🎟️ Add-On Experiences</h3>
+      <p><strong>French Quarter food tour</strong> · Swamp tour · Jazz cruise · Cooking class. Make it unforgettable.</p>
+      <a href="https://www.tripadvisor.com/" target="_blank" class="perk-link">Explore Experiences →</a>
+    </div>
+
+    <!-- INSURANCE -->
+    <div class="perk-card">
+      <h3>🛡️ Travel Insurance</h3>
+      <p>Protect your trip investment. Trip cancellations, medical emergencies, lost luggage — plans start at just $29.</p>
+      <a href="https://klook.tpm.li/wG7YCPzF" target="_blank" class="perk-link">Get Coverage →</a>
+    </div>
+
+    <!-- GEAR -->
+    <div class="perk-card">
+      <h3>🎒 Travel Gear</h3>
+      <p>Don't forget the essentials — luggage, portable chargers, travel pillows. Gear we actually use on every trip.</p>
+      <a href="https://www.amazon.com/" target="_blank" class="perk-link">Shop Gear →</a>
+    </div>
+
+    <!-- CAR RENTAL -->
+    <div class="perk-card">
+      <h3>🚗 Car Rentals</h3>
+      <p>Need wheels when you land? Compare rental car prices in seconds for New Orleans.</p>
+      <a href="https://www.expedia.com/Car-Rentals" target="_blank" class="perk-link">Rent a Car →</a>
+    </div>
+
+  </div>
+
+  <!-- ITINERARY PLACEHOLDER -->
+  <div class="trip-hero" id="itinerary">
+    <h3 style="font-size:18px; font-weight:700; color:#1a0533; margin-bottom:16px;">📅 Your Itinerary</h3>
+    <p style="font-size:14px; color:#555; line-height:1.6; margin-bottom:12px;">Your full trip schedule with activities, events, hotel info, and group details will appear here closer to your departure date.</p>
+    <p style="font-size:13px; color:#7c3aed; font-weight:600;">✉️ You'll receive your detailed itinerary via email 30 days before departure.</p>
+  </div>
+
+  <!-- GROUP PLACEHOLDER -->
+  <div class="trip-hero" id="group">
+    <h3 style="font-size:18px; font-weight:700; color:#1a0533; margin-bottom:16px;">👥 Meet Your Group</h3>
+    <p style="font-size:14px; color:#555; line-height:1.6; margin-bottom:12px;">Connect with your fellow travelers before the trip! Group chat access opens 60 days before departure.</p>
+    <p style="font-size:13px; color:#7c3aed; font-weight:600;">🔜 Coming Soon: Join the Essence Festival 2026 Group Chat</p>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a>
+</footer>
+
+<script>
+// Simple countdown to July 3, 2026
+function updateTripCountdown() {
+  var now = new Date();
+  var tripDate = new Date('2026-07-03T00:00:00');
+  var diff = tripDate - now;
+  
+  if (diff <= 0) {
+    document.getElementById('tripCountdown').textContent = 'TODAY!';
+    return;
+  }
+  
+  var days = Math.floor(diff / 86400000);
+  document.getElementById('tripCountdown').textContent = days + ' DAYS';
+}
+
+updateTripCountdown();
+setInterval(updateTripCountdown, 3600000); // Update every hour
+
+// Checklist interactivity
+document.querySelectorAll('.checklist-item').forEach(function(item) {
+  item.addEventListener('click', function() {
+    this.classList.toggle('done');
+  });
+});
+</script>
+
+</body>
+</html>

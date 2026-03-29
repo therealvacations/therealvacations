@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Real Vacations | All-Inclusive Group Travel</title>
+<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #fff; }
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  nav a img { height: 52px; }
+  .nav-center { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; flex: 1; justify-content: center; }
+  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: #c084fc; }
+  .nav-auth { display: flex; gap: 10px; }
+  .nav-login { border: 2px solid #c084fc; color: #c084fc; padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .nav-login:hover { background: #c084fc; color: #1a0533; }
+  .nav-signup { background: #c084fc; color: #1a0533; padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+  .nav-signup:hover { background: #7c3aed; color: #fff; }
+
+  /* BANNER */
+  .urgent-banner { background: linear-gradient(90deg, #7c3aed, #a855f7); color: #fff; text-align: center; padding: 18px 24px; }
+  .urgent-banner h3 { font-size: 18px; margin-bottom: 6px; }
+  .urgent-banner p { font-size: 14px; opacity: 0.9; margin-bottom: 14px; }
+  .countdown-wrap { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; margin-bottom: 16px; }
+  .countdown-box { background: rgba(255,255,255,0.15); border-radius: 10px; padding: 10px 18px; min-width: 70px; }
+  .countdown-box .num { font-size: 28px; font-weight: 800; display: block; }
+  .countdown-box .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.85; }
+  .banner-btn { background: #fff; color: #7c3aed; padding: 12px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; display: inline-block; transition: transform 0.2s; cursor: pointer; border: none; }
+  .banner-btn:hover { transform: translateY(-2px); }
+
+  /* HERO */
+  .hero { background: linear-gradient(135deg, #1a0533 0%, #3b0764 60%, #6b21a8 100%); color: #fff; text-align: center; padding: 80px 24px 60px; }
+  .hero-tag { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #c084fc; margin-bottom: 16px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 52px); font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  .hero h1 span { color: #c084fc; }
+  .hero p { font-size: 18px; color: #e9d5ff; max-width: 620px; margin: 0 auto 32px; line-height: 1.6; }
+  .hero-badges { display: flex; justify-content: center; gap: 24px; flex-wrap: wrap; margin-bottom: 36px; }
+  .hero-badge { font-size: 13px; color: #c084fc; }
+  .hero-btns { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  .btn-green { background: #22c55e; color: #fff; padding: 14px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; transition: background 0.2s, transform 0.15s; display: inline-block; }
+  .btn-green:hover { background: #16a34a; transform: translateY(-2px); }
+  .btn-outline { border: 2px solid #c084fc; color: #c084fc; padding: 13px 32px; border-radius: 50px; font-weight: 600; font-size: 16px; transition: all 0.2s; display: inline-block; cursor: pointer; background: transparent; }
+  .btn-outline:hover { background: #c084fc; color: #1a0533; transform: translateY(-2px); }
+
+  /* PERKS SECTION - NEW */
+  .perks-section { background: #fff; padding: 70px 24px; border-bottom: 1px solid #f3e8ff; }
+  .perks-tag { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #7c3aed; font-weight: 600; margin-bottom: 12px; text-align: center; display: block; }
+  .perks-section h2 { text-align: center; font-size: clamp(24px, 4vw, 38px); font-weight: 800; color: #1a0533; margin-bottom: 12px; }
+  .perks-section .sub { text-align: center; color: #666; margin-bottom: 48px; font-size: 16px; max-width: 620px; margin-left: auto; margin-right: auto; line-height: 1.6; }
+  .perks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+  .perk-card { background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%); border-radius: 20px; padding: 32px 28px; text-align: center; transition: transform 0.2s, box-shadow 0.2s; border: 2px solid #f3e8ff; }
+  .perk-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(124,58,237,0.15); border-color: #c084fc; }
+  .perk-icon { font-size: 42px; margin-bottom: 16px; }
+  .perk-card h3 { font-size: 18px; font-weight: 700; color: #1a0533; margin-bottom: 10px; }
+  .perk-card p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 18px; }
+  .perk-btn { display: inline-block; background: #7c3aed; color: #fff; padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 14px; transition: background 0.2s, transform 0.15s; }
+  .perk-btn:hover { background: #6d28d9; transform: translateY(-2px); }
+
+  /* SECTIONS */
+  .section-tag { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #7c3aed; font-weight: 600; margin-bottom: 12px; text-align: center; display: block; }
+  .trips-section { background: #faf5ff; padding: 70px 24px; }
+  .trips-section h2 { text-align: center; font-size: clamp(24px, 4vw, 38px); font-weight: 800; color: #1a0533; margin-bottom: 8px; }
+  .trips-section .sub { text-align: center; color: #666; margin-bottom: 48px; font-size: 16px; }
+  .trips-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; max-width: 1200px; margin: 0 auto; }
+  .trip-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; }
+  .trip-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+  .trip-card-header { background: linear-gradient(135deg, #1a0533, #6b21a8); padding: 24px 22px 20px; color: #fff; }
+  .trip-badge { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; background: #c084fc; color: #1a0533; padding: 4px 10px; border-radius: 20px; display: inline-block; margin-bottom: 10px; }
+  .trip-badge.green { background: #86efac; }
+  .trip-badge.yellow { background: #fde68a; }
+  .trip-badge.orange { background: #fdba74; }
+  .trip-card-header h3 { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+  .trip-card-header .date-loc { font-size: 13px; color: #e9d5ff; }
+  .trip-card-body { padding: 22px; }
+  .trip-card-body p { color: #555; font-size: 14px; line-height: 1.6; margin-bottom: 12px; }
+  .trip-deposit { font-size: 14px; color: #7c3aed; font-weight: 700; margin-bottom: 4px; }
+  .trip-deposit-note { font-size: 13px; color: #555; margin-bottom: 16px; line-height: 1.6; }
+  .trip-btn { display: block; text-align: center; background: #7c3aed; color: #fff; padding: 12px; border-radius: 50px; font-weight: 700; font-size: 14px; transition: background 0.2s, transform 0.15s; }
+  .trip-btn:hover { background: #6d28d9; transform: translateY(-2px); }
+  .interest-note { font-size: 13px; color: #7c3aed; font-weight: 600; text-align: center; margin-top: 8px; }
+
+  /* HOW IT WORKS */
+  .how { padding: 70px 24px; max-width: 960px; margin: 0 auto; text-align: center; }
+  .how h2 { font-size: clamp(24px, 4vw, 38px); font-weight: 800; color: #1a0533; margin-bottom: 48px; }
+  .steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px; }
+  .step-num { width: 52px; height: 52px; background: #7c3aed; color: #fff; border-radius: 50%; font-size: 22px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+  .step h3 { font-size: 18px; font-weight: 700; color: #1a0533; margin-bottom: 10px; }
+  .step p { color: #555; font-size: 14px; line-height: 1.6; }
+
+  /* FAQ */
+  .faq { background: #faf5ff; padding: 70px 24px; }
+  .faq h2 { text-align: center; font-size: clamp(22px, 4vw, 36px); font-weight: 800; color: #1a0533; margin-bottom: 40px; }
+  .faq-list { max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+  details { background: #fff; border-radius: 12px; padding: 18px 22px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  summary { font-weight: 700; font-size: 15px; color: #1a0533; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; }
+  summary::after { content: '+'; font-size: 20px; color: #7c3aed; }
+  details[open] summary::after { content: '−'; }
+  details p { margin-top: 12px; color: #555; font-size: 14px; line-height: 1.65; }
+
+  /* CTA */
+  .cta { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; text-align: center; padding: 70px 24px; }
+  .cta h2 { font-size: clamp(24px, 4vw, 40px); font-weight: 800; margin-bottom: 16px; }
+  .cta p { font-size: 17px; color: #e9d5ff; max-width: 520px; margin: 0 auto 32px; line-height: 1.6; }
+
+  /* FOOTER */
+  footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
+  .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; }
+  .footer-col a:hover { color: #c084fc; }
+  .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
+
+  /* SPIN WHEEL MODAL */
+  .wheel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
+  .wheel-overlay.active { display: flex; }
+  .wheel-modal { background: linear-gradient(160deg, #1a0533, #3b0764); border-radius: 24px; padding: 36px 28px 32px; max-width: 480px; width: 100%; text-align: center; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.6); max-height: 95vh; overflow-y: auto; }
+  .wheel-close { position: absolute; top: 14px; right: 18px; font-size: 22px; color: #c084fc; cursor: pointer; background: none; border: none; line-height: 1; z-index: 2; }
+  .wheel-close:hover { color: #fff; }
+  .wheel-modal h2 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 6px; }
+  .wheel-modal .wm-sub { font-size: 14px; color: #c084fc; margin-bottom: 22px; line-height: 1.5; }
+  .wm-step { display: none; }
+  .wm-step.active { display: block; }
+  .wheel-wrap { position: relative; display: inline-block; margin: 8px auto 16px; }
+  #wheelCanvas { border-radius: 50%; display: block; box-shadow: 0 0 30px rgba(192,132,252,0.4); }
+  .wheel-pointer { position: absolute; top: -16px; left: 50%; transform: translateX(-50%); font-size: 30px; z-index: 2; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+  .spin-go-btn { background: linear-gradient(135deg, #c084fc, #7c3aed); color: #fff; padding: 14px 48px; border-radius: 50px; font-weight: 800; font-size: 18px; border: none; cursor: pointer; transition: opacity 0.2s, transform 0.15s; letter-spacing: 1px; }
+  .spin-go-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-2px); }
+  .spin-go-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .result-emoji { font-size: 52px; margin-bottom: 8px; }
+  .result-won { color: #e9d5ff; font-size: 15px; margin-bottom: 4px; }
+  .result-prize { font-size: 36px; font-weight: 900; color: #c084fc; margin-bottom: 12px; line-height: 1.2; }
+  .expire-timer { background: rgba(220,38,38,0.15); border: 1px solid rgba(239,68,68,0.4); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; }
+  .expire-label { font-size: 11px; color: #fca5a5; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: 600; }
+  .expire-clock { font-size: 26px; font-weight: 800; color: #ef4444; font-family: 'Courier New', monospace; letter-spacing: 2px; }
+  .claim-form { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
+  .claim-form input { padding: 13px 18px; border-radius: 50px; border: 2px solid #6b21a8; background: rgba(255,255,255,0.08); color: #fff; font-size: 15px; outline: none; transition: border 0.2s; }
+  .claim-form input::placeholder { color: #9ca3af; }
+  .claim-form input:focus { border-color: #c084fc; }
+  .claim-btn { background: #22c55e; color: #fff; padding: 14px; border-radius: 50px; font-weight: 700; font-size: 16px; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; }
+  .claim-btn:hover { background: #16a34a; transform: translateY(-2px); }
+  .claim-note { font-size: 12px; color: #6b7280; margin-top: 4px; }
+  .success-wrap { background: rgba(34,197,94,0.1); border: 2px dashed #22c55e; border-radius: 14px; padding: 18px 24px; margin-bottom: 14px; }
+  .success-label { font-size: 14px; color: #86efac; font-weight: 700; margin-bottom: 6px; }
+  .success-msg { font-size: 15px; color: #e9d5ff; line-height: 1.6; }
+  .result-note { font-size: 12px; color: #9ca3af; line-height: 1.6; margin-bottom: 20px; }
+  .result-book-btn { background: #22c55e; color: #fff; padding: 14px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; display: inline-block; transition: background 0.2s, transform 0.15s; }
+  .result-book-btn:hover { background: #16a34a; transform: translateY(-2px); }
+
+  @media (max-width: 768px) {
+    nav { padding: 12px 20px; }
+    .nav-center { flex-direction: column; gap: 12px; }
+    .nav-links { gap: 14px; }
+    .nav-links a { font-size: 12px; }
+    .hero { padding: 50px 20px 40px; }
+    .trips-grid { grid-template-columns: 1fr; }
+    .perks-grid { grid-template-columns: 1fr; }
+    .hero-btns { flex-direction: column; align-items: center; }
+    .steps { grid-template-columns: 1fr; }
+    .faq-list { padding: 0 10px; }
+    .countdown-wrap { gap: 10px; }
+    .countdown-box { min-width: 55px; padding: 8px 12px; }
+    .countdown-box .num { font-size: 22px; }
+    .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+  }
+  @media (max-width: 480px) {
+    .nav-links { display: none; }
+    .trip-card-header h3 { font-size: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<script>
+// WHEEL PRIZE SETTINGS
+var WHEEL_PRIZES = [
+  { label: "$50 Off",                     code: "TRV50",    segments: 6 },
+  { label: "$100 Off",                    code: "TRV100",   segments: 5 },
+  { label: "$150 Off",                    code: "TRV150",   segments: 4 },
+  { label: "$200 Off",                    code: "TRV200",   segments: 3 },
+  { label: "$300 Off",                    code: "TRV300",   segments: 2 },
+  { label: "$400 Off",                    code: "TRV400",   segments: 1 },
+  { label: "$500 Off",                    code: "TRV500",   segments: 1 },
+  { label: "Free Winery Tasting Upgrade", code: "TRVWINE",  segments: 1 }
+];
+
+var PRIZE_EXPIRY_HOURS = 48;
+var FORMSPREE_SPIN_URL = "https://formspree.io/f/xgonjyqa";
+
+// Countdown settings
+var COUNTDOWN_DEADLINE     = '2026-07-03T00:00:00';
+var COUNTDOWN_TRIP_NAME    = 'Essence Festival New Orleans';
+var COUNTDOWN_BOOK_URL     = 'https://book.stripe.com/fZueVc3Hgfaf7ZJaQz0Fi03';
+var COUNTDOWN_BOOK_LABEL   = '🎟️ Reserve Essence Spot →';
+var COUNTDOWN_ACTIVE_MSG   = 'Book before July 3rd with a deposit — flexible payment plan available';
+var COUNTDOWN_DEADLINE_MSG = 'Today is the last day to book — visit the booking page for payment details!';
+var COUNTDOWN_CLOSED_MSG   = 'The booking window has passed. Contact us to check for availability.';
+</script>
+
+<nav>
+  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+  <div class="nav-center">
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="trips.html">Trips</a>
+      <a href="real-stories.html">Real Stories</a>
+      <a href="about.html">About</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="resources.html">Resources</a>
+      <a href="blog.html">Blog</a>
+      <a href="contact.html">Contact</a>
+    </div>
+    <div class="nav-auth">
+      <a href="login.html" class="nav-login">Login</a>
+      <a href="signup.html" class="nav-signup">Sign Up</a>
+    </div>
+  </div>
+</nav>
+
+<div class="urgent-banner" id="urgentBanner">
+  <h3 id="bannerTitle">⚡ Essence Festival New Orleans — Book Now!</h3>
+  <p id="bannerMsg">Book before July 3rd with a deposit — flexible payment plan available</p>
+  <div class="countdown-wrap">
+    <div class="countdown-box"><span class="num" id="cd-days">--</span><span class="lbl">Days</span></div>
+    <div class="countdown-box"><span class="num" id="cd-hrs">--</span><span class="lbl">Hours</span></div>
+    <div class="countdown-box"><span class="num" id="cd-min">--</span><span class="lbl">Mins</span></div>
+    <div class="countdown-box"><span class="num" id="cd-sec">--</span><span class="lbl">Secs</span></div>
+  </div>
+  <a id="bannerBookBtn" href="https://book.stripe.com/fZueVc3Hgfaf7ZJaQz0Fi03" target="_blank" class="banner-btn">🎟️ Reserve Essence Spot →</a>
+</div>
+
+<section class="hero">
+  <p class="hero-tag">Born from Family. Built for Community.</p>
+  <h1>You Bring Your People.<br><span>We Handle Everything Else.</span></h1>
+  <p>At The Real Vacations, we believe that the best memories are made when we step away from the chaos of life and come together to experience something extraordinary. We specialize in curated, all-inclusive group trips that make travel simple, affordable, and stress-free.</p>
+  <div class="hero-badges">
+    <span class="hero-badge">✓ 20+ Years of Group Travel &nbsp;&nbsp; ✓ Flexible Payment Plans &nbsp;&nbsp; ✓ 24/7 Trip Support</span>
+  </div>
+  <div class="hero-btns">
+    <a href="trips.html" class="btn-green">Explore Our Trips →</a>
+    <button class="btn-outline" onclick="openWheel()">🎡 Spin for My Discount</button>
+  </div>
+</section>
+
+<!-- REAL VACATIONER PERKS SECTION -->
+<section class="perks-section">
+  <span class="perks-tag">🌍 Real Vacationer Perks</span>
+  <h2>Real Vacationers Get It First</h2>
+  <p class="sub">We don't just plan your trip — we make sure you get the best deals on everything around it. Flights, hotels, gear, experiences. Because you're family, and family gets the hookup.</p>
+  
+  <div class="perks-grid">
+    
+    <div class="perk-card">
+      <div class="perk-icon">✈️</div>
+      <h3>Flight Deals</h3>
+      <p>Book your flight for less — we track the prices so you don't have to. Find the best rates and get to your adventure.</p>
+      <a href="deals.html#flights" class="perk-btn">Find My Flight →</a>
+    </div>
+
+    <div class="perk-card">
+      <div class="perk-icon">🏨</div>
+      <h3>Hotels & Stays</h3>
+      <p>Extend your trip? We've got stays near every experience. Compare prices and book the perfect spot.</p>
+      <a href="deals.html#hotels" class="perk-btn">Browse Hotels →</a>
+    </div>
+
+    <div class="perk-card">
+      <div class="perk-icon">🎒</div>
+      <h3>Travel Essentials</h3>
+      <p>From luggage to travel pillows — gear we actually use. Handpicked items to make your journey smoother.</p>
+      <a href="deals.html#gear" class="perk-btn">Shop Gear →</a>
+    </div>
+
+    <div class="perk-card">
+      <div class="perk-icon">🎟️</div>
+      <h3>Add-On Experiences</h3>
+      <p>Museums, food tours, wine tastings — extend your adventure with curated local experiences.</p>
+      <a href="deals.html#experiences" class="perk-btn">Explore More →</a>
+    </div>
+
+  </div>
+</section>
+
+<section class="trips-section">
+  <span class="section-tag">Upcoming Group Experiences</span>
+  <h2>Choose Your Next Unforgettable Adventure</h2>
+  <p class="sub">Curated trips for families, friend groups, and anyone ready to travel together</p>
+  <div class="trips-grid">
+
+    <!-- ESSENCE FESTIVAL -->
+    <div class="trip-card">
+      <div class="trip-card-header">
+        <span class="trip-badge yellow">⚡ Opening Very Soon</span>
+        <h3>Essence Festival 2026</h3>
+        <div class="date-loc">July 3–5, 2026 · New Orleans 🎵</div>
+      </div>
+      <div class="trip-card-body">
+        <p>The world's largest celebration of culture and music. Legendary performances and NOLA hospitality.</p>
+        <div class="trip-deposit">Book with a deposit to secure your spot</div>
+        <div class="trip-deposit-note">Opening very soon — only a few spots left · Confirm your deposit before time runs out & save $100</div>
+        <a href="https://book.stripe.com/fZueVc3Hgfaf7ZJaQz0Fi03" target="_blank" class="trip-btn" style="background:#a855f7;">🎟️ Claim My Spot — $500 Deposit</a>
+        <a href="essence-festival-new-orleans-july-3-5-2026.html" style="display:block; text-align:center; margin-top:8px; font-size:13px; color:#7c3aed; font-weight:600;">View Full Trip Details →</a>
+        <p class="interest-note">⏰ Book within the countdown & save $100 automatically</p>
+      </div>
+    </div>
+
+    <!-- MARY J BLIGE - NIGHT 1 (July 17) -->
+    <div class="trip-card">
+      <div class="trip-card-header">
+        <span class="trip-badge orange">🔥 Very Few Spots Left</span>
+        <h3>Mary J Blige Residency - Night 1</h3>
+        <div class="date-loc">July 17, 2026 · Las Vegas 🎤</div>
+      </div>
+      <div class="trip-card-body">
+        <p>"My Life, My Story" at Dolby Live at Park MGM. An intimate, powerful performance you'll never forget.</p>
+        <div class="trip-deposit">Book with a deposit to secure your spot</div>
+        <div class="trip-deposit-note">Opening very soon — only a few spots left · Confirm your deposit before time runs out & save $100</div>
+        <a href="https://book.stripe.com/aFacN44Lkd272Fp1fZ0Fi04" target="_blank" class="trip-btn" style="background:#a855f7;">🎟️ Claim My Spot — $500 Deposit</a>
+        <a href="mary-j-blige-my-life-my-story-las-vegas-july-17-2026.html" style="display:block; text-align:center; margin-top:8px; font-size:13px; color:#7c3aed; font-weight:600;">View Full Trip Details →</a>
+        <p class="interest-note">⏰ Book within the countdown & save $100 automatically</p>
+      </div>
+    </div>
+
+    <!-- MARY J BLIGE - FINALE (July 18) -->
+    <div class="trip-card">
+      <div class="trip-card-header">
+        <span class="trip-badge orange">🔥 Very Few Spots Left</span>
+        <h3>Mary J Blige Residency Finale</h3>
+        <div class="date-loc">July 18, 2026 · Las Vegas 🎤</div>
+      </div>
+      <div class="trip-card-body">
+        <p>The FINAL night of "My Life, My Story" at Dolby Live. Witness the grand finale of an iconic residency.</p>
+        <div class="trip-deposit">Book with a deposit to secure your spot</div>
+        <div class="trip-deposit-note">Opening very soon — only a few spots left · Confirm your deposit before time runs out & save $100</div>
+        <a href="https://book.stripe.com/aFacN44Lkd272Fp1fZ0Fi04" target="_blank" class="trip-btn" style="background:#a855f7;">🎟️ Claim My Spot — $500 Deposit</a>
+        <a href="mary-j-blige-my-life-my-story-las-vegas-july-18-2026.html" style="display:block; text-align:center; margin-top:8px; font-size:13px; color:#7c3aed; font-weight:600;">View Full Trip Details →</a>
+        <p class="interest-note">⏰ Book within the countdown & save $100 automatically</p>
+      </div>
+    </div>
+
+    <!-- KEITH SWEAT -->
+    <div class="trip-card">
+      <div class="trip-card-header">
+        <span class="trip-badge">🔥 Limited Availability</span>
+        <h3>Keith Sweat R&B Lovers Tour</h3>
+        <div class="date-loc">August 29, 2026 · Atlanta 🎷</div>
+      </div>
+      <div class="trip-card-body">
+        <p>Keith Sweat, Joe, Dru Hill, Ginuwine & Kut Klose — all on one stage. VIP Meet & Greet available exclusively through us.</p>
+        <div class="trip-deposit">Book with a deposit to secure your spot</div>
+        <div class="trip-deposit-note">Opening very soon — only a few spots left · Confirm your deposit before time runs out & save $100</div>
+        <a href="https://book.stripe.com/eVq9AS91A2nta7R2k30Fi05" target="_blank" class="trip-btn" style="background:#a855f7;">🎟️ Reserve My ATL Spot — $500 Deposit</a>
+        <a href="keith-sweat-r-and-b-tour-atlanta-august-29-2026.html" style="display:block; text-align:center; margin-top:8px; font-size:13px; color:#7c3aed; font-weight:600;">View Full Trip Details →</a>
+        <p class="interest-note">⏰ Book within the countdown & save $100 automatically</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="how">
+  <h2>Group Travel Without the Group Headache</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><h3>Pick Your Trip</h3><p>Browse our curated experiences. Each one designed for groups who want quality, connection, and zero stress.</p></div>
+    <div class="step"><div class="step-num">2</div><h3>Spin & Save</h3><p>Spin the wheel before you book for a chance to win up to $500 off. Your code is emailed instantly.</p></div>
+    <div class="step"><div class="step-num">3</div><h3>Lock In Your Spot</h3><p>Secure your spot with a deposit and make flexible payments on your own schedule before the balance due date.</p></div>
+    <div class="step"><div class="step-num">4</div><h3>Show Up & Enjoy</h3><p>We handle everything. You just bring your people and make memories.</p></div>
+  </div>
+</section>
+
+<section class="faq">
+  <h2>Questions? We've Got Answers</h2>
+  <div class="faq-list">
+    <details>
+      <summary>How do deposits and payment plans work?</summary>
+      <p>Secure your spot with a deposit, then make flexible payments on your own schedule. When you get to the booking page, it will show you exactly what's required based on when you book and the balance due date for your trip. No credit checks, no interest.</p>
+    </details>
+    <details>
+      <summary>How does the spin wheel discount work?</summary>
+      <p>Click "Spin for My Discount" anywhere on the site. The wheel spins immediately — no signup required. Whatever it lands on is your prize, from $50 off to $500 off. After spinning, enter your name and email to claim your code. It's emailed to you instantly. Enter it at checkout when booking. Codes are single-use, valid for 48 hours.</p>
+    </details>
+    <details>
+      <summary>Can I travel solo or do I need a group?</summary>
+      <p>Come solo! Many of our travelers come alone and leave with lifelong connections. That's the magic of group travel.</p>
+    </details>
+    <details>
+      <summary>What is the cancellation policy?</summary>
+      <p>Full refund if cancelled within 24 hours of booking. After 24 hours, deposits are non-refundable but transferable to another traveler with a $50 fee. Travel insurance is highly recommended.</p>
+    </details>
+    <details>
+      <summary>How do I get notified when new trips open?</summary>
+      <p>Click "Join the Interest List" on any upcoming trip. You'll be first to know when booking opens — with exclusive early-bird pricing.</p>
+    </details>
+  </div>
+</section>
+
+<section class="cta">
+  <h2>Ready to Make Memories?</h2>
+  <p>Spin the wheel first — win up to $500 off your trip. Then book your spot before they're gone!</p>
+  <button onclick="openWheel()" style="background:#c084fc; color:#1a0533; padding:15px 32px; border-radius:50px; font-weight:700; font-size:16px; border:none; cursor:pointer; margin:8px; transition: opacity 0.2s;">🎡 Spin for My Discount</button>
+  <a href="trips.html" style="background:#22c55e; color:#fff; padding:15px 32px; border-radius:50px; font-weight:700; font-size:16px; display:inline-block; margin:8px; transition: background 0.2s;">View All Trips →</a>
+</section>
+
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;">
+      <p>Creating unforgettable group travel experiences for over 20 years.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="trips.html">Upcoming Trips</a>
+      <a href="about.html">About Us</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="real-stories.html">Real Stories</a>
+      <a href="blog.html">Blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Us</h4>
+      <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>
+      <a href="tel:4049230017">404-923-0017</a>
+      <a href="contact.html">Send a Message</a>
+    </div>
+  </div>
+  <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">👥 Facebook</a></div>
+  <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
+</footer>
+
+<!-- SPIN WHEEL MODAL -->
+<div class="wheel-overlay" id="wheelOverlay" onclick="if(event.target===this)closeWheel()">
+  <div class="wheel-modal">
+    <button class="wheel-close" onclick="closeWheel()">✕</button>
+    <h2>🎡 Spin to Win!</h2>
+    <p class="wm-sub">Spin the wheel for a chance to win up to $500 off your trip!</p>
+
+    <div class="wm-step active" id="stepSpin">
+      <div class="wheel-wrap">
+        <div class="wheel-pointer">▼</div>
+        <canvas id="wheelCanvas" width="300" height="300"></canvas>
+      </div>
+      <br>
+      <button class="spin-go-btn" id="spinBtn" onclick="spinWheel()">SPIN!</button>
+      <p style="font-size:12px; color:#6b7280; margin-top:10px;">No signup required to spin. Good luck!</p>
+    </div>
+
+    <div class="wm-step" id="stepClaim">
+      <div class="result-emoji">🎉</div>
+      <div class="result-won">Congratulations! You won:</div>
+      <div class="result-prize" id="resultPrize"></div>
+
+      <div class="expire-timer">
+        <div class="expire-label">⏰ Claim before it expires</div>
+        <div class="expire-clock" id="expireClock">47:59:59</div>
+      </div>
+
+      <p style="font-size:14px; color:#e9d5ff; margin-bottom:16px; line-height:1.5;">Enter your name and email below to receive your discount code instantly.</p>
+
+      <div class="claim-form">
+        <input type="text" id="claimName" placeholder="Your first name" autocomplete="given-name" />
+        <input type="email" id="claimEmail" placeholder="Your email address" autocomplete="email" />
+        <button class="claim-btn" onclick="claimPrize()">🎟️ Claim My Code</button>
+      </div>
+      <p class="claim-note">🔒 No spam ever. Your code appears instantly after claiming.</p>
+    </div>
+
+    <div class="wm-step" id="stepSuccess">
+      <div class="result-emoji">🎊</div>
+      <div class="result-won">You Won!</div>
+      <div class="result-prize" id="successPrize"></div>
+
+      <div class="success-wrap">
+        <div class="success-label">✅ Discount code emailed to:</div>
+        <div class="success-msg" id="successEmail"></div>
+      </div>
+
+      <div class="expire-timer" style="margin-bottom:14px;">
+        <div class="expire-label">⏰ Code expires in</div>
+        <div class="expire-clock" id="expireClock2">47:59:59</div>
+      </div>
+
+      <p class="result-note">Single use only · Valid on any trip · Enter code at checkout<br>Code expires <span id="successExpiry"></span></p>
+      <a href="trips.html" class="result-book-btn">🎟️ Book Now — Use My Code →</a>
+      <br><br>
+      <a href="trips.html" style="color:#c084fc; font-size:13px;">Browse all trips →</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+var allSegments = [];
+WHEEL_PRIZES.forEach(function(prize) {
+  for (var i = 0; i < prize.segments; i++) {
+    allSegments.push(prize);
+  }
+});
+var totalSegments = allSegments.length;
+var currentAngle = 0;
+var isSpinning = false;
+var wonPrize = null;
+var winIndex = 0;
+var prizeExpireTime = null;
+var expireInterval = null;
+
+function updateCountdown() {
+  var now      = new Date();
+  var deadline = new Date(COUNTDOWN_DEADLINE);
+  var dayAfter = new Date(deadline.getTime() + 86400000);
+  var isDeadlineDay = now >= deadline && now < dayAfter;
+  var isPast        = now >= dayAfter;
+  var btn      = document.getElementById('bannerBookBtn');
+  var banner   = document.getElementById('urgentBanner');
+  var bannerH3 = document.getElementById('bannerTitle');
+  var bannerP  = document.getElementById('bannerMsg');
+
+  if (isPast) {
+    if (banner) banner.style.background = '#374151';
+    if (bannerH3) bannerH3.textContent = '⚠️ ' + COUNTDOWN_TRIP_NAME + ' Booking Has Closed';
+    if (bannerP) bannerP.textContent = COUNTDOWN_CLOSED_MSG;
+    if (btn) btn.style.display = 'none';
+    ['cd-days','cd-hrs','cd-min','cd-sec'].forEach(function(id){ var el = document.getElementById(id); if (el) el.textContent = '00'; });
+    return;
+  }
+  if (isDeadlineDay) {
+    if (banner) banner.style.background = 'linear-gradient(90deg, #dc2626, #ef4444)';
+    if (bannerH3) bannerH3.textContent = '🚨 TODAY IS THE LAST DAY TO BOOK ' + COUNTDOWN_TRIP_NAME.toUpperCase() + '!';
+    if (bannerP) bannerP.textContent = COUNTDOWN_DEADLINE_MSG;
+    if (btn) btn.style.display = 'none';
+    ['cd-days','cd-hrs','cd-min','cd-sec'].forEach(function(id){ var el = document.getElementById(id); if (el) el.textContent = '00'; });
+    return;
+  }
+  if (bannerH3) bannerH3.textContent = '⚡ ' + COUNTDOWN_TRIP_NAME + ' — Book Now!';
+  if (bannerP) bannerP.textContent = COUNTDOWN_ACTIVE_MSG;
+  if (btn) { btn.href = COUNTDOWN_BOOK_URL; btn.textContent = COUNTDOWN_BOOK_LABEL; }
+  var diff = deadline - now;
+  var d = Math.floor(diff / 86400000);
+  var h = Math.floor((diff % 86400000) / 3600000);
+  var m = Math.floor((diff % 3600000) / 60000);
+  var s = Math.floor((diff % 60000) / 1000);
+  var elD = document.getElementById('cd-days'); if (elD) elD.textContent = String(d).padStart(2,'0');
+  var elH = document.getElementById('cd-hrs');  if (elH) elH.textContent = String(h).padStart(2,'0');
+  var elM = document.getElementById('cd-min');  if (elM) elM.textContent = String(m).padStart(2,'0');
+  var elS = document.getElementById('cd-sec');  if (elS) elS.textContent = String(s).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown, 1000);
+
+function openWheel() {
+  document.getElementById('wheelOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  drawWheel(currentAngle);
+}
+function closeWheel() {
+  document.getElementById('wheelOverlay').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+var COLORS = ['#5b21b6','#7c3aed','#6d28d9','#8b5cf6','#4c1d95','#a78bfa','#3b0764','#c084fc','#6b21a8','#9333ea'];
+function drawWheel(angle) {
+  var canvas = document.getElementById('wheelCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var cx = canvas.width / 2;
+  var cy = canvas.height / 2;
+  var r = cx - 4;
+  var arc = (2 * Math.PI) / totalSegments;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (var i = 0; i < totalSegments; i++) {
+    var start = angle + i * arc;
+    var end = start + arc;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, start, end); ctx.closePath();
+    ctx.fillStyle = COLORS[i % COLORS.length]; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right'; ctx.fillStyle = '#fff';
+    var lbl = allSegments[i].label;
+    ctx.font = 'bold ' + (lbl.length > 14 ? 8 : 10) + 'px Segoe UI, sans-serif';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'; ctx.shadowBlur = 2;
+    ctx.fillText(lbl, r - 8, 4); ctx.restore();
+  }
+  ctx.beginPath(); ctx.arc(cx, cy, 20, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1a0533'; ctx.fill();
+  ctx.strokeStyle = '#c084fc'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#c084fc'; ctx.font = 'bold 9px Segoe UI';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('TRV', cx, cy);
+}
+
+function spinWheel() {
+  if (isSpinning) return;
+  try {
+    if (sessionStorage.getItem('trv_wheel_claimed') === 'true') {
+      alert('You have already claimed a prize! Check your records for your discount code.');
+      return;
+    }
+  } catch(e) {}
+  isSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+
+  winIndex = Math.floor(Math.random() * totalSegments);
+  wonPrize = allSegments[winIndex];
+
+  var arc = (2 * Math.PI) / totalSegments;
+  var targetAngle = (-Math.PI / 2) - (winIndex * arc) - (arc / 2);
+  var spins = 5 + Math.floor(Math.random() * 4);
+  var endAngle = currentAngle + (spins * 2 * Math.PI) + ((targetAngle - currentAngle) % (2 * Math.PI));
+  var duration = 4500;
+  var startTime = null;
+  var startAngle = currentAngle;
+
+  function easeOut(t) { return 1 - Math.pow(1 - t, 4); }
+  function animate(ts) {
+    if (!startTime) startTime = ts;
+    var p = Math.min((ts - startTime) / duration, 1);
+    currentAngle = startAngle + (endAngle - startAngle) * easeOut(p);
+    drawWheel(currentAngle);
+    if (p < 1) { requestAnimationFrame(animate); }
+    else { isSpinning = false; setTimeout(showClaimStep, 500); }
+  }
+  requestAnimationFrame(animate);
+}
+
+function showClaimStep() {
+  prizeExpireTime = Date.now() + (PRIZE_EXPIRY_HOURS * 60 * 60 * 1000);
+  document.getElementById('resultPrize').textContent = wonPrize.label;
+  document.getElementById('stepSpin').classList.remove('active');
+  document.getElementById('stepClaim').classList.add('active');
+  startExpireCountdown('expireClock');
+}
+
+function startExpireCountdown(clockId) {
+  if (expireInterval) clearInterval(expireInterval);
+  function tick() {
+    var remaining = prizeExpireTime - Date.now();
+    if (remaining <= 0) {
+      document.getElementById(clockId).textContent = 'EXPIRED';
+      clearInterval(expireInterval);
+      return;
+    }
+    var h = Math.floor(remaining / 3600000);
+    var m = Math.floor((remaining % 3600000) / 60000);
+    var s = Math.floor((remaining % 60000) / 1000);
+    document.getElementById(clockId).textContent =
+      String(h).padStart(2,'0') + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }
+  tick();
+  expireInterval = setInterval(tick, 1000);
+}
+
+function claimPrize() {
+  var name  = document.getElementById('claimName').value.trim();
+  var email = document.getElementById('claimEmail').value.trim();
+  if (!name) { alert('Please enter your first name!'); return; }
+  if (!email || !email.includes('@') || !email.includes('.')) { alert('Please enter a valid email address!'); return; }
+
+  if (Date.now() > prizeExpireTime) {
+    alert('Sorry, this prize has expired. Spin again for a new chance!');
+    return;
+  }
+
+  document.getElementById('successPrize').textContent = wonPrize.label;
+  document.getElementById('successEmail').textContent = email;
+
+  var expiryDate = new Date(prizeExpireTime);
+  var options = { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
+  document.getElementById('successExpiry').textContent = expiryDate.toLocaleDateString('en-US', options);
+
+  document.getElementById('stepClaim').classList.remove('active');
+  document.getElementById('stepSuccess').classList.add('active');
+
+  startExpireCountdown('expireClock2');
+
+  fetch(FORMSPREE_SPIN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: name,
+      email: email,
+      prize: wonPrize.label,
+      code: wonPrize.code,
+      source: 'homepage-spin-wheel',
+      timestamp: new Date().toISOString()
+    })
+  }).catch(function(err) { console.log('Formspree error:', err); });
+
+  try { sessionStorage.setItem('trv_wheel_claimed', 'true'); } catch(e) {}
+}
+</script>
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
+</body>
+</html>
