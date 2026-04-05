@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Payment Method</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { max-width: 400px; margin: auto; padding: 20px; }
+        button { background-color: #6772e5; color: white; border: none; padding: 10px; cursor: pointer; }
+        button:hover { background-color: #5469d4; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Update Payment Method</h2>
+        <form id="payment-form">
+            <div id="card-element"><!-- A Stripe Element will be inserted here. --></div>
+            <button id="submit">Update</button>
+            <div id="payment-message" class="hidden"></div>
+        </form>
+    </div>
+    <script>
+        const stripe = Stripe('YOUR_PUBLIC_KEY'); // Replace with your actual public key
+        const elements = stripe.elements();
+        const cardElement = elements.create('card');
+        cardElement.mount('#card-element');
+
+        const form = document.getElementById('payment-form');
+        form.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const {paymentMethod, error} = await stripe.createPaymentMethod({
+                type: 'card',
+                card: cardElement,
+            });
+            if (error) {
+                // Display error.message in your UI.
+                document.getElementById('payment-message').textContent = error.message;
+            } else {
+                // Send paymentMethod.id to your server (for example, using fetch).
+                console.log('PaymentMethod ID: ', paymentMethod.id);
+                document.getElementById('payment-message').textContent = 'Payment method updated successfully!';
+            }
+        });
+    </script>
+</body>
+</html>
