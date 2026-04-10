@@ -69,13 +69,13 @@
 </head>
 <body>
 <nav>
-  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+  <a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a>
   <div class="nav-links">
-    <a href="index.html" class="hide-mobile">Home</a>
-    <a href="trips.html" class="hide-mobile">Trips</a>
+    <a href="/" class="hide-mobile">Home</a>
+    <a href="/" class="hide-mobile">Trips</a>
     <a href="deals.html" class="hide-mobile">Deals</a>
-    <a href="contact.html" class="hide-mobile">Contact</a>
-    <a href="signup.html" class="nav-signup">Sign Up Free</a>
+    <a href="/contact" class="hide-mobile">Contact</a>
+    <a href="/signup" class="nav-signup">Sign Up Free</a>
   </div>
 </nav>
 <div class="page">
@@ -122,7 +122,7 @@
     </div>
     <div class="login-right">
       <h3>Welcome back!</h3>
-      <p class="sub">Don't have an account? <a href="signup.html">Sign up free →</a></p>
+      <p class="sub">Don't have an account? <a href="/signup">Sign up free →</a></p>
       <div class="social-btns">
         <button class="social-btn">
           <span class="social-icon">🔵</span>
@@ -150,16 +150,16 @@
       </div>
       <button class="login-btn" onclick="handleLogin()">Sign In to My Dashboard →</button>
       <div class="signup-row">
-        New here? <a href="signup.html">Create your free account</a>
+        New here? <a href="/signup">Create your free account</a>
       </div>
       <p class="note">🔒 Your information is secure and never shared or sold. Ever.</p>
     </div>
   </div>
 </div>
 <footer>
-  © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a>
+  © 2026 The Real Vacations · <a href="/cdn-cgi/l/email-protection#13707c7d6772706753677b766176727f65727072677a7c7d603d707c7e"><span class="__cf_email__" data-cfemail="f1929e9f85909285b18599948394909d8790929085989e9f82df929e9c">[email&#160;protected]</span></a> · <a href="tel:4049230017">404-923-0017</a>
 </footer>
-<script type="module">
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
 import { handleLogin as supabaseLogin } from './js/auth.js';
 
 async function handleLogin() {
@@ -177,17 +177,4 @@ async function handleLogin() {
   
   try {
     const result = await supabaseLogin(email, password);
-    window.location.href = 'dashboard.html';
-  } catch (error) {
-    alert('Login failed: ' + error.message);
-  }
-}
-
-window.handleLogin = handleLogin;
-
-document.getElementById('password').addEventListener('keypress', function(e) {
-  if (e.key === 'Enter') handleLogin();
-});
-</script>
-</body>
-</html>
+    window.location.href = 'dashboard.ht

@@ -2,5 +2,16 @@
   "crons": [{
     "path": "/api/cron/auto-process-payments",
     "schedule": "0 2 * * *"
-  }]
+  }],
+  "rewrites": [
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/real-stories", "destination": "/real-stories.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works.html" },
+    { "source": "/resources", "destination": "/resources.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/signup", "destination": "/signup.html" }
+  ]
 }
