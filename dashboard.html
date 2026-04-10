@@ -6,184 +6,113 @@
     <title>Dashboard | The Real Vacations</title>
     <link rel="icon" type="image/jpeg" href="favicon.jpeg">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DM Sans', sans-serif; background: #f5f5f5; color: #333; }
         
-        /* NAV */
-        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; }
         nav img { height: 52px; }
-        nav a { color: #fff; text-decoration: none; font-weight: 600; }
         .nav-logout { background: #c084fc; color: #1a0533; padding: 8px 16px; border-radius: 20px; cursor: pointer; border: none; font-weight: 600; }
         
-        /* CONTAINER */
         .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+        h1 { margin-bottom: 32px; color: #1a0533; }
+        h2 { margin-bottom: 20px; }
         
-        /* TABS */
         .tabs { display: flex; gap: 12px; margin-bottom: 32px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
-        .tab-btn { background: none; border: none; padding: 12px 20px; cursor: pointer; font-weight: 600; color: #999; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn { background: none; border: none; padding: 12px 20px; cursor: pointer; font-weight: 600; color: #999; font-size: 14px; border-bottom: 3px solid transparent; transition: 0.2s; }
         .tab-btn.active { color: #7c3aed; border-bottom-color: #7c3aed; }
         .tab-btn:hover { color: #7c3aed; }
         
-        /* SECTIONS */
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* FORMS */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; }
-        .form-group input, .form-group textarea, .form-group select { 
-            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; 
-        }
-        .form-group textarea { resize: vertical; min-height: 100px; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; background: #7c3aed; color: #fff; }
+        .btn:hover { background: #6d28d9; }
         
-        /* BUTTONS */
-        .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
-        .btn-primary { background: #7c3aed; color: #fff; }
-        .btn-primary:hover { background: #6d28d9; }
-        .btn-secondary { background: #e0e0e0; color: #333; }
-        .btn-danger { background: #ef4444; color: #fff; }
-        .btn-danger:hover { background: #dc2626; }
-        
-        /* CARDS */
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
         .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
         .card h3 { margin-bottom: 8px; color: #1a0533; }
-        .card p { color: #666; font-size: 14px; margin-bottom: 12px; }
-        .card-actions { display: flex; gap: 8px; }
-        .card-actions button { padding: 6px 12px; font-size: 12px; }
+        .card p { color: #666; font-size: 14px; margin-bottom: 8px; }
         
-        /* MODAL */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
+        .form-group textarea { min-height: 100px; }
+        
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
         .modal-content { background: #fff; padding: 40px; border-radius: 16px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-        .modal-header h2 { color: #1a0533; }
-        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
-        
-        /* ALERTS */
-        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; }
-        .alert-success { background: #d1fae5; color: #065f46; }
-        .alert-error { background: #fee2e2; color: #991b1b; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; float: right; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     </style>
 </head>
 <body>
-    <!-- NAV -->
     <nav>
         <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
-        <div style="margin-left: auto;">
-            <button class="nav-logout" onclick="handleLogout()">Logout</button>
-        </div>
+        <button class="nav-logout" onclick="logout()">Logout</button>
     </nav>
 
-    <!-- CONTAINER -->
     <div class="container">
-        <h1 style="margin-bottom: 32px; color: #1a0533;">Admin Dashboard</h1>
+        <h1>Admin Dashboard</h1>
 
-        <!-- TABS -->
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab(event, 'bookings')">📅 Bookings</button>
-            <button class="tab-btn" onclick="switchTab(event, 'testimonials')">💬 Testimonials</button>
-            <button class="tab-btn" onclick="switchTab(event, 'gallery')">🖼️ Gallery</button>
-            <button class="tab-btn" onclick="switchTab(event, 'wheel')">🎡 Spin Wheel</button>
-            <button class="tab-btn" onclick="switchTab(event, 'blog')">📝 Blog</button>
-            <button class="tab-btn" onclick="switchTab(event, 'trips')">✈️ Trips</button>
+            <button class="tab-btn active" onclick="switchTab('testimonials')">💬 Testimonials</button>
+            <button class="tab-btn" onclick="switchTab('gallery')">🖼️ Gallery</button>
+            <button class="tab-btn" onclick="switchTab('wheel')">🎡 Spin Wheel</button>
+            <button class="tab-btn" onclick="switchTab('blog')">📝 Blog</button>
+            <button class="tab-btn" onclick="switchTab('trips')">✈️ Trips</button>
         </div>
 
-        <!-- BOOKINGS TAB -->
-        <div id="bookings" class="tab-content active">
-            <h2>Your Bookings</h2>
-            <div id="bookings-list"></div>
-        </div>
-
-        <!-- TESTIMONIALS TAB -->
-        <div id="testimonials" class="tab-content">
+        <!-- TESTIMONIALS -->
+        <div id="testimonials" class="tab-content active">
             <h2>Manage Testimonials</h2>
-            <button class="btn btn-primary" onclick="openTestimonialModal()">+ Add Testimonial</button>
+            <button class="btn" onclick="openTestimonialModal()">+ Add Testimonial</button>
             <div id="testimonials-list" class="cards-grid"></div>
         </div>
 
-        <!-- GALLERY TAB -->
+        <!-- GALLERY -->
         <div id="gallery" class="tab-content">
             <h2>Real Stories Gallery</h2>
-            <button class="btn btn-primary" onclick="openGalleryModal()">+ Add Photo</button>
+            <button class="btn" onclick="openGalleryModal()">+ Add Photo</button>
             <div id="gallery-list" class="cards-grid"></div>
         </div>
 
-        <!-- WHEEL TAB -->
+        <!-- WHEEL -->
         <div id="wheel" class="tab-content">
             <h2>Spin Wheel Settings</h2>
-            <form id="wheel-form" onsubmit="saveWheelSettings(event)">
+            <form onsubmit="saveWheelSettings(event)">
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Prize 1</label>
-                        <input type="text" id="prize_1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Prize 2</label>
-                        <input type="text" id="prize_2" required>
-                    </div>
+                    <div class="form-group"><label>Prize 1</label><input type="text" id="prize_1" required></div>
+                    <div class="form-group"><label>Prize 2</label><input type="text" id="prize_2" required></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Prize 3</label>
-                        <input type="text" id="prize_3" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Prize 4</label>
-                        <input type="text" id="prize_4" required>
-                    </div>
+                    <div class="form-group"><label>Prize 3</label><input type="text" id="prize_3" required></div>
+                    <div class="form-group"><label>Prize 4</label><input type="text" id="prize_4" required></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Prize 5</label>
-                        <input type="text" id="prize_5" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Prize 6</label>
-                        <input type="text" id="prize_6" required>
-                    </div>
+                    <div class="form-group"><label>Prize 5</label><input type="text" id="prize_5" required></div>
+                    <div class="form-group"><label>Prize 6</label><input type="text" id="prize_6" required></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Prize 7</label>
-                        <input type="text" id="prize_7" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Prize 8</label>
-                        <input type="text" id="prize_8" required>
-                    </div>
+                    <div class="form-group"><label>Prize 7</label><input type="text" id="prize_7" required></div>
+                    <div class="form-group"><label>Prize 8</label><input type="text" id="prize_8" required></div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Color 1</label>
-                        <input type="color" id="wheel_color_1" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Color 2</label>
-                        <input type="color" id="wheel_color_2" required>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Color 3</label>
-                    <input type="color" id="wheel_color_3" required>
-                </div>
-                <button type="submit" class="btn btn-primary">Save Wheel Settings</button>
+                <button type="submit" class="btn">Save Wheel Settings</button>
             </form>
         </div>
 
-        <!-- BLOG TAB -->
+        <!-- BLOG -->
         <div id="blog" class="tab-content">
             <h2>Blog Posts</h2>
-            <button class="btn btn-primary" onclick="openBlogModal()">+ New Post</button>
+            <button class="btn" onclick="openBlogModal()">+ New Post</button>
             <div id="blog-list" class="cards-grid"></div>
         </div>
 
-        <!-- TRIPS TAB -->
+        <!-- TRIPS -->
         <div id="trips" class="tab-content">
             <h2>Trip Content</h2>
-            <button class="btn btn-primary" onclick="openTripModal()">+ New Trip</button>
+            <button class="btn" onclick="openTripModal()">+ New Trip</button>
             <div id="trips-list" class="cards-grid"></div>
         </div>
     </div>
@@ -191,331 +120,218 @@
     <!-- MODALS -->
     <div id="testimonial-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Testimonial</h2>
-                <button class="close-btn" onclick="closeTestimonialModal()">×</button>
-            </div>
-            <form id="testimonial-form" onsubmit="saveTestimonial(event)">
-                <div class="form-group">
-                    <label>Author Name</label>
-                    <input type="text" id="author_name" required>
-                </div>
-                <div class="form-group">
-                    <label>Initials (e.g., JM)</label>
-                    <input type="text" id="author_initials" maxlength="2">
-                </div>
-                <div class="form-group">
-                    <label>Trip Location</label>
-                    <input type="text" id="trip_location">
-                </div>
-                <div class="form-group">
-                    <label>Trip Date</label>
-                    <input type="text" id="trip_date" placeholder="e.g., March 2025">
-                </div>
-                <div class="form-group">
-                    <label>Review Text</label>
-                    <textarea id="review_text" required></textarea>
-                </div>
-                <div class="form-group">
-                    <label>Rating</label>
-                    <select id="rating">
-                        <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
-                        <option value="4">⭐⭐⭐⭐ 4 Stars</option>
-                        <option value="3">⭐⭐⭐ 3 Stars</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary">Save Testimonial</button>
+            <button class="close-btn" onclick="closeTestimonialModal()">×</button>
+            <h2 style="margin-top: 20px;">Add Testimonial</h2>
+            <form onsubmit="saveTestimonial(event)">
+                <div class="form-group"><label>Author Name</label><input type="text" id="author_name" required></div>
+                <div class="form-group"><label>Initials</label><input type="text" id="author_initials" maxlength="2"></div>
+                <div class="form-group"><label>Trip Location</label><input type="text" id="trip_location"></div>
+                <div class="form-group"><label>Trip Date</label><input type="text" id="trip_date"></div>
+                <div class="form-group"><label>Review</label><textarea id="review_text" required></textarea></div>
+                <button type="submit" class="btn">Save</button>
             </form>
         </div>
     </div>
 
     <div id="gallery-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Gallery Photo</h2>
-                <button class="close-btn" onclick="closeGalleryModal()">×</button>
-            </div>
-            <form id="gallery-form" onsubmit="saveGalleryItem(event)">
-                <div class="form-group">
-                    <label>Image URL</label>
-                    <input type="url" id="image_url" required placeholder="https://...">
-                </div>
-                <div class="form-group">
-                    <label>Caption</label>
-                    <input type="text" id="caption" placeholder="e.g., Napa Valley wine country 🍷">
-                </div>
-                <div class="form-group">
-                    <label>Alt Text</label>
-                    <input type="text" id="alt_text" required>
-                </div>
-                <div class="form-group">
-                    <label>Display Order</label>
-                    <input type="number" id="display_order" min="1">
-                </div>
-                <button type="submit" class="btn btn-primary">Add Photo</button>
+            <button class="close-btn" onclick="closeGalleryModal()">×</button>
+            <h2 style="margin-top: 20px;">Add Photo</h2>
+            <form onsubmit="saveGalleryItem(event)">
+                <div class="form-group"><label>Image Filename</label><input type="text" id="image_url" required></div>
+                <div class="form-group"><label>Caption</label><input type="text" id="caption"></div>
+                <div class="form-group"><label>Alt Text</label><input type="text" id="alt_text" required></div>
+                <button type="submit" class="btn">Add</button>
             </form>
         </div>
     </div>
 
     <div id="blog-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>New Blog Post</h2>
-                <button class="close-btn" onclick="closeBlogModal()">×</button>
-            </div>
-            <form id="blog-form" onsubmit="saveBlogPost(event)">
-                <div class="form-group">
-                    <label>Title</label>
-                    <input type="text" id="blog_title" required>
-                </div>
-                <div class="form-group">
-                    <label>Category</label>
-                    <select id="blog_category">
-                        <option value="packing">Packing Tips</option>
-                        <option value="documents">Travel Documents</option>
-                        <option value="tips">Travel Tips</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Content</label>
-                    <textarea id="blog_content" required style="min-height: 150px;"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Publish Post</button>
+            <button class="close-btn" onclick="closeBlogModal()">×</button>
+            <h2 style="margin-top: 20px;">New Blog Post</h2>
+            <form onsubmit="saveBlogPost(event)">
+                <div class="form-group"><label>Title</label><input type="text" id="blog_title" required></div>
+                <div class="form-group"><label>Category</label><select id="blog_category"><option>packing</option><option>documents</option><option>tips</option></select></div>
+                <div class="form-group"><label>Content</label><textarea id="blog_content" required></textarea></div>
+                <button type="submit" class="btn">Publish</button>
             </form>
         </div>
     </div>
 
     <div id="trip-modal" class="modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2>Add Trip</h2>
-                <button class="close-btn" onclick="closeTripModal()">×</button>
-            </div>
-            <form id="trip-form" onsubmit="saveTripContent(event)">
-                <div class="form-group">
-                    <label>Trip Name</label>
-                    <input type="text" id="trip_name" required>
-                </div>
-                <div class="form-group">
-                    <label>Location</label>
-                    <input type="text" id="trip_location_field" required>
-                </div>
-                <div class="form-group">
-                    <label>Dates</label>
-                    <input type="text" id="trip_dates" placeholder="e.g., July 3-5, 2026">
-                </div>
+            <button class="close-btn" onclick="closeTripModal()">×</button>
+            <h2 style="margin-top: 20px;">Add Trip</h2>
+            <form onsubmit="saveTripContent(event)">
+                <div class="form-group"><label>Trip Name</label><input type="text" id="trip_name" required></div>
+                <div class="form-group"><label>Location</label><input type="text" id="trip_location_field" required></div>
+                <div class="form-group"><label>Dates</label><input type="text" id="trip_dates"></div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>Deposit Price ($)</label>
-                        <input type="number" id="trip_deposit" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Total Price ($)</label>
-                        <input type="number" id="trip_total" min="0">
-                    </div>
+                    <div class="form-group"><label>Deposit ($)</label><input type="number" id="trip_deposit" min="0"></div>
+                    <div class="form-group"><label>Total ($)</label><input type="number" id="trip_total" min="0"></div>
                 </div>
-                <div class="form-group">
-                    <label>Description</label>
-                    <textarea id="trip_description"></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary">Add Trip</button>
+                <div class="form-group"><label>Description</label><textarea id="trip_description"></textarea></div>
+                <button type="submit" class="btn">Add</button>
             </form>
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="js/supabase-client.js"></script>
-    <script src="js/auth.js"></script>
     <script>
-        // TAB SWITCHING
-        function switchTab(e, tabName) {
-            e.preventDefault();
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            e.target.classList.add('active');
+        const supabaseUrl = 'https://lqdflvnkiskzmvvknmmh.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'))
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'))
+            document.getElementById(tabName).classList.add('active')
+            event.target.classList.add('active')
             
-            if (tabName === 'testimonials') loadTestimonials();
-            if (tabName === 'gallery') loadGallery();
-            if (tabName === 'wheel') loadWheelSettings();
-            if (tabName === 'blog') loadBlogPosts();
-            if (tabName === 'trips') loadTrips();
+            if (tabName === 'testimonials') loadTestimonials()
+            if (tabName === 'gallery') loadGallery()
+            if (tabName === 'wheel') loadWheelSettings()
+            if (tabName === 'blog') loadBlogPosts()
+            if (tabName === 'trips') loadTrips()
         }
 
-        // MODALS
-        function openTestimonialModal() { document.getElementById('testimonial-modal').classList.add('active'); }
-        function closeTestimonialModal() { document.getElementById('testimonial-modal').classList.remove('active'); }
-        function openGalleryModal() { document.getElementById('gallery-modal').classList.add('active'); }
-        function closeGalleryModal() { document.getElementById('gallery-modal').classList.remove('active'); }
-        function openBlogModal() { document.getElementById('blog-modal').classList.add('active'); }
-        function closeBlogModal() { document.getElementById('blog-modal').classList.remove('active'); }
-        function openTripModal() { document.getElementById('trip-modal').classList.add('active'); }
-        function closeTripModal() { document.getElementById('trip-modal').classList.remove('active'); }
+        function openTestimonialModal() { document.getElementById('testimonial-modal').classList.add('active') }
+        function closeTestimonialModal() { document.getElementById('testimonial-modal').classList.remove('active') }
+        function openGalleryModal() { document.getElementById('gallery-modal').classList.add('active') }
+        function closeGalleryModal() { document.getElementById('gallery-modal').classList.remove('active') }
+        function openBlogModal() { document.getElementById('blog-modal').classList.add('active') }
+        function closeBlogModal() { document.getElementById('blog-modal').classList.remove('active') }
+        function openTripModal() { document.getElementById('trip-modal').classList.add('active') }
+        function closeTripModal() { document.getElementById('trip-modal').classList.remove('active') }
 
-        // TESTIMONIALS
         async function saveTestimonial(e) {
-            e.preventDefault();
+            e.preventDefault()
             const { error } = await supabase.from('testimonials').insert([{
                 author_name: document.getElementById('author_name').value,
                 author_initials: document.getElementById('author_initials').value,
                 trip_location: document.getElementById('trip_location').value,
                 trip_date: document.getElementById('trip_date').value,
                 review_text: document.getElementById('review_text').value,
-                rating: parseInt(document.getElementById('rating').value)
-            }]);
-            if (error) alert('Error: ' + error.message);
+                rating: 5
+            }])
+            if (error) alert('Error: ' + error.message)
             else {
-                alert('Testimonial added!');
-                document.getElementById('testimonial-form').reset();
-                closeTestimonialModal();
-                loadTestimonials();
+                alert('Saved!')
+                e.target.reset()
+                closeTestimonialModal()
+                loadTestimonials()
             }
         }
+
         async function loadTestimonials() {
-            const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
-            const html = (data || []).map(t => `
-                <div class="card">
-                    <h3>${t.author_name}</h3>
-                    <p>"${t.review_text.substring(0, 100)}..."</p>
-                    <p><strong>${t.trip_location}</strong> - ${t.trip_date}</p>
-                    <p>${'⭐'.repeat(t.rating)}</p>
-                </div>
-            `).join('');
-            document.getElementById('testimonials-list').innerHTML = html || '<p>No testimonials yet.</p>';
+            const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
+            const html = (data || []).map(t => `<div class="card"><h3>${t.author_name}</h3><p>"${t.review_text.substring(0, 60)}..."</p><p>${t.trip_location} - ${t.trip_date}</p></div>`).join('')
+            document.getElementById('testimonials-list').innerHTML = html || '<p>No testimonials yet.</p>'
         }
 
-        // GALLERY
         async function saveGalleryItem(e) {
-            e.preventDefault();
+            e.preventDefault()
             const { error } = await supabase.from('real_stories_gallery').insert([{
                 image_url: document.getElementById('image_url').value,
                 caption: document.getElementById('caption').value,
-                alt_text: document.getElementById('alt_text').value,
-                display_order: parseInt(document.getElementById('display_order').value) || 0
-            }]);
-            if (error) alert('Error: ' + error.message);
+                alt_text: document.getElementById('alt_text').value
+            }])
+            if (error) alert('Error: ' + error.message)
             else {
-                alert('Photo added!');
-                document.getElementById('gallery-form').reset();
-                closeGalleryModal();
-                loadGallery();
+                alert('Saved!')
+                e.target.reset()
+                closeGalleryModal()
+                loadGallery()
             }
         }
+
         async function loadGallery() {
-            const { data } = await supabase.from('real_stories_gallery').select('*').order('display_order', { ascending: true });
-            const html = (data || []).map(g => `
-                <div class="card">
-                    <img src="${g.image_url}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
-                    <p>${g.caption || 'No caption'}</p>
-                </div>
-            `).join('');
-            document.getElementById('gallery-list').innerHTML = html || '<p>No gallery items yet.</p>';
+            const { data } = await supabase.from('real_stories_gallery').select('*')
+            const html = (data || []).map(g => `<div class="card"><p><strong>${g.caption}</strong></p><p>${g.image_url}</p></div>`).join('')
+            document.getElementById('gallery-list').innerHTML = html || '<p>No gallery items yet.</p>'
         }
 
-        // WHEEL
         async function loadWheelSettings() {
-            const { data } = await supabase.from('wheel_settings').select('*').limit(1);
+            const { data } = await supabase.from('wheel_settings').select('*').limit(1)
             if (data && data[0]) {
-                const w = data[0];
+                const w = data[0]
                 for (let i = 1; i <= 8; i++) {
-                    const el = document.getElementById(`prize_${i}`);
-                    if (el) el.value = w[`prize_${i}`] || '';
+                    const el = document.getElementById(`prize_${i}`)
+                    if (el) el.value = w[`prize_${i}`] || ''
                 }
-                document.getElementById('wheel_color_1').value = w.wheel_color_1 || '#7c3aed';
-                document.getElementById('wheel_color_2').value = w.wheel_color_2 || '#c084fc';
-                document.getElementById('wheel_color_3').value = w.wheel_color_3 || '#a855f7';
             }
-        }
-        async function saveWheelSettings(e) {
-            e.preventDefault();
-            const updateData = {};
-            for (let i = 1; i <= 8; i++) {
-                updateData[`prize_${i}`] = document.getElementById(`prize_${i}`).value;
-            }
-            updateData.wheel_color_1 = document.getElementById('wheel_color_1').value;
-            updateData.wheel_color_2 = document.getElementById('wheel_color_2').value;
-            updateData.wheel_color_3 = document.getElementById('wheel_color_3').value;
-            
-            const { error } = await supabase.from('wheel_settings').update(updateData).eq('id', 1);
-            alert(error ? 'Error: ' + error.message : 'Wheel settings saved!');
         }
 
-        // BLOG
+        async function saveWheelSettings(e) {
+            e.preventDefault()
+            const updateData = {}
+            for (let i = 1; i <= 8; i++) {
+                updateData[`prize_${i}`] = document.getElementById(`prize_${i}`).value
+            }
+            const { error } = await supabase.from('wheel_settings').update(updateData).eq('id', 1)
+            alert(error ? 'Error: ' + error.message : 'Saved!')
+        }
+
         async function saveBlogPost(e) {
-            e.preventDefault();
-            const title = document.getElementById('blog_title').value;
-            const slug = title.toLowerCase().replace(/\s+/g, '-');
+            e.preventDefault()
             const { error } = await supabase.from('blog_posts').insert([{
-                title: title,
-                slug: slug,
+                title: document.getElementById('blog_title').value,
+                slug: document.getElementById('blog_title').value.toLowerCase().replace(/\s+/g, '-'),
                 category: document.getElementById('blog_category').value,
                 content: document.getElementById('blog_content').value,
                 is_published: true
-            }]);
-            if (error) alert('Error: ' + error.message);
+            }])
+            if (error) alert('Error: ' + error.message)
             else {
-                alert('Post published!');
-                document.getElementById('blog-form').reset();
-                closeBlogModal();
-                loadBlogPosts();
+                alert('Published!')
+                e.target.reset()
+                closeBlogModal()
+                loadBlogPosts()
             }
         }
+
         async function loadBlogPosts() {
-            const { data } = await supabase.from('blog_posts').select('*').eq('is_published', true).order('created_at', { ascending: false });
-            const html = (data || []).map(b => `
-                <div class="card">
-                    <h3>${b.title}</h3>
-                    <p>${b.content.substring(0, 80)}...</p>
-                    <p style="color: #7c3aed; font-size: 12px; margin-top: 8px;">${b.category}</p>
-                </div>
-            `).join('');
-            document.getElementById('blog-list').innerHTML = html || '<p>No blog posts yet.</p>';
+            const { data } = await supabase.from('blog_posts').select('*').eq('is_published', true)
+            const html = (data || []).map(b => `<div class="card"><h3>${b.title}</h3><p>${b.content.substring(0, 60)}...</p></div>`).join('')
+            document.getElementById('blog-list').innerHTML = html || '<p>No blog posts yet.</p>'
         }
 
-        // TRIPS
         async function saveTripContent(e) {
-            e.preventDefault();
-            const tripName = document.getElementById('trip_name').value;
-            const tripId = tripName.toLowerCase().replace(/\s+/g, '-');
+            e.preventDefault()
             const { error } = await supabase.from('trip_content').insert([{
-                trip_id: tripId,
-                trip_name: tripName,
-                trip_slug: tripId,
+                trip_id: document.getElementById('trip_name').value.toLowerCase().replace(/\s+/g, '-'),
+                trip_name: document.getElementById('trip_name').value,
+                trip_slug: document.getElementById('trip_name').value.toLowerCase().replace(/\s+/g, '-'),
                 location: document.getElementById('trip_location_field').value,
                 dates: document.getElementById('trip_dates').value,
                 price_deposit: parseInt(document.getElementById('trip_deposit').value) || 0,
                 price_total: parseInt(document.getElementById('trip_total').value) || 0,
                 description: document.getElementById('trip_description').value,
                 is_active: true
-            }]);
-            if (error) alert('Error: ' + error.message);
+            }])
+            if (error) alert('Error: ' + error.message)
             else {
-                alert('Trip added!');
-                document.getElementById('trip-form').reset();
-                closeTripModal();
-                loadTrips();
+                alert('Added!')
+                e.target.reset()
+                closeTripModal()
+                loadTrips()
             }
-        }
-        async function loadTrips() {
-            const { data } = await supabase.from('trip_content').select('*').eq('is_active', true);
-            const html = (data || []).map(t => `
-                <div class="card">
-                    <h3>${t.trip_name}</h3>
-                    <p><strong>${t.location}</strong></p>
-                    <p>${t.dates}</p>
-                    <p>Deposit: $${t.price_deposit} | Total: $${t.price_total}</p>
-                </div>
-            `).join('');
-            document.getElementById('trips-list').innerHTML = html || '<p>No trips yet.</p>';
         }
 
-        // INIT
+        async function loadTrips() {
+            const { data } = await supabase.from('trip_content').select('*').eq('is_active', true)
+            const html = (data || []).map(t => `<div class="card"><h3>${t.trip_name}</h3><p>${t.location}</p><p>${t.dates}</p></div>`).join('')
+            document.getElementById('trips-list').innerHTML = html || '<p>No trips yet.</p>'
+        }
+
+        function logout() {
+            supabase.auth.signOut()
+            window.location.href = 'login.html'
+        }
+
         window.addEventListener('load', () => {
-            const user = getCurrentUser();
-            if (!user) {
-                window.location.href = 'login.html';
-            }
-        });
+            loadTestimonials()
+        })
     </script>
 </body>
 </html>
