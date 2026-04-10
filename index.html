@@ -176,6 +176,15 @@
 </head>
 <body>
 
+<!-- Supabase client for spin wheel discount tracking -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
+<script>
+var _sb = window.supabase.createClient(
+  'https://lqdflvnkiskzmvvknmmh.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
+);
+</script>
+
 <script>
 // WHEEL PRIZE SETTINGS
 var WHEEL_PRIZES = [
@@ -310,6 +319,10 @@ var COUNTDOWN_CLOSED_MSG   = 'The booking window has passed. Contact us to check
     </div>
 
     <!-- MARY J BLIGE - NIGHT 1 (July 17) -->
+    <!-- ⚠️ TODO: Create a SEPARATE Stripe Payment Link for Night 1 in your Stripe Dashboard
+         Currently both Night 1 and Finale use the same link. Go to:
+         Stripe Dashboard → Payment Links → + New → Product: "Mary J Night 1 July 17 Deposit $500"
+         Then replace the href below with your new link -->
     <div class="trip-card">
       <div class="trip-card-header">
         <span class="trip-badge orange">🔥 Very Few Spots Left</span>
@@ -686,4 +699,28 @@ function claimPrize() {
       code: wonPrize.code,
       source: 'homepage-spin-wheel',
       timestamp: new Date().toISOString()
- 
+    })
+  }).catch(function(err) { console.error('Formspree error:', err); });
+
+  // Save discount code to Supabase
+  try {
+    _sb.from('discount_codes').insert([{
+      code: wonPrize.code + '_' + Date.now(),
+      discount_amount: parseInt(wonPrize.label.replace(/[^0-9]/g, '')) || 0,
+      discount_type: wonPrize.label.includes('$') ? 'fixed' : 'perk',
+      expires_at: new Date(prizeExpireTime).toISOString(),
+      max_uses: 1,
+      used_count: 0
+    }]).then(function(res) {
+      if (res.error) console.error('Supabase discount save error:', res.error);
+      else console.log('Discount saved to Supabase');
+    });
+  } catch(e) { console.error('Supabase error:', e); }
+
+  try { sessionStorage.setItem('trv_wheel_claimed', 'true'); } catch(e) {}
+}
+
+drawWheel(0);
+</script>
+</body>
+</html>
