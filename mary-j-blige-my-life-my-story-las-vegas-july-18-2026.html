@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mary J Blige Residency Finale | Las Vegas | The Real Vacations</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* Header */
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }        
+        .logo img {
+            height: 70px;
+            width: auto;
+        }
+
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        nav a:hover {
+            color: #667eea;
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 80px 5%;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-details {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        
+        /* Section Styling */
+        section {
+            padding: 60px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-alt {
+            background: #f8f9fa;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #1a1a2e;
+            text-align: center;
+        }
+        
+        /* Venue Section */
+        .venue-highlight {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .venue-highlight h3 {
+            font-size: 2rem;
+            color: #fa709a;
+            margin-bottom: 1rem;
+        }
+        
+        .venue-highlight p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+        
+        .venue-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .venue-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Package Details */
+        .package-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .package-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+        
+        .package-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .package-card h3 {
+            font-size: 1.5rem;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+        
+        .package-card p {
+            color: #666;
+            line-height: 1.7;
+        }
+        
+        /* Pricing */
+        .pricing-section {
+            background: white;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .pricing-card {
+            background: #f8f9fa;
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            border-color: #fa709a;
+            transform: translateY(-5px);
+        }
+        
+        .pricing-card h3 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+        
+        .price {
+            font-size: 3rem;
+            color: #fa709a;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .price-note {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .book-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .book-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Why This Trip */
+        .why-trip {
+            background: #f8f9fa;
+        }
+        
+        .why-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .why-content p {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Included/Excluded */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .details-column h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #1a1a2e;
+        }
+        
+        .details-column ul {
+            list-style: none;
+        }
+        
+        .details-column li {
+            padding: 0.7rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #666;
+        }
+        
+        .details-column li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #fa709a;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .excluded li:before {
+            content: "✗";
+            color: #999;
+        }
+        
+        /* CTA Footer */
+        .cta-footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 5%;
+        }
+        
+        .cta-footer h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-footer p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 5%;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-links {
+            margin: 2rem 0;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #667eea;
+        }
+        
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo"><img src="logo.jpeg" alt="The Real Vacations"></a>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="trips.html">Trips</a>
+                <a href="real-stories.html">Real Stories</a>
+                <a href="about.html">About</a>
+                <a href="resources.html">Resources</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Mary J Blige: My Life, My Story</h1>
+            <p class="hero-subtitle">The Grand Finale of Her Iconic Residency</p>
+            <p class="hero-details">July 18, 2026 • Las Vegas, Nevada</p>
+        </div>
+    </section>
+
+    <!-- Venue Highlight -->
+    <section>
+        <div class="venue-highlight">
+            <h3>Dolby Live at Park MGM</h3>
+            <p>Experience the final, intimate performance of Mary J's groundbreaking residency in one of Las Vegas's most technologically advanced venues. With 5,300 seats, cutting-edge Dolby Atmos sound, and a design that brings you closer to the Queen of Hip-Hop Soul, this is the ultimate way to witness music history.</p>
+            <a href="https://www.ticketmaster.com/dolby-live-at-park-mgm-tickets-las-vegas/venue/416721" class="venue-button" target="_blank">View Venue Info →</a>
+        </div>
+    </section>
+
+    <!-- Package Details -->
+    <section class="section-alt">
+        <h2 class="section-title">What's Included</h2>
+        <div class="package-grid">
+            <div class="package-card">
+                <div class="package-icon">🎫</div>
+                <h3>Event Access</h3>
+                <p>Reserved seats for Mary J Blige's residency finale at Dolby Live. VIP package includes premium seating in the first 15 rows with exclusive perks.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🏨</div>
+                <h3>Accommodations</h3>
+                <p><strong>3 nights in the same building as the venue!</strong> General: Park MGM rooms. VIP: The Reserve at Park MGM—luxury boutique hotel on the top 4 floors with exclusive lounge, priority check-in, and elevated amenities.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🚐</div>
+                <h3>Transportation</h3>
+                <p>Round-trip airport transfers via luxury shuttle. No transportation needed to the show—you're staying in the same building! VIP package includes premium car service.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🎰</div>
+                <h3>Vegas Experiences</h3>
+                <p>Welcome reception with group, $50 gaming credit per room, and optional add-ons: Pool party, helicopter tour, spa day, or Michelin-starred dining reservations.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing-section">
+        <h2 class="section-title">Choose Your Package</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>General Package</h3>
+                <div class="price">$1,695</div>
+                <p class="price-note">per person (double occupancy)</p>
+                <ul style="text-align: left; margin-bottom: 2rem;">
+                    <li style="padding: 0.5rem 0;">✓ 3 nights at Park MGM</li>
+                    <li style="padding: 0.5rem 0;">✓ Reserved concert seating</li>
+                    <li style="padding: 0.5rem 0;">✓ Airport shuttle transfers</li>
+                    <li style="padding: 0.5rem 0;">✓ $50 gaming credit</li>
+                    <li style="padding: 0.5rem 0;">✓ Welcome group reception</li>
+                </ul>
+                <a href="#" class="book-button">Book Now - Pay $400 Deposit</a>
+            </div>
+            <div class="pricing-card">
+                <h3>VIP Package</h3>
+                <div class="price">$2,995</div>
+                <p class="price-note">per person (double occupancy)</p>
+                <ul style="text-align: left; margin-bottom: 2rem;">
+                    <li style="padding: 0.5rem 0;">✓ 3 nights at The Reserve (luxury boutique)</li>
+                    <li style="padding: 0.5rem 0;">✓ Premium seating (first 15 rows)</li>
+                    <li style="padding: 0.5rem 0;">✓ Private car service</li>
+                    <li style="padding: 0.5rem 0;">✓ Exclusive lounge access</li>
+                    <li style="padding: 0.5rem 0;">✓ $100 resort credit</li>
+                    <li style="padding: 0.5rem 0;">✓ VIP pre-show champagne reception</li>
+                </ul>
+                <a href="#" class="book-button">Book VIP - Pay $600 Deposit</a>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 2rem; color: #666;">Flexible payment plans available. Deposit required to secure your spot. Final payment due 45 days before travel.</p>
+    </section>
+
+    <!-- Why This Trip -->
+    <section class="why-trip">
+        <div class="why-content">
+            <h2 class="section-title">Why This Trip is Unforgettable</h2>
+            <p>Mary J Blige isn't just performing—she's closing out a chapter. Her "My Life, My Story" residency at Dolby Live has been a raw, emotional, and powerful celebration of her three-decade career. This finale is your chance to witness the Queen of Hip-Hop Soul in one of her most intimate performances yet.</p>
+            <p>Dolby Live at Park MGM is unlike any other venue in Vegas. The acoustics are pristine, the sightlines are perfect, and the immersive sound technology makes you feel like you're inside the music. With only 5,300 seats, every spot in the house is a good one.</p>
+            <p>And you're not just seeing a show—you're staying steps away. Park MGM is connected directly to the venue, so you can enjoy pre-show drinks, catch the performance, and be back in your room within minutes. The VIP experience at The Reserve takes it even further with a private lounge, elevated service, and luxury that matches the occasion.</p>
+        </div>
+    </section>
+
+    <!-- What's Included/Excluded -->
+    <section>
+        <h2 class="section-title">Trip Details</h2>
+        <div class="details-grid">
+            <div class="details-column">
+                <h3>What's Included</h3>
+                <ul>
+                    <li>3 nights at Park MGM or The Reserve</li>
+                    <li>Reserved concert tickets</li>
+                    <li>Round-trip airport transfers</li>
+                    <li>Welcome group reception</li>
+                    <li>Gaming credit ($50 General / $100 VIP)</li>
+                    <li>VIP lounge access (VIP package only)</li>
+                    <li>Pre-show champagne reception (VIP)</li>
+                    <li>24/7 trip coordinator support</li>
+                    <li>Travel insurance option</li>
+                </ul>
+            </div>
+            <div class="details-column excluded">
+                <h3>What's Not Included</h3>
+                <ul>
+                    <li>Airfare (available as optional add-on)</li>
+                    <li>Meals (dining on your own)</li>
+                    <li>Personal expenses & gambling</li>
+                    <li>Optional add-on experiences</li>
+                    <li>Resort fees (included in VIP package)</li>
+                </ul>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 3rem; color: #666; font-size: 0.95rem;"><strong>Cancellation Policy:</strong> Full refund if cancelled within 24 hours of booking. After 24 hours, deposits are non-refundable but transferable to another traveler with $50 fee. Travel insurance highly recommended.</p>
+    </section>
+
+    <!-- CTA Footer -->
+    <section class="cta-footer">
+        <h2>Ready to Witness the Finale?</h2>
+        <p>This is Mary J's last show. Book now with a deposit and pay monthly!</p>
+        <a href="contact.html" class="cta-button">Contact Us to Book</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="logo"><img src="logo.jpeg" alt="The Real Vacations"></div>
+            <div class="footer-links">
+                <a href="about.html">About</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="resources.html">Resources</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <div class="contact-info">
+                <p>Email: <a href="/cdn-cgi/l/email-protection#54373b3a2035372014203c312631353822353735203d3b3a277a373b39"><span class="__cf_email__" data-c

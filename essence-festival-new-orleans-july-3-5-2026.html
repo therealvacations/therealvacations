@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Essence Festival 2026 | New Orleans | The Real Vacations</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* Header */
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }        
+        .logo img {
+            height: 70px;
+            width: auto;
+        }
+
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        nav a:hover {
+            color: #667eea;
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 80px 5%;
+            text-align: center;
+        }
+        
+        .hero-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hero-details {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+        
+        /* Section Styling */
+        section {
+            padding: 60px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .section-alt {
+            background: #f8f9fa;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #1a1a2e;
+            text-align: center;
+        }
+        
+        /* Venue Section */
+        .venue-highlight {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .venue-highlight h3 {
+            font-size: 2rem;
+            color: #f5576c;
+            margin-bottom: 1rem;
+        }
+        
+        .venue-highlight p {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 2rem;
+            line-height: 1.7;
+        }
+        
+        .venue-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .venue-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Package Details */
+        .package-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .package-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.1);
+        }
+        
+        .package-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .package-card h3 {
+            font-size: 1.5rem;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+        
+        .package-card p {
+            color: #666;
+            line-height: 1.7;
+        }
+        
+        /* Pricing */
+        .pricing-section {
+            background: white;
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .pricing-card {
+            background: #f8f9fa;
+            padding: 2.5rem;
+            border-radius: 15px;
+            text-align: center;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .pricing-card:hover {
+            border-color: #f5576c;
+            transform: translateY(-5px);
+        }
+        
+        .pricing-card h3 {
+            font-size: 2rem;
+            color: #1a1a2e;
+            margin-bottom: 1rem;
+        }
+        
+        .price {
+            font-size: 3rem;
+            color: #f5576c;
+            font-weight: bold;
+            margin: 1rem 0;
+        }
+        
+        .price-note {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .book-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .book-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Why This Trip */
+        .why-trip {
+            background: #f8f9fa;
+        }
+        
+        .why-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .why-content p {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Included/Excluded */
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+        
+        .details-column h3 {
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            color: #1a1a2e;
+        }
+        
+        .details-column ul {
+            list-style: none;
+        }
+        
+        .details-column li {
+            padding: 0.7rem 0;
+            padding-left: 2rem;
+            position: relative;
+            color: #666;
+        }
+        
+        .details-column li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #f5576c;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .excluded li:before {
+            content: "✗";
+            color: #999;
+        }
+        
+        /* CTA Footer */
+        .cta-footer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 60px 5%;
+        }
+        
+        .cta-footer h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .cta-footer p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 40px;
+            text-decoration: none;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 5%;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-links {
+            margin: 2rem 0;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #667eea;
+        }
+        
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo"><img src="logo.jpeg" alt="The Real Vacations"></a>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="trips.html">Trips</a>
+                <a href="real-stories.html">Real Stories</a>
+                <a href="about.html">About</a>
+                <a href="resources.html">Resources</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Essence Festival 2026</h1>
+            <p class="hero-subtitle">The World's Largest Celebration of Black Culture & Music</p>
+            <p class="hero-details">July 3-5, 2026 • New Orleans, Louisiana</p>
+        </div>
+    </section>
+
+    <!-- Venue Highlight -->
+    <section>
+        <div class="venue-highlight">
+            <h3>Caesars Superdome</h3>
+            <p>Home to the iconic Essence Festival for over 30 years, the Caesars Superdome hosts 3 days of world-class performances, empowerment seminars, and cultural celebration. This 73,000-seat venue in the heart of New Orleans brings together 400,000+ attendees annually for an unforgettable experience.</p>
+            <a href="https://www.ticketmaster.com/essence-festival-tickets/artist/805923" class="venue-button" target="_blank">View Venue Info →</a>
+        </div>
+    </section>
+
+    <!-- Package Details -->
+    <section class="section-alt">
+        <h2 class="section-title">What's Included</h2>
+        <div class="package-grid">
+            <div class="package-card">
+                <div class="package-icon">🎫</div>
+                <h3>Event Access</h3>
+                <p>3-day Essence Festival tickets with access to all mainstage performances, empowerment experiences, and cultural programming at the Caesars Superdome.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🏨</div>
+                <h3>Accommodations</h3>
+                <p><strong>4 nights at Hyatt Regency New Orleans</strong> (5-minute walk to venue). General package: Standard rooms. VIP package: Club Level rooms with lounge access and upgraded amenities.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🚐</div>
+                <h3>Transportation</h3>
+                <p>Round-trip airport transfers and daily shuttle service between hotel and Superdome. VIP package includes private car service upgrades available.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🎭</div>
+                <h3>NOLA Experiences</h3>
+                <p>Guided French Quarter walking tour, beignets at Café Du Monde, and optional add-ons: Jazz brunch, swamp tour, Garden District exploration, and more.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing-section">
+        <h2 class="section-title">Choose Your Package</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>General Package</h3>
+                <div class="price">$2,495</div>
+                <p class="price-note">per person (double occupancy)</p>
+                <ul style="text-align: left; margin-bottom: 2rem;">
+                    <li style="padding: 0.5rem 0;">✓ Standard room at Hyatt Regency</li>
+                    <li style="padding: 0.5rem 0;">✓ 3-day festival tickets</li>
+                    <li style="padding: 0.5rem 0;">✓ Group shuttle service</li>
+                    <li style="padding: 0.5rem 0;">✓ Welcome reception</li>
+                </ul>
+                <a href="#" class="book-button">Book Now - Pay $500 Deposit</a>
+            </div>
+            <div class="pricing-card">
+                <h3>VIP Package</h3>
+                <div class="price">$3,895</div>
+                <p class="price-note">per person (double occupancy)</p>
+                <ul style="text-align: left; margin-bottom: 2rem;">
+                    <li style="padding: 0.5rem 0;">✓ Club Level room + lounge access</li>
+                    <li style="padding: 0.5rem 0;">✓ Premium festival seating</li>
+                    <li style="padding: 0.5rem 0;">✓ Private car service</li>
+                    <li style="padding: 0.5rem 0;">✓ VIP welcome dinner</li>
+                    <li style="padding: 0.5rem 0;">✓ Exclusive meet & greet opportunity</li>
+                </ul>
+                <a href="#" class="book-button">Book VIP - Pay $750 Deposit</a>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 2rem; color: #666;">Flexible payment plans available. Deposit required to secure your spot. Final payment due 60 days before travel.</p>
+    </section>
+
+    <!-- Why This Trip -->
+    <section class="why-trip">
+        <div class="why-content">
+            <h2 class="section-title">Why This Trip is Unforgettable</h2>
+            <p>For over 30 years, Essence Festival has been the ultimate celebration of Black culture, music, and empowerment. More than just concerts, it's a cultural movement that brings together 400,000+ attendees from around the world for three days of powerful performances, inspiring speakers, and joyful community.</p>
+            <p>From Grammy-winning headliners on the mainstage to thought-provoking panels at the Convention Center, Essence Fest offers a transformative experience. And there's no better place for it than New Orleans—a city where culture, history, and music flow through every street.</p>
+            <p>With our all-inclusive package, you'll experience the best of both worlds: the energy of the festival and the magic of NOLA. We handle the logistics so you can focus on making memories, connecting with your group, and celebrating Black excellence in all its forms.</p>
+        </div>
+    </section>
+
+    <!-- What's Included/Excluded -->
+    <section>
+        <h2 class="section-title">Trip Details</h2>
+        <div class="details-grid">
+            <div class="details-column">
+                <h3>What's Included</h3>
+                <ul>
+                    <li>4 nights accommodation at Hyatt Regency New Orleans</li>
+                    <li>3-day Essence Festival tickets</li>
+                    <li>Round-trip airport transfers</li>
+                    <li>Daily shuttle to/from Superdome</li>
+                    <li>Guided French Quarter walking tour</li>
+                    <li>Beignets at Café Du Monde</li>
+                    <li>Welcome reception with group</li>
+                    <li>24/7 trip coordinator support</li>
+                    <li>Travel insurance option</li>
+                </ul>
+            </div>
+            <div class="details-column excluded">
+                <h3>What's Not Included</h3>
+                <ul>
+                    <li>Airfare (available as optional add-on)</li>
+                    <li>Meals (beyond welcome reception)</li>
+                    <li>Personal expenses & souvenirs</li>
+                    <li>Optional add-on experiences</li>
+                    <li>Gratuities for local guides</li>
+                </ul>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 3rem; color: #666; font-size: 0.95rem;"><strong>Cancellation Policy:</strong> Full refund if cancelled within 24 hours of booking. After 24 hours, deposits are non-refundable but transferable to another traveler with $50 fee. Travel insurance highly recommended.</p>
+    </section>
+
+    <!-- CTA Footer -->
+    <section class="cta-footer">
+        <h2>Ready to Experience Essence Festival?</h2>
+        <p>Book now with a deposit and pay monthly. Spots are limited!</p>
+        <a href="contact.html" class="cta-button">Contact Us to Book</a>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="logo"><img src="logo.jpeg" alt="The Real Vacations"></div>
+            <div class="footer-links">
+                <a href="about.html">About</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="resources.html">Resources</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <div class="contact-info">
+                <p>Email: <a href="/cdn-cgi/l/email-protection#462529283227253206322e233423272a30272527322f2928356825292b"><span class="__cf_email__" data-c

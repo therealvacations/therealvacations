@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keith Sweat R&B Lovers Tour | Atlanta | The Real Vacations</title>
+<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #fff; }
+  a { text-decoration: none; color: inherit; }
+  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  nav a img { height: 52px; }
+  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: #c084fc; }
+
+  .hero { background: linear-gradient(135deg, #1a0533 0%, #3b0764 60%, #6b21a8 100%); color: #fff; padding: 70px 24px 50px; text-align: center; }
+  .hero-tag { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: #c084fc; margin-bottom: 12px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; margin-bottom: 12px; }
+  .hero .sub { font-size: 18px; color: #e9d5ff; margin-bottom: 8px; }
+  .hero .venue { font-size: 16px; color: #c084fc; font-weight: 600; }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; }
+
+  .venue-section { background: #faf5ff; padding: 48px 24px; text-align: center; }
+  .venue-section h2 { font-size: 22px; font-weight: 800; color: #1a0533; margin-bottom: 12px; }
+  .venue-section p { color: #555; font-size: 15px; line-height: 1.65; max-width: 640px; margin: 0 auto 18px; }
+  .venue-link { color: #7c3aed; font-weight: 600; font-size: 14px; border-bottom: 1px solid #7c3aed; }
+
+  .lineup { padding: 56px 24px; }
+  .lineup h2 { text-align: center; font-size: 28px; font-weight: 800; color: #1a0533; margin-bottom: 36px; }
+  .lineup-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; }
+  .artist { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; border-radius: 14px; padding: 20px 28px; text-align: center; min-width: 150px; }
+  .artist h3 { font-size: 16px; font-weight: 800; margin-bottom: 4px; }
+  .artist p { font-size: 12px; color: #c084fc; }
+
+  .included { background: #faf5ff; padding: 56px 24px; }
+  .included h2 { text-align: center; font-size: 28px; font-weight: 800; color: #1a0533; margin-bottom: 36px; }
+  .included-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; max-width: 860px; margin: 0 auto; }
+  .included-item { background: #fff; border-radius: 14px; padding: 24px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.07); }
+  .included-item .icon { font-size: 30px; margin-bottom: 12px; }
+  .included-item h3 { font-size: 15px; font-weight: 700; color: #1a0533; margin-bottom: 8px; }
+  .included-item p { font-size: 13px; color: #666; line-height: 1.6; }
+
+  .packages { padding: 56px 24px; }
+  .packages h2 { text-align: center; font-size: 28px; font-weight: 800; color: #1a0533; margin-bottom: 36px; }
+  .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; max-width: 740px; margin: 0 auto; }
+  .pkg { border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+  .pkg-header { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; padding: 28px 24px; text-align: center; }
+  .pkg-header h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+  .pkg-price { font-size: 36px; font-weight: 900; color: #c084fc; }
+  .pkg-price span { font-size: 14px; color: #e9d5ff; font-weight: 400; }
+  .pkg-body { background: #fff; padding: 24px; }
+  .pkg-body ul { list-style: none; margin-bottom: 24px; }
+  .pkg-body ul li { font-size: 14px; color: #444; padding: 6px 0; border-bottom: 1px solid #f3e8ff; display: flex; align-items: center; gap: 8px; }
+  .pkg-body ul li::before { content: '✓'; color: #7c3aed; font-weight: 700; }
+  .pkg-btn { display: block; text-align: center; background: #7c3aed; color: #fff; padding: 14px; border-radius: 50px; font-weight: 700; font-size: 15px; transition: background 0.2s; }
+  .pkg-btn:hover { background: #6d28d9; }
+  .pkg-btn.outline { background: transparent; border: 2px solid #7c3aed; color: #7c3aed; }
+  .pkg-btn.outline:hover { background: #7c3aed; color: #fff; }
+  .pkg-note { font-size: 12px; color: #888; text-align: center; margin-top: 10px; }
+
+  .meetgreet { background: linear-gradient(135deg, #0f0620, #1a0533); color: #fff; padding: 56px 24px; }
+  .meetgreet-inner { max-width: 820px; margin: 0 auto; }
+  .mg-badge { display: inline-block; background: #c084fc; color: #1a0533; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 5px 14px; border-radius: 20px; margin-bottom: 16px; }
+  .meetgreet h2 { font-size: clamp(22px, 4vw, 34px); font-weight: 800; margin-bottom: 14px; }
+  .meetgreet .mg-sub { font-size: 16px; color: #c084fc; font-weight: 600; margin-bottom: 20px; }
+  .meetgreet p { font-size: 15px; color: #d8b4fe; line-height: 1.7; margin-bottom: 28px; }
+  .mg-details { background: rgba(255,255,255,0.07); border: 1px solid rgba(192,132,252,0.3); border-radius: 16px; padding: 28px; margin-bottom: 28px; }
+  .mg-details h3 { font-size: 16px; font-weight: 700; color: #c084fc; margin-bottom: 16px; }
+  .mg-details ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+  .mg-details ul li { font-size: 14px; color: #e9d5ff; display: flex; align-items: flex-start; gap: 10px; line-height: 1.5; }
+  .mg-details ul li::before { content: '✨'; flex-shrink: 0; }
+  .mg-pricing { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+  .mg-price-box { background: rgba(192,132,252,0.15); border: 2px solid #c084fc; border-radius: 14px; padding: 20px 28px; text-align: center; }
+  .mg-price-box .price { font-size: 38px; font-weight: 900; color: #c084fc; }
+  .mg-price-box .price-label { font-size: 13px; color: #d8b4fe; margin-top: 4px; }
+  .mg-price-box .exclusive { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; background: #c084fc; color: #1a0533; padding: 3px 10px; border-radius: 10px; display: inline-block; margin-top: 8px; }
+  .mg-price-note { font-size: 13px; color: #a78bfa; line-height: 1.6; flex: 1; min-width: 200px; }
+  .mg-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mg-btn-primary { background: #c084fc; color: #1a0533; padding: 14px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; display: inline-block; transition: background 0.2s, transform 0.15s; }
+  .mg-btn-primary:hover { background: #a855f7; transform: translateY(-2px); }
+  .mg-btn-info { border: 2px solid #c084fc; color: #c084fc; padding: 13px 28px; border-radius: 50px; font-weight: 600; font-size: 15px; display: inline-block; transition: all 0.2s; }
+  .mg-btn-info:hover { background: rgba(192,132,252,0.1); transform: translateY(-2px); }
+  .mg-disclaimer { font-size: 12px; color: #6b7280; margin-top: 16px; font-style: italic; }
+
+  .why { padding: 56px 24px; background: #faf5ff; }
+  .why h2 { text-align: center; font-size: 26px; font-weight: 800; color: #1a0533; margin-bottom: 24px; }
+  .why p { max-width: 720px; margin: 0 auto; font-size: 16px; color: #555; line-height: 1.75; text-align: center; }
+
+  .trip-details { padding: 56px 24px; }
+  .trip-details h2 { font-size: 26px; font-weight: 800; color: #1a0533; margin-bottom: 28px; }
+  .details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 820px; }
+  .details-col h3 { font-size: 16px; font-weight: 700; color: #7c3aed; margin-bottom: 14px; }
+  .details-col ul { list-style: none; }
+  .details-col ul li { font-size: 14px; color: #444; padding: 5px 0; border-bottom: 1px solid #f3e8ff; display: flex; gap: 8px; }
+  .details-col ul li::before { content: '✓'; color: #7c3aed; font-weight: 700; flex-shrink: 0; }
+  .details-col ul li.no::before { content: '✗'; color: #ef4444; }
+  .policy { background: #f3e8ff; border-radius: 12px; padding: 18px 22px; margin-top: 24px; max-width: 820px; font-size: 14px; color: #555; line-height: 1.65; }
+  .policy strong { color: #1a0533; }
+
+  .cta { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; text-align: center; padding: 60px 24px; }
+  .cta h2 { font-size: clamp(22px, 4vw, 36px); font-weight: 800; margin-bottom: 14px; }
+  .cta p { font-size: 16px; color: #e9d5ff; max-width: 500px; margin: 0 auto 28px; line-height: 1.6; }
+  .cta-btn { background: #c084fc; color: #1a0533; padding: 15px 36px; border-radius: 50px; font-weight: 700; font-size: 16px; display: inline-block; transition: background 0.2s, transform 0.15s; }
+  .cta-btn:hover { background: #a855f7; transform: translateY(-2px); }
+
+  footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
+  .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; }
+  .footer-col a:hover { color: #c084fc; }
+  .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
+
+  @media (max-width: 600px) { .nav-links { display: none; } .details-grid { grid-template-columns: 1fr; } .mg-pricing { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<!-- ✅ FIX: Blog added to nav -->
+<nav>
+  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="trips.html">Trips</a>
+    <a href="real-stories.html">Real Stories</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html">How It Works</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <p class="hero-tag">Group Trip Experience</p>
+  <h1>Keith Sweat R&B Lovers Tour</h1>
+  <p class="sub">An Epic Night of Classic R&B</p>
+  <p class="venue">August 29, 2026 • State Farm Arena • Atlanta, Georgia</p>
+</section>
+
+<section class="venue-section">
+  <div class="container">
+    <h2>State Farm Arena</h2>
+    <p>Atlanta's premier indoor arena and home of the Hawks, State Farm Arena is the perfect setting for this unforgettable R&B showcase. With state-of-the-art acoustics and a 21,000-seat capacity, you'll experience these legendary artists up close in one of the nation's best concert venues.</p>
+    <a href="https://www.statefarmarena.com" target="_blank" class="venue-link" style="display:inline-block;">See Where the Magic Happens →</a>
+  </div>
+</section>
+
+<section style="background:#faf5ff; padding:40px 24px;">
+  <div style="max-width:820px; margin:0 auto; text-align:center;">
+    <h2 style="font-size:22px; font-weight:800; color:#1a0533; margin-bottom:12px;">Omni Atlanta Hotel at Centennial Park</h2>
+    <p style="color:#555; font-size:15px; line-height:1.65; max-width:640px; margin:0 auto 18px;">Directly connected to State Farm Arena via covered walkway — no transportation needed for the concert. See guest reviews and photos before you arrive.</p>
+    <a href="https://www.omnihotels.com/hotels/atlanta-cnn-center" target="_blank" class="venue-link" style="display:inline-block; color:#7c3aed; border-color:#7c3aed;">Preview Your Stay →</a>
+  </div>
+</section>
+
+<section class="lineup">
+  <div class="container">
+    <h2>The Lineup</h2>
+    <div class="lineup-grid">
+      <div class="artist"><h3>Keith Sweat</h3><p>The King of R&B</p></div>
+      <div class="artist"><h3>Joe</h3><p>Smooth Vocals</p></div>
+      <div class="artist"><h3>Dru Hill</h3><p>90s Legends</p></div>
+      <div class="artist"><h3>Ginuwine</h3><p>The Pony King</p></div>
+      <div class="artist"><h3>Kut Klose</h3><p>R&B Royalty</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="included">
+  <div class="container">
+    <h2>What's Included</h2>
+    <div class="included-grid">
+      <div class="included-item">
+        <div class="icon">🎫</div>
+        <h3>Event Access</h3>
+        <p>Premium tickets to the R&B Lovers Tour at State Farm Arena. VIP package includes floor seats or lower bowl premium seating with early venue entry.</p>
+      </div>
+      <div class="included-item">
+        <div class="icon">🏨</div>
+        <h3>Accommodations</h3>
+        <p><strong>2 nights at Omni Atlanta Hotel at Centennial Park</strong> — directly connected to State Farm Arena via covered walkway.</p>
+      </div>
+      <div class="included-item">
+        <div class="icon">🚐</div>
+        <h3>Transportation</h3>
+        <p>Round-trip airport transfers. Hotel connected to arena via covered walkway — no additional transportation needed for the concert!</p>
+      </div>
+      <div class="included-item">
+        <div class="icon">🍽️</div>
+        <h3>Atlanta Experiences</h3>
+        <p>Pre-concert meet & greet with group, access to exclusive lounge, and optional add-ons: Brunch at The Breakfast Club, MLK Historic Site tour, or Ponce City Market exploration.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="packages">
+  <div class="container">
+    <h2>Choose Your Package</h2>
+    <div class="packages-grid">
+      <div class="pkg">
+        <div class="pkg-header">
+          <h3>General Package</h3>
+          <div class="pkg-price">$1,295 <span>per person (double occupancy)</span></div>
+        </div>
+        <div class="pkg-body">
+          <ul>
+            <li>Deluxe room at Omni Atlanta</li>
+            <li>Premium concert tickets</li>
+            <li>Airport transfers</li>
+            <li>Group meet & greet</li>
+          </ul>
+          <!-- ✅ FIX: Changed from contact.html to Stripe deposit link -->
+          <a href="https://book.stripe.com/eVq9AS91A2nta7R2k30Fi05" target="_blank" class="pkg-btn outline">Claim My Spot — $500 Deposit →</a>
+          <p class="pkg-note">Book within the countdown clock & save $100 automatically · Flexible payment plans available</p>
+        </div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-header">
+          <h3>VIP Package</h3>
+          <div class="pkg-price">$2,195 <span>per person (double occupancy)</span></div>
+        </div>
+        <div class="pkg-body">
+          <ul>
+            <li>Premium room with upgrades</li>
+            <li>Floor or lower bowl seats</li>
+            <li>Early venue entry</li>
+            <li>VIP lounge access</li>
+            <li>Pre-concert reception with premium bar</li>
+          </ul>
+          <!-- ✅ FIX: Changed from contact.html to Stripe deposit link -->
+          <a href="https://book.stripe.com/eVq9AS91A2nta7R2k30Fi05" target="_blank" class="pkg-btn">Secure My VIP Experience — $500 Deposit →</a>
+          <p class="pkg-note">Book within the countdown clock & save $100 automatically · Flexible payment plans available</p>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:20px; font-size:13px; color:#888;">Only a few spots left — secure yours now with a $500 deposit. Flexible payment plans available after deposit.</p>
+  </div>
+</section>
+
+<!-- MEET & GREET ADD-ON — ✅ Stripe link already correct -->
+<section class="meetgreet">
+  <div class="meetgreet-inner">
+    <span class="mg-badge">✨ Exclusive Add-On — Group Travelers Only</span>
+    <h2>Keith Sweat Meet & Greet VIP Experience</h2>
+    <p class="mg-sub">August 29, 2026 • State Farm Arena, Atlanta</p>
+    <p>This is one of those once-in-a-lifetime moments — get up close and personal with the King of R&B himself. The Keith Sweat Meet & Greet VIP Experience is available exclusively to travelers who book through The Real Vacations group trip, at a special rate you won't find anywhere else.</p>
+
+    <div class="mg-details">
+      <h3>What the Meet & Greet Experience Includes:</h3>
+      <ul>
+        <li>Personal meet and greet with Keith Sweat before or after the show</li>
+        <li>Exclusive photo opportunity — your moment with a legend</li>
+        <li>VIP access and premium backstage experience</li>
+        <li>Limited availability — this experience sells out fast</li>
+        <li>Available on August 29, 2026 only at State Farm Arena</li>
+      </ul>
+    </div>
+
+    <div class="mg-pricing">
+      <div class="mg-price-box">
+        <div class="price">$399</div>
+        <div class="price-label">per person add-on</div>
+        <div class="exclusive">Group Trip Exclusive Rate</div>
+      </div>
+      <p class="mg-price-note">This exclusive rate is available <strong>only when booked as part of a Real Vacations group trip package</strong>. Add it to your trip booking and we handle the rest. Spaces are extremely limited — this add-on is first come, first served among group travelers.</p>
+    </div>
+
+    <div class="mg-btns">
+      <!-- ✅ Meet & Greet deposit — correct Stripe link -->
+      <a href="https://book.stripe.com/8x2cN4elU4vBfsb7En0Fi06" target="_blank" class="mg-btn-primary">✨ Claim the Group Rate — $100 Deposit →</a>
+      <a href="https://keithsweatofficialtourmerch.com/products/keith-sweat-meet-and-greet-vip-experience" target="_blank" class="mg-btn-info">View Full Experience Details →</a>
+    </div>
+    <p class="mg-disclaimer">* Meet & Greet must be added at time of trip booking. Subject to availability. The Real Vacations group rate applies exclusively to confirmed trip bookings.</p>
+  </div>
+</section>
+
+<section class="why">
+  <div class="container">
+    <h2>Why This Trip is Special</h2>
+    <p>If you grew up in the 90s and early 2000s, this lineup needs no introduction. Keith Sweat, Joe, Dru Hill, Ginuwine, and Kut Klose defined an era of R&B that still moves us today. These aren't just artists — they're the soundtrack to our memories. State Farm Arena is one of the best venues in the country to experience live music, and you'll be staying at a hotel literally connected to the arena. This isn't just a concert. It's a reunion. It's a celebration. And with our all-inclusive package, all you have to do is show up.</p>
+  </div>
+</section>
+
+<section class="trip-details">
+  <div class="container">
+    <h2>Trip Details</h2>
+    <div class="details-grid">
+      <div class="details-col">
+        <h3>What's Included</h3>
+        <ul>
+          <li>2 nights at Omni Atlanta Hotel</li>
+          <li>Premium concert tickets</li>
+          <li>Round-trip airport transfers</li>
+          <li>Group meet & greet before show</li>
+          <li>Access to exclusive lounge (VIP)</li>
+          <li>Early venue entry (VIP)</li>
+          <li>24/7 trip coordinator support</li>
+          <li>Travel insurance option</li>
+        </ul>
+      </div>
+      <div class="details-col">
+        <h3>What's Not Included</h3>
+        <ul>
+          <li class="no">Airfare (available as optional add-on)</li>
+          <li class="no">Meals (dining on your own)</li>
+          <li class="no">Personal expenses & merchandise</li>
+          <li class="no">Meet & Greet (available as add-on)</li>
+          <li class="no">Optional add-on experiences</li>
+          <li class="no">Parking (if driving)</li>
+        </ul>
+      </div>
+    </div>
+    <div class="policy"><strong>Cancellation Policy:</strong> Full refund if cancelled within 24 hours of booking. After 24 hours, deposits are non-refundable but transferable to another traveler with $50 fee. Travel insurance highly recommended.</div>
+  </div>
+</section>
+
+<!-- ✅ FIX: Bottom CTA changed from contact form to Stripe deposit -->
+<section class="cta">
+  <h2>Ready for an Epic R&B Night?</h2>
+  <p>Secure your spot now with a $500 deposit. Limited spots available — flexible payment plans after deposit.</p>
+  <a href="https://book.stripe.com/eVq9AS91A2nta7R2k30Fi05" target="_blank" class="cta-btn">🎟️ Claim My Spot — $500 Deposit →</a>
+</section>
+
+<!-- ✅ FIX: Clean footer with Blog, clean email -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;">
+      <p>Creating unforgettable group travel experiences for over 20 years.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="trips.html">Upcoming Trips</a>
+      <a href="about.html">About Us</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="real-stories.html">Real Stories</a>
+      <a href="blog.html">Blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Us</h4>
+      <a href="/cdn-cgi/l/email-protection#462529283227253206322e233423272a30272527322f2928356825292b"><span class="__cf_email__" data-cfemail="4f2c20213b2e2c3b0f3b272a3d2a2e23392e2c2e3b2620213c612c2022">[email&#160;protected]</span></a>
+      <a href="tel:4049230017">404-923-0017</a>
+      <a href="contact.htm
+    </div>
+          <div style="text-align:center; margin-bottom:20px;"><a href="
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
+</body>
+</html>
