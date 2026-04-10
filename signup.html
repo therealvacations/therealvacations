@@ -67,8 +67,8 @@
   <a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a>
   <div class="nav-links">
     <a href="/" class="hide-mobile">Home</a>
-    <a href="/" class="hide-mobile">Trips</a>
-    <a href="/" class="hide-mobile">Deals</a>
+    <a href="/trips" class="hide-mobile">Trips</a>
+    <a href="/deals" class="hide-mobile">Deals</a>
     <a href="/login" class="nav-login">Log In</a>
   </div>
 </nav>
@@ -166,7 +166,7 @@
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="terms" required>
-        <label for="terms">I agree to the <a href="/contact">Terms of Service</a> and <a href="/contact">Privacy Policy</a>.</label>
+        <label for="terms">I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.</label>
       </div>
       <button class="signup-btn" onclick="handleSignup()">🎉 Create My Free Account →</button>
       <div class="login-row">Already a member? <a href="/login">Sign in</a></div>
@@ -178,12 +178,13 @@
   © 2026 The Real Vacations · <a href="/cdn-cgi/l/email-protection#5c3f3332283d3f281c2834392e393d302a3d3f3d283533322f723f3331"><span class="__cf_email__" data-cfemail="89eae6e7fde8eafdc9fde1ecfbece8e5ffe8eae8fde0e6e7faa7eae6e4">[email&#160;protected]</span></a> · <a href="tel:4049230017">404-923-0017</a>
 </footer>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
-import { handleSignup as supabaseSignup } from './js/auth.js';
+import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin } from './js/auth.js';
 
-async function handleSignup() {
+window.handleSignup = async function() {
   var firstName = document.getElementById('firstName').value.trim();
   var lastName  = document.getElementById('lastName').value.trim();
   var email     = document.getElementById('email').value.trim();
+  var phone     = document.getElementById('phone').value.trim();
   var password  = document.getElementById('password').value.trim();
   var terms     = document.getElementById('terms').checked;
 
@@ -193,5 +194,32 @@ async function handleSignup() {
   if (!password || password.length < 8) { alert('Password must be at least 8 characters.'); return; }
   if (!terms) { alert('Please agree to the Terms of Service to continue.'); return; }
 
+  var btn = document.querySelector('.signup-btn');
+  btn.textContent = 'Creating account...';
+  btn.disabled = true;
+
   try {
-    c
+    await supabaseSignup({ email, password, firstName, lastName, phone });
+    window.location.href = '/dashboard';
+  } catch (error) {
+    alert('Signup failed: ' + error.message);
+    btn.textContent = '🎉 Create My Free Account →';
+    btn.disabled = false;
+  }
+}
+
+// Wire up Google/Facebook OAuth
+var socialBtns = document.querySelectorAll('.social-btn');
+if (socialBtns[0]) {
+  socialBtns[0].addEventListener('click', async function() {
+    try { await handleFacebookLogin(); } catch(e) { alert('Facebook signup error: ' + e.message); }
+  });
+}
+if (socialBtns[1]) {
+  socialBtns[1].addEventListener('click', async function() {
+    try { await handleGoogleLogin(); } catch(e) { alert('Google signup error: ' + e.message); }
+  });
+}
+</script>
+</body>
+</html>

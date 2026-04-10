@@ -72,8 +72,8 @@
   <a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a>
   <div class="nav-links">
     <a href="/" class="hide-mobile">Home</a>
-    <a href="/" class="hide-mobile">Trips</a>
-    <a href="/" class="hide-mobile">Deals</a>
+    <a href="/trips" class="hide-mobile">Trips</a>
+    <a href="/deals" class="hide-mobile">Deals</a>
     <a href="/contact" class="hide-mobile">Contact</a>
     <a href="/signup" class="nav-signup">Sign Up Free</a>
   </div>
@@ -160,9 +160,10 @@
   © 2026 The Real Vacations · <a href="/cdn-cgi/l/email-protection#13707c7d6772706753677b766176727f65727072677a7c7d603d707c7e"><span class="__cf_email__" data-cfemail="f1929e9f85909285b18599948394909d8790929085989e9f82df929e9c">[email&#160;protected]</span></a> · <a href="tel:4049230017">404-923-0017</a>
 </footer>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
-import { handleLogin as supabaseLogin } from './js/auth.js';
+import { handleLogin as supabaseLogin, handleGoogleLogin, handleFacebookLogin } from './js/auth.js';
 
-async function handleLogin() {
+// Wire up the login button
+window.handleLogin = async function() {
   var email = document.getElementById('email').value.trim();
   var password = document.getElementById('password').value.trim();
   
@@ -175,6 +176,32 @@ async function handleLogin() {
     return;
   }
   
+  var btn = document.querySelector('.login-btn');
+  btn.textContent = 'Signing in...';
+  btn.disabled = true;
+
   try {
-    const result = await supabaseLogin(email, password);
-    window.location.href = 'dashboard.ht
+    await supabaseLogin(email, password);
+    window.location.href = '/dashboard';
+  } catch (error) {
+    alert('Login failed: ' + error.message);
+    btn.textContent = 'Sign In to My Dashboard →';
+    btn.disabled = false;
+  }
+}
+
+// Wire up Google OAuth
+var socialBtns = document.querySelectorAll('.social-btn');
+if (socialBtns[0]) {
+  socialBtns[0].addEventListener('click', async function() {
+    try { await handleFacebookLogin(); } catch(e) { alert('Facebook login error: ' + e.message); }
+  });
+}
+if (socialBtns[1]) {
+  socialBtns[1].addEventListener('click', async function() {
+    try { await handleGoogleLogin(); } catch(e) { alert('Google login error: ' + e.message); }
+  });
+}
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
 {
+  "cleanUrls": true,
   "crons": [{
     "path": "/api/cron/auto-process-payments",
     "schedule": "0 2 * * *"
@@ -12,6 +13,17 @@
     { "source": "/contact", "destination": "/contact.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/login", "destination": "/login.html" },
-    { "source": "/signup", "destination": "/signup.html" }
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/terms", "destination": "/terms.html" },
+    { "source": "/privacy", "destination": "/privacy.html" },
+    { "source": "/deals", "destination": "/deals.html" },
+    { "source": "/trips", "destination": "/trips.html" },
+    { "source": "/update-payment-method", "destination": "/update-payment-method.html" },
+    { "source": "/forgot-password", "destination": "/forgot-password.html" },
+    { "source": "/essence-festival-new-orleans-july-3-5-2026", "destination": "/essence-festival-new-orleans-july-3-5-2026.html" },
+    { "source": "/mary-j-blige-my-life-my-story-las-vegas-july-17-2026", "destination": "/mary-j-blige-my-life-my-story-las-vegas-july-17-2026.html" },
+    { "source": "/mary-j-blige-my-life-my-story-las-vegas-july-18-2026", "destination": "/mary-j-blige-my-life-my-story-las-vegas-july-18-2026.html" },
+    { "source": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026", "destination": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026.html" },
+    { "source": "/napa-juneteenth-june-19-22-2026", "destination": "/napa-juneteenth-june-19-22-2026.html" }
   ]
 }
