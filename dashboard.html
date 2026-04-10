@@ -1,272 +1,521 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Dashboard | The Real Vacations</title>
-<link rel="icon" type="image/jpeg" href="favicon.jpeg">
-<style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #faf5ff; }
-  a { text-decoration: none; color: inherit; }
-  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
-  nav a img { height: 52px; }
-  .nav-center { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; flex: 1; justify-content: center; }
-  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
-  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-  .nav-links a:hover { color: #c084fc; }
-  .nav-auth { display: flex; gap: 10px; }
-  .nav-logout { border: 2px solid #ef4444; color: #ef4444; padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: all 0.2s; cursor: pointer; }
-  .nav-logout:hover { background: #ef4444; color: #fff; }
-  .dash { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
-  .welcome { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; padding: 32px; border-radius: 20px; margin-bottom: 32px; }
-  .welcome h1 { font-size: 28px; font-weight: 800; margin-bottom: 6px; }
-  .welcome p { font-size: 15px; color: #e9d5ff; }
-  .trip-hero { background: #fff; border-radius: 20px; padding: 32px; margin-bottom: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-  .trip-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; border-bottom: 2px solid #f3e8ff; padding-bottom: 20px; }
-  .trip-info h2 { font-size: 24px; font-weight: 800; color: #1a0533; margin-bottom: 6px; }
-  .trip-info .date { font-size: 14px; color: #7c3aed; font-weight: 600; }
-  .countdown-big { text-align: right; }
-  .countdown-big .label { font-size: 12px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
-  .countdown-big .time { font-size: 32px; font-weight: 900; color: #7c3aed; line-height: 1; font-family: 'Courier New', monospace; }
-  .payment-section { margin-bottom: 28px; }
-  .payment-section h3 { font-size: 16px; font-weight: 700; color: #1a0533; margin-bottom: 12px; }
-  .payment-bar { background: #f3e8ff; height: 16px; border-radius: 50px; overflow: hidden; margin-bottom: 12px; }
-  .payment-fill { background: linear-gradient(90deg, #7c3aed, #c084fc); height: 100%; transition: width 0.5s ease; }
-  .payment-details { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; font-size: 13px; color: #555; }
-  .payment-details strong { color: #1a0533; }
-  .pay-btn { display: inline-block; background: #7c3aed; color: #fff; padding: 10px 24px; border-radius: 50px; font-weight: 600; font-size: 14px; transition: background 0.2s, transform 0.15s; margin-top: 8px; border: none; cursor: pointer; }
-  .pay-btn:hover { background: #6d28d9; transform: translateY(-2px); }
-  .checklist-section { margin-bottom: 24px; }
-  .checklist-section h3 { font-size: 16px; font-weight: 700; color: #1a0533; margin-bottom: 12px; }
-  .checklist-item { background: #faf5ff; border: 2px solid #f3e8ff; border-radius: 12px; padding: 14px 18px; margin-bottom: 10px; display: flex; align-items: center; gap: 14px; transition: all 0.2s; cursor: pointer; }
-  .checklist-item:hover { border-color: #c084fc; }
-  .checklist-item.done { background: #f0fdf4; border-color: #86efac; }
-  .checklist-item.done .checkbox { background: #22c55e; color: #fff; }
-  .checkbox { width: 24px; height: 24px; border: 2px solid #d1d5db; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; transition: all 0.2s; }
-  .checklist-text { flex: 1; font-size: 14px; color: #1a0533; font-weight: 500; }
-  .actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-  .action-btn { background: linear-gradient(135deg, #faf5ff, #f3e8ff); border: 2px solid #f3e8ff; padding: 20px; border-radius: 16px; text-align: center; transition: all 0.2s; cursor: pointer; }
-  .action-btn:hover { border-color: #c084fc; transform: translateY(-2px); }
-  .action-btn-icon { font-size: 28px; margin-bottom: 8px; }
-  .action-btn-text { font-size: 13px; font-weight: 600; color: #1a0533; }
-  .perks-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; margin-bottom: 32px; }
-  .perk-card { background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
-  .perk-card h3 { font-size: 16px; font-weight: 700; color: #1a0533; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-  .perk-card p { font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 16px; }
-  .perk-link { display: inline-block; background: #7c3aed; color: #fff; padding: 8px 20px; border-radius: 50px; font-weight: 600; font-size: 13px; transition: background 0.2s; }
-  .perk-link:hover { background: #6d28d9; }
-  footer { background: #0f0620; color: #888; text-align: center; padding: 20px; font-size: 12px; margin-top: 60px; }
-  footer a { color: #c084fc; }
-  @media (max-width: 768px) {
-    .nav-center { flex-direction: column; gap: 12px; }
-    .nav-links { display: none; }
-    .trip-header { flex-direction: column; }
-    .countdown-big { text-align: left; }
-    .perks-grid { grid-template-columns: 1fr; }
-    .actions { grid-template-columns: 1fr; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | The Real Vacations</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'DM Sans', sans-serif; background: #f5f5f5; color: #333; }
+        
+        /* NAV */
+        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; gap: 24px; }
+        nav img { height: 52px; }
+        nav a { color: #fff; text-decoration: none; font-weight: 600; }
+        .nav-logout { background: #c084fc; color: #1a0533; padding: 8px 16px; border-radius: 20px; cursor: pointer; border: none; font-weight: 600; }
+        
+        /* CONTAINER */
+        .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+        
+        /* TABS */
+        .tabs { display: flex; gap: 12px; margin-bottom: 32px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
+        .tab-btn { background: none; border: none; padding: 12px 20px; cursor: pointer; font-weight: 600; color: #999; font-size: 14px; border-bottom: 3px solid transparent; transition: all 0.2s; }
+        .tab-btn.active { color: #7c3aed; border-bottom-color: #7c3aed; }
+        .tab-btn:hover { color: #7c3aed; }
+        
+        /* SECTIONS */
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        /* FORMS */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; color: #333; }
+        .form-group input, .form-group textarea, .form-group select { 
+            width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; 
+        }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        
+        /* BUTTONS */
+        .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: #7c3aed; color: #fff; }
+        .btn-primary:hover { background: #6d28d9; }
+        .btn-secondary { background: #e0e0e0; color: #333; }
+        .btn-danger { background: #ef4444; color: #fff; }
+        .btn-danger:hover { background: #dc2626; }
+        
+        /* CARDS */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
+        .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .card h3 { margin-bottom: 8px; color: #1a0533; }
+        .card p { color: #666; font-size: 14px; margin-bottom: 12px; }
+        .card-actions { display: flex; gap: 8px; }
+        .card-actions button { padding: 6px 12px; font-size: 12px; }
+        
+        /* MODAL */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: #fff; padding: 40px; border-radius: 16px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .modal-header h2 { color: #1a0533; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; }
+        
+        /* ALERTS */
+        .alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; }
+        .alert-success { background: #d1fae5; color: #065f46; }
+        .alert-error { background: #fee2e2; color: #991b1b; }
+    </style>
 </head>
 <body>
-<nav>
-  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
-  <div class="nav-center">
-    <div class="nav-links">
-      <a href="index.html">Home</a>
-      <a href="dashboard.html" style="color:#c084fc;">My Dashboard</a>
-      <a href="trips.html">Trips</a>
-      <a href="deals.html">Deals</a>
-      <a href="resources.html">Resources</a>
-      <a href="contact.html">Contact</a>
-    </div>
-    <div class="nav-auth">
-      <button onclick="handleLogout()" class="nav-logout">Logout</button>
-    </div>
-  </div>
-</nav>
-<div class="dash">
-  <div class="welcome">
-    <h1 id="welcomeUser">Welcome Back!</h1>
-    <p>Your trips, perks, and everything you need — all in one place.</p>
-  </div>
-  <div class="trip-hero">
-    <div class="trip-header">
-      <div class="trip-info">
-        <h2>🎵 Essence Festival New Orleans</h2>
-        <p class="date">July 3–5, 2026 · New Orleans, LA</p>
-      </div>
-      <div class="countdown-big">
-        <div class="label">⏰ Countdown to Adventure</div>
-        <div class="time" id="tripCountdown">95 DAYS</div>
-      </div>
-    </div>
-    <div class="payment-section">
-      <h3>💳 Payment Status</h3>
-      <div class="payment-bar">
-        <div class="payment-fill" id="paymentFill" style="width: 25%;"></div>
-      </div>
-      <div class="payment-details">
-        <span id="paymentStatus"><strong>$500</strong> paid of <strong>$2,000</strong> total</span>
-        <span id="nextPayment">Next payment: <strong>$500 by May 1</strong></span>
-      </div>
-      <button onclick="makePayment()" class="pay-btn">Make a Payment →</button>
-    </div>
-    <div class="checklist-section">
-      <h3>✅ Trip Prep Checklist</h3>
-      <div class="checklist-item done">
-        <div class="checkbox">✓</div>
-        <div class="checklist-text">Reserve Your Spot</div>
-      </div>
-      <div class="checklist-item">
-        <div class="checkbox"></div>
-        <div class="checklist-text">Book Your Flight</div>
-      </div>
-      <div class="checklist-item">
-        <div class="checkbox"></div>
-        <div class="checklist-text">Add Travel Insurance</div>
-      </div>
-      <div class="checklist-item">
-        <div class="checkbox"></div>
-        <div class="checklist-text">Join Your Trip Group Chat</div>
-      </div>
-      <div class="checklist-item">
-        <div class="checkbox"></div>
-        <div class="checklist-text">Review Your Itinerary</div>
-      </div>
-    </div>
-    <div class="actions">
-      <a href="#flights" class="action-btn">
-        <div class="action-btn-icon">✈️</div>
-        <div class="action-btn-text">Book Flight</div>
-      </a>
-      <a href="#itinerary" class="action-btn">
-        <div class="action-btn-icon">📅</div>
-        <div class="action-btn-text">View Itinerary</div>
-      </a>
-      <a href="#group" class="action-btn">
-        <div class="action-btn-icon">👥</div>
-        <div class="action-btn-text">Meet Your Group</div>
-      </a>
-      <a href="contact.html" class="action-btn">
-        <div class="action-btn-icon">📞</div>
-        <div class="action-btn-text">Contact Support</div>
-      </a>
-    </div>
-  </div>
-  <h2 style="font-size:24px; font-weight:800; color:#1a0533; margin-bottom:20px;">✈️ Your Trip Essentials</h2>
-  <div class="perks-grid">
-    <div class="perk-card" id="flights">
-      <h3>✈️ Flight Deals for Your Trip</h3>
-      <p>We found flights from Atlanta to New Orleans for <strong>$127 roundtrip</strong> on your trip dates (July 3-5).</p>
-      <a href="https://www.expedia.com/Flights" target="_blank" class="perk-link">Search Flights →</a>
-    </div>
-    <div class="perk-card">
-      <h3>🏨 Extend Your Stay?</h3>
-      <p>Hotels near Essence Festival from <strong>$99/night</strong>. Arrive early or stay late to explore NOLA.</p>
-      <a href="https://www.expedia.com/Hotels" target="_blank" class="perk-link">Browse Hotels →</a>
-    </div>
-    <div class="perk-card">
-      <h3>🎟️ Add-On Experiences</h3>
-      <p><strong>French Quarter food tour</strong> · Swamp tour · Jazz cruise · Cooking class. Make it unforgettable.</p>
-      <a href="https://www.tripadvisor.com/" target="_blank" class="perk-link">Explore Experiences →</a>
-    </div>
-    <div class="perk-card">
-      <h3>🛡️ Travel Insurance</h3>
-      <p>Protect your trip investment. Trip cancellations, medical emergencies, lost luggage — plans start at just $29.</p>
-      <a href="https://klook.tpm.li/wG7YCPzF" target="_blank" class="perk-link">Get Coverage →</a>
-    </div>
-    <div class="perk-card">
-      <h3>🎒 Travel Gear</h3>
-      <p>Don't forget the essentials — luggage, portable chargers, travel pillows. Gear we actually use on every trip.</p>
-      <a href="https://www.amazon.com/" target="_blank" class="perk-link">Shop Gear →</a>
-    </div>
-    <div class="perk-card">
-      <h3>🚗 Car Rentals</h3>
-      <p>Need wheels when you land? Compare rental car prices in seconds for New Orleans.</p>
-      <a href="https://www.expedia.com/Car-Rentals" target="_blank" class="perk-link">Rent a Car →</a>
-    </div>
-  </div>
-  <div class="trip-hero" id="itinerary">
-    <h3 style="font-size:18px; font-weight:700; color:#1a0533; margin-bottom:16px;">📅 Your Itinerary</h3>
-    <p style="font-size:14px; color:#555; line-height:1.6; margin-bottom:12px;">Your full trip schedule with activities, events, hotel info, and group details will appear here closer to your departure date.</p>
-    <p style="font-size:13px; color:#7c3aed; font-weight:600;">✉️ You'll receive your detailed itinerary via email 30 days before departure.</p>
-  </div>
-  <div class="trip-hero" id="group">
-    <h3 style="font-size:18px; font-weight:700; color:#1a0533; margin-bottom:16px;">👥 Meet Your Group</h3>
-    <p style="font-size:14px; color:#555; line-height:1.6; margin-bottom:12px;">Connect with your fellow travelers before the trip! Group chat access opens 60 days before departure.</p>
-    <p style="font-size:13px; color:#7c3aed; font-weight:600;">🔜 Coming Soon: Join the Essence Festival 2026 Group Chat</p>
-  </div>
-</div>
-<footer>
-  © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a>
-</footer>
-<script type="module">
-import { getCurrentUser, handleLogout as supabaseLogout } from './js/auth.js';
-import { getPaymentSchedule } from './js/payment-schedule.js';
+    <!-- NAV -->
+    <nav>
+        <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+        <div style="margin-left: auto;">
+            <button class="nav-logout" onclick="handleLogout()">Logout</button>
+        </div>
+    </nav>
 
-async function initDashboard() {
-  try {
-    const user = await getCurrentUser();
-    if (!user) {
-      window.location.href = 'login.html';
-      return;
-    }
-    
-    document.getElementById('welcomeUser').textContent = 'Welcome Back, ' + (user.user_metadata?.full_name || user.email) + '!';
-    
-    const payments = await getPaymentSchedule('booking-id-here');
-    if (payments && payments.length > 0) {
-      const totalPaid = 500;
-      const totalAmount = 2000;
-      const percentage = (totalPaid / totalAmount) * 100;
-      document.getElementById('paymentFill').style.width = percentage + '%';
-      document.getElementById('paymentStatus').innerHTML = '<strong>$' + totalPaid + '</strong> paid of <strong>$' + totalAmount + '</strong> total';
-      const nextPayment = payments[0];
-      document.getElementById('nextPayment').textContent = 'Next payment: $' + nextPayment.amount_due + ' by ' + nextPayment.auto_charge_date;
-    }
-  } catch (error) {
-    console.error('Dashboard init error:', error);
-  }
-}
+    <!-- CONTAINER -->
+    <div class="container">
+        <h1 style="margin-bottom: 32px; color: #1a0533;">Admin Dashboard</h1>
 
-window.handleLogout = async function() {
-  try {
-    await supabaseLogout();
-    window.location.href = 'login.html';
-  } catch (error) {
-    alert('Logout failed: ' + error.message);
-  }
-};
+        <!-- TABS -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'bookings')">📅 Bookings</button>
+            <button class="tab-btn" onclick="switchTab(event, 'testimonials')">💬 Testimonials</button>
+            <button class="tab-btn" onclick="switchTab(event, 'gallery')">🖼️ Gallery</button>
+            <button class="tab-btn" onclick="switchTab(event, 'wheel')">🎡 Spin Wheel</button>
+            <button class="tab-btn" onclick="switchTab(event, 'blog')">📝 Blog</button>
+            <button class="tab-btn" onclick="switchTab(event, 'trips')">✈️ Trips</button>
+        </div>
 
-window.makePayment = function() {
-  alert('Redirecting to payment...');
-};
+        <!-- BOOKINGS TAB -->
+        <div id="bookings" class="tab-content active">
+            <h2>Your Bookings</h2>
+            <div id="bookings-list"></div>
+        </div>
 
-initDashboard();
+        <!-- TESTIMONIALS TAB -->
+        <div id="testimonials" class="tab-content">
+            <h2>Manage Testimonials</h2>
+            <button class="btn btn-primary" onclick="openTestimonialModal()">+ Add Testimonial</button>
+            <div id="testimonials-list" class="cards-grid"></div>
+        </div>
 
-function updateTripCountdown() {
-  var now = new Date();
-  var tripDate = new Date('2026-07-03T00:00:00');
-  var diff = tripDate - now;
-  
-  if (diff <= 0) {
-    document.getElementById('tripCountdown').textContent = 'TODAY!';
-    return;
-  }
-  
-  var days = Math.floor(diff / 86400000);
-  document.getElementById('tripCountdown').textContent = days + ' DAYS';
-}
+        <!-- GALLERY TAB -->
+        <div id="gallery" class="tab-content">
+            <h2>Real Stories Gallery</h2>
+            <button class="btn btn-primary" onclick="openGalleryModal()">+ Add Photo</button>
+            <div id="gallery-list" class="cards-grid"></div>
+        </div>
 
-updateTripCountdown();
-setInterval(updateTripCountdown, 3600000);
+        <!-- WHEEL TAB -->
+        <div id="wheel" class="tab-content">
+            <h2>Spin Wheel Settings</h2>
+            <form id="wheel-form" onsubmit="saveWheelSettings(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prize 1</label>
+                        <input type="text" id="prize_1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prize 2</label>
+                        <input type="text" id="prize_2" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prize 3</label>
+                        <input type="text" id="prize_3" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prize 4</label>
+                        <input type="text" id="prize_4" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prize 5</label>
+                        <input type="text" id="prize_5" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prize 6</label>
+                        <input type="text" id="prize_6" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Prize 7</label>
+                        <input type="text" id="prize_7" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Prize 8</label>
+                        <input type="text" id="prize_8" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Color 1</label>
+                        <input type="color" id="wheel_color_1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Color 2</label>
+                        <input type="color" id="wheel_color_2" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Color 3</label>
+                    <input type="color" id="wheel_color_3" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Wheel Settings</button>
+            </form>
+        </div>
 
-document.querySelectorAll('.checklist-item').forEach(function(item) {
-  item.addEventListener('click', function() {
-    this.classList.toggle('done');
-  });
-});
-</script>
+        <!-- BLOG TAB -->
+        <div id="blog" class="tab-content">
+            <h2>Blog Posts</h2>
+            <button class="btn btn-primary" onclick="openBlogModal()">+ New Post</button>
+            <div id="blog-list" class="cards-grid"></div>
+        </div>
+
+        <!-- TRIPS TAB -->
+        <div id="trips" class="tab-content">
+            <h2>Trip Content</h2>
+            <button class="btn btn-primary" onclick="openTripModal()">+ New Trip</button>
+            <div id="trips-list" class="cards-grid"></div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div id="testimonial-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Testimonial</h2>
+                <button class="close-btn" onclick="closeTestimonialModal()">×</button>
+            </div>
+            <form id="testimonial-form" onsubmit="saveTestimonial(event)">
+                <div class="form-group">
+                    <label>Author Name</label>
+                    <input type="text" id="author_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Initials (e.g., JM)</label>
+                    <input type="text" id="author_initials" maxlength="2">
+                </div>
+                <div class="form-group">
+                    <label>Trip Location</label>
+                    <input type="text" id="trip_location">
+                </div>
+                <div class="form-group">
+                    <label>Trip Date</label>
+                    <input type="text" id="trip_date" placeholder="e.g., March 2025">
+                </div>
+                <div class="form-group">
+                    <label>Review Text</label>
+                    <textarea id="review_text" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Rating</label>
+                    <select id="rating">
+                        <option value="5">⭐⭐⭐⭐⭐ 5 Stars</option>
+                        <option value="4">⭐⭐⭐⭐ 4 Stars</option>
+                        <option value="3">⭐⭐⭐ 3 Stars</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Testimonial</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="gallery-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Gallery Photo</h2>
+                <button class="close-btn" onclick="closeGalleryModal()">×</button>
+            </div>
+            <form id="gallery-form" onsubmit="saveGalleryItem(event)">
+                <div class="form-group">
+                    <label>Image URL</label>
+                    <input type="url" id="image_url" required placeholder="https://...">
+                </div>
+                <div class="form-group">
+                    <label>Caption</label>
+                    <input type="text" id="caption" placeholder="e.g., Napa Valley wine country 🍷">
+                </div>
+                <div class="form-group">
+                    <label>Alt Text</label>
+                    <input type="text" id="alt_text" required>
+                </div>
+                <div class="form-group">
+                    <label>Display Order</label>
+                    <input type="number" id="display_order" min="1">
+                </div>
+                <button type="submit" class="btn btn-primary">Add Photo</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="blog-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>New Blog Post</h2>
+                <button class="close-btn" onclick="closeBlogModal()">×</button>
+            </div>
+            <form id="blog-form" onsubmit="saveBlogPost(event)">
+                <div class="form-group">
+                    <label>Title</label>
+                    <input type="text" id="blog_title" required>
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="blog_category">
+                        <option value="packing">Packing Tips</option>
+                        <option value="documents">Travel Documents</option>
+                        <option value="tips">Travel Tips</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Content</label>
+                    <textarea id="blog_content" required style="min-height: 150px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Publish Post</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="trip-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Trip</h2>
+                <button class="close-btn" onclick="closeTripModal()">×</button>
+            </div>
+            <form id="trip-form" onsubmit="saveTripContent(event)">
+                <div class="form-group">
+                    <label>Trip Name</label>
+                    <input type="text" id="trip_name" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" id="trip_location_field" required>
+                </div>
+                <div class="form-group">
+                    <label>Dates</label>
+                    <input type="text" id="trip_dates" placeholder="e.g., July 3-5, 2026">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Deposit Price ($)</label>
+                        <input type="number" id="trip_deposit" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Total Price ($)</label>
+                        <input type="number" id="trip_total" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="trip_description"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="js/supabase-client.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        // TAB SWITCHING
+        function switchTab(e, tabName) {
+            e.preventDefault();
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            e.target.classList.add('active');
+            
+            if (tabName === 'testimonials') loadTestimonials();
+            if (tabName === 'gallery') loadGallery();
+            if (tabName === 'wheel') loadWheelSettings();
+            if (tabName === 'blog') loadBlogPosts();
+            if (tabName === 'trips') loadTrips();
+        }
+
+        // MODALS
+        function openTestimonialModal() { document.getElementById('testimonial-modal').classList.add('active'); }
+        function closeTestimonialModal() { document.getElementById('testimonial-modal').classList.remove('active'); }
+        function openGalleryModal() { document.getElementById('gallery-modal').classList.add('active'); }
+        function closeGalleryModal() { document.getElementById('gallery-modal').classList.remove('active'); }
+        function openBlogModal() { document.getElementById('blog-modal').classList.add('active'); }
+        function closeBlogModal() { document.getElementById('blog-modal').classList.remove('active'); }
+        function openTripModal() { document.getElementById('trip-modal').classList.add('active'); }
+        function closeTripModal() { document.getElementById('trip-modal').classList.remove('active'); }
+
+        // TESTIMONIALS
+        async function saveTestimonial(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('testimonials').insert([{
+                author_name: document.getElementById('author_name').value,
+                author_initials: document.getElementById('author_initials').value,
+                trip_location: document.getElementById('trip_location').value,
+                trip_date: document.getElementById('trip_date').value,
+                review_text: document.getElementById('review_text').value,
+                rating: parseInt(document.getElementById('rating').value)
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else {
+                alert('Testimonial added!');
+                document.getElementById('testimonial-form').reset();
+                closeTestimonialModal();
+                loadTestimonials();
+            }
+        }
+        async function loadTestimonials() {
+            const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(t => `
+                <div class="card">
+                    <h3>${t.author_name}</h3>
+                    <p>"${t.review_text.substring(0, 100)}..."</p>
+                    <p><strong>${t.trip_location}</strong> - ${t.trip_date}</p>
+                    <p>${'⭐'.repeat(t.rating)}</p>
+                </div>
+            `).join('');
+            document.getElementById('testimonials-list').innerHTML = html || '<p>No testimonials yet.</p>';
+        }
+
+        // GALLERY
+        async function saveGalleryItem(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('real_stories_gallery').insert([{
+                image_url: document.getElementById('image_url').value,
+                caption: document.getElementById('caption').value,
+                alt_text: document.getElementById('alt_text').value,
+                display_order: parseInt(document.getElementById('display_order').value) || 0
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else {
+                alert('Photo added!');
+                document.getElementById('gallery-form').reset();
+                closeGalleryModal();
+                loadGallery();
+            }
+        }
+        async function loadGallery() {
+            const { data } = await supabase.from('real_stories_gallery').select('*').order('display_order', { ascending: true });
+            const html = (data || []).map(g => `
+                <div class="card">
+                    <img src="${g.image_url}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;">
+                    <p>${g.caption || 'No caption'}</p>
+                </div>
+            `).join('');
+            document.getElementById('gallery-list').innerHTML = html || '<p>No gallery items yet.</p>';
+        }
+
+        // WHEEL
+        async function loadWheelSettings() {
+            const { data } = await supabase.from('wheel_settings').select('*').limit(1);
+            if (data && data[0]) {
+                const w = data[0];
+                for (let i = 1; i <= 8; i++) {
+                    const el = document.getElementById(`prize_${i}`);
+                    if (el) el.value = w[`prize_${i}`] || '';
+                }
+                document.getElementById('wheel_color_1').value = w.wheel_color_1 || '#7c3aed';
+                document.getElementById('wheel_color_2').value = w.wheel_color_2 || '#c084fc';
+                document.getElementById('wheel_color_3').value = w.wheel_color_3 || '#a855f7';
+            }
+        }
+        async function saveWheelSettings(e) {
+            e.preventDefault();
+            const updateData = {};
+            for (let i = 1; i <= 8; i++) {
+                updateData[`prize_${i}`] = document.getElementById(`prize_${i}`).value;
+            }
+            updateData.wheel_color_1 = document.getElementById('wheel_color_1').value;
+            updateData.wheel_color_2 = document.getElementById('wheel_color_2').value;
+            updateData.wheel_color_3 = document.getElementById('wheel_color_3').value;
+            
+            const { error } = await supabase.from('wheel_settings').update(updateData).eq('id', 1);
+            alert(error ? 'Error: ' + error.message : 'Wheel settings saved!');
+        }
+
+        // BLOG
+        async function saveBlogPost(e) {
+            e.preventDefault();
+            const title = document.getElementById('blog_title').value;
+            const slug = title.toLowerCase().replace(/\s+/g, '-');
+            const { error } = await supabase.from('blog_posts').insert([{
+                title: title,
+                slug: slug,
+                category: document.getElementById('blog_category').value,
+                content: document.getElementById('blog_content').value,
+                is_published: true
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else {
+                alert('Post published!');
+                document.getElementById('blog-form').reset();
+                closeBlogModal();
+                loadBlogPosts();
+            }
+        }
+        async function loadBlogPosts() {
+            const { data } = await supabase.from('blog_posts').select('*').eq('is_published', true).order('created_at', { ascending: false });
+            const html = (data || []).map(b => `
+                <div class="card">
+                    <h3>${b.title}</h3>
+                    <p>${b.content.substring(0, 80)}...</p>
+                    <p style="color: #7c3aed; font-size: 12px; margin-top: 8px;">${b.category}</p>
+                </div>
+            `).join('');
+            document.getElementById('blog-list').innerHTML = html || '<p>No blog posts yet.</p>';
+        }
+
+        // TRIPS
+        async function saveTripContent(e) {
+            e.preventDefault();
+            const tripName = document.getElementById('trip_name').value;
+            const tripId = tripName.toLowerCase().replace(/\s+/g, '-');
+            const { error } = await supabase.from('trip_content').insert([{
+                trip_id: tripId,
+                trip_name: tripName,
+                trip_slug: tripId,
+                location: document.getElementById('trip_location_field').value,
+                dates: document.getElementById('trip_dates').value,
+                price_deposit: parseInt(document.getElementById('trip_deposit').value) || 0,
+                price_total: parseInt(document.getElementById('trip_total').value) || 0,
+                description: document.getElementById('trip_description').value,
+                is_active: true
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else {
+                alert('Trip added!');
+                document.getElementById('trip-form').reset();
+                closeTripModal();
+                loadTrips();
+            }
+        }
+        async function loadTrips() {
+            const { data } = await supabase.from('trip_content').select('*').eq('is_active', true);
+            const html = (data || []).map(t => `
+                <div class="card">
+                    <h3>${t.trip_name}</h3>
+                    <p><strong>${t.location}</strong></p>
+                    <p>${t.dates}</p>
+                    <p>Deposit: $${t.price_deposit} | Total: $${t.price_total}</p>
+                </div>
+            `).join('');
+            document.getElementById('trips-list').innerHTML = html || '<p>No trips yet.</p>';
+        }
+
+        // INIT
+        window.addEventListener('load', () => {
+            const user = getCurrentUser();
+            if (!user) {
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
 </body>
 </html>
