@@ -1,158 +1,61 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Why We Do What We Do | The Real Vacations</title>
-    <meta name="description" content="Born from the Cates 26 family tradition, The Real Vacations has been creating unforgettable group travel experiences for over 20 years.">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary-purple: #6B2D8B; --primary-green: #2E8B57; --dark-purple: #4A1D6A;
-            --light-purple: #F5F0F8; --accent-gold: #D4AF37; --dark-bg: #1a1a2e;
-            --text-dark: #2D2D2D; --text-medium: #555; --text-light: #777; --white: #ffffff;
-            --gradient-primary: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-green) 100%);
-            --gradient-hero: linear-gradient(135deg, #1a1a2e 0%, #4A1D6A 50%, #2E8B57 100%);
-            --shadow-soft: 0 4px 20px rgba(107, 45, 139, 0.15);
-            --shadow-hover: 0 8px 30px rgba(107, 45, 139, 0.25);
-        }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Montserrat', sans-serif; line-height: 1.7; color: var(--text-dark); background: var(--white); }
-        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; line-height: 1.3; }
-        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
-        nav a img { height: 52px; }
-        .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
-        .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; text-decoration: none; }
-        .nav-links a:hover { color: #c084fc; }
-        .hero { background: var(--gradient-hero); color: var(--white); padding: 80px 5%; text-align: center; position: relative; }
-        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 30% 70%, rgba(46, 139, 87, 0.3) 0%, transparent 50%); }
-        .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
-        .hero h1 { font-size: 3rem; margin-bottom: 1rem; font-weight: 700; }
-        .hero p { font-size: 1.3rem; opacity: 0.95; }
-        section { padding: 80px 5%; }
-        .section-inner { max-width: 900px; margin: 0 auto; }
-        .section-title { font-size: 2.5rem; margin-bottom: 2rem; color: var(--dark-purple); text-align: center; }
-        .section-alt { background: var(--light-purple); }
-        .story-content p { font-size: 1.1rem; color: var(--text-medium); line-height: 1.9; margin-bottom: 1.5rem; }
-        .story-content p:first-of-type::first-letter { font-size: 3.5rem; font-family: 'Playfair Display', serif; float: left; line-height: 1; padding-right: 0.5rem; color: var(--primary-purple); font-weight: 700; }
-        .highlight-text { background: var(--light-purple); padding: 2rem; border-radius: 16px; border-left: 5px solid var(--primary-purple); margin: 2rem 0; font-style: italic; }
-        .highlight-text p { margin-bottom: 0; font-size: 1.15rem; color: var(--dark-purple); }
-        .values-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem; max-width: 1200px; margin-left: auto; margin-right: auto; }
-        .value-card { background: var(--white); padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-soft); transition: all 0.3s; border-bottom: 4px solid transparent; }
-        .value-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); border-bottom-color: var(--primary-purple); }
-        .value-icon { font-size: 3rem; margin-bottom: 1rem; }
-        .value-card h3 { font-size: 1.4rem; color: var(--primary-purple); margin-bottom: 0.75rem; }
-        .value-card p { color: var(--text-medium); line-height: 1.7; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-top: 3rem; max-width: 1000px; margin-left: auto; margin-right: auto; }
-        .stat-item { background: var(--white); padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-soft); text-align: center; }
-        .stat-number { font-size: 3.5rem; font-weight: 700; color: var(--primary-purple); font-family: 'Playfair Display', serif; margin-bottom: 0.5rem; }
-        .stat-label { font-size: 1rem; color: var(--text-medium); }
-        .cta-section { background: var(--gradient-primary); color: var(--white); text-align: center; padding: 80px 5%; }
-        .cta-section h2 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--white); }
-        .cta-section p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95; }
-        .cta-button { display: inline-block; background: var(--white); color: var(--primary-purple); padding: 18px 45px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 1.1rem; transition: all 0.3s; }
-        .cta-button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
-        .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-        .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; text-decoration: none; }
-        .footer-col a:hover { color: #c084fc; }
-        .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
-        @media (max-width: 768px) { .nav-links { display: none; } .hero h1 { font-size: 2rem; } .section-title { font-size: 2rem; } }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About Us | The Real Vacations</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
+.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500}.nav-links a:hover{color:#c084fc}
+.hero{background:linear-gradient(135deg,#1a0533,#3b0764,#6b21a8);color:#fff;text-align:center;padding:80px 24px 60px}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff}
+.section{max-width:900px;margin:0 auto;padding:60px 24px}
+.story-text{font-size:16px;color:#555;line-height:1.8;white-space:pre-wrap}
+.values-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:1100px;margin:0 auto;padding:0 24px}
+.value-card{background:#faf5ff;border-radius:16px;padding:28px;text-align:center;transition:transform 0.2s}
+.value-card:hover{transform:translateY(-4px)}.value-icon{font-size:40px;margin-bottom:12px}
+.value-card h3{font-size:18px;font-weight:700;color:#1a0533;margin-bottom:8px}.value-card p{font-size:14px;color:#555}
+.stats-bar{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;padding:40px 24px;background:#1a0533;color:#fff;text-align:center}
+.stat{min-width:120px}.stat .num{font-size:36px;font-weight:800;color:#c084fc}.stat .lbl{font-size:13px;color:#e9d5ff;margin-top:4px}
+.cta{background:linear-gradient(135deg,#1a0533,#6b21a8);color:#fff;text-align:center;padding:60px 24px}
+.cta h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:28px}
+.cta-btn{background:#22c55e;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;display:inline-block}.cta-btn:hover{background:#16a34a}
+footer{background:#0f0620;color:#ccc;padding:40px;text-align:center;font-size:12px}footer a{color:#c084fc}
+@media(max-width:768px){.nav-links{display:none}.stats-bar{gap:20px}}
+</style>
 </head>
 <body>
-    <!-- ✅ FIX: Blog added to nav -->
-    <nav>
-        <a href="/"><img src="logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/trips">Trips</a>
-            <a href="/real-stories">Real Stories</a>
-            <a href="/about">About</a>
-            <a href="/how-it-works">How It Works</a>
-            <a href="/resources">Resources</a>
-            <a href="/blog">Blog</a>
-            <a href="/contact">Contact</a>
-        </div>
-    </nav>
+<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div></nav>
+<section class="hero"><h1>Why We Do What We Do</h1><p>Creating unforgettable group travel experiences for over 20 years</p></section>
+<div class="section"><h2 style="font-size:28px;font-weight:800;color:#1a0533;margin-bottom:20px;">Our Story</h2><div class="story-text" id="storyText">Loading...</div></div>
+<div style="padding:60px 0;"><h2 style="text-align:center;font-size:28px;font-weight:800;color:#1a0533;margin-bottom:36px;">What We Stand For</h2><div class="values-grid" id="valuesGrid">Loading...</div></div>
+<div class="stats-bar" id="statsBar"><div class="stat"><div class="num" id="statYears">20+</div><div class="lbl">Years of Experience</div></div><div class="stat"><div class="num" id="statTravelers">1,500+</div><div class="lbl">Happy Travelers</div></div><div class="stat"><div class="num" id="statTrips">50+</div><div class="lbl">Trips Organized</div></div><div class="stat"><div class="num" id="statCommitment">100%</div><div class="lbl">Commitment to Excellence</div></div></div>
+<section class="cta"><h2>Ready to Travel with Us?</h2><a href="/trips" class="cta-btn">See Where We're Going →</a></section>
+<footer>© 2026 The Real Vacations. All rights reserved. · <a href="mailto:info@therealvacations.com">info@therealvacations.com</a></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
+<script>
+var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
 
-    <section class="hero">
-        <div class="hero-content">
-            <h1>Why We Do What We Do</h1>
-            <p>Creating unforgettable group travel experiences for over 20 years</p>
-        </div>
-    </section>
-
-    <section>
-        <div class="section-inner">
-            <h2 class="section-title">Our Story</h2>
-            <div class="story-content">
-                <p>At The Real Vacations, we believe that the best memories are made when we step away from the chaos of life and come together to experience something extraordinary. Whether it's a solo adventure, a couple's getaway, or a gathering of friends and family, we know that travel is about more than just a destination—it's about making meaningful connections, sharing laughter, and creating memories that last a lifetime.</p>
-                <p>But here's the thing: we also know how stressful it can be to plan the perfect trip. Life is hectic. The constant juggling of work, schedules, and responsibilities leaves little room for much else. And when it comes to travel, finding the time, energy, and patience to plan a trip that everyone will enjoy can feel overwhelming. From booking flights to selecting the right hotel, arranging transportation, discovering great places to eat, and managing logistics, it can become more of a chore than a vacation.</p>
-                <div class="highlight-text">
-                    <p>For us, the desire to make travel easier was born from a simple family tradition that has been with us for over 20 years. Every December 26th, regardless of the circumstances, we gather as a family to create new memories, explore new places, and escape the stresses of daily life. We call it <strong>"Cates 26"</strong>.</p>
-                </div>
-                <p>It serves as a reminder that, no matter how busy life gets, we must make time for the things that matter most. But as our family grew, so did the challenges of coordinating the perfect trip. We were a growing family—siblings, cousins, children—and booking for everyone felt like a never-ending puzzle. Flights, accommodations, transportation, finding the best places to eat, and all the details that come with planning a trip—it started to feel overwhelming. The joy of being together was quickly overshadowed by the stress of trying to make it all come together.</p>
-                <p><strong>And that's when The Real Vacations was born.</strong></p>
-                <p>I realized there had to be a better way—an easier, stress-free way to plan group trips without the endless back-and-forth between websites, the comparing of prices, or the anxiety of hoping everything would go smoothly. The Real Vacations was created to take that weight off your shoulders.</p>
-                <p>We specialize in curated, all-inclusive group trips that make travel simple, affordable, and, most importantly, stress-free. Whether it's a family reunion, a company retreat, a group of friends, or even a destination music event like SweatFest Punta Cana, we handle all the details so you don't have to. Imagine a trip where you can simply show up, and everything—flights, accommodations, transportation, and VIP experiences—is already taken care of. No stress. No hassle. Just the freedom to enjoy the moment and each other's company.</p>
-                <p>What's even better is that we offer customized group trips, designed specifically for your needs. Whether you're planning a family vacation where everyone can finally escape the everyday and enjoy quality time together, a team-building retreat for your company, or a celebration with friends, we curate experiences tailored to your unique group. From exclusive concerts and festivals to sporting events and cultural celebrations, we ensure your trip aligns with what you love most.</p>
-                <div class="highlight-text">
-                    <p>Here's the relief: You won't have to spend hours, days, or weeks planning. No more endless searches or comparing prices. You won't have to worry about the details that usually leave you stressed and frustrated. <strong>We take care of everything, so you can focus on what really matters—the experience.</strong></p>
-                </div>
-                <p>We understand that the most valuable part of travel is the time you spend together. That's why we're here to ensure that you don't just get away, but you enjoy the journey—without all the anxiety. We offer flexibility in payments, allowing larger groups to plan without the burden of paying everything up front. Whether it's a family vacation, a corporate retreat, or a group of friends looking to reconnect, we make travel easy, affordable, and stress-free.</p>
-                <p>The Real Vacations is about more than just a trip. It's about offering you comfort, relief, and that confidence that comes with knowing everything is taken care of. It's about giving you the freedom to create the memories you've been waiting for—without the stress, the frustration, or the confusion.</p>
-                <p>So, are you ready to let go of the planning stress and finally have a vacation that's everything you've dreamed of? With The Real Vacations, your perfect trip is just a click away. We'll take care of the details, so you can focus on what truly matters—being together.</p>
-                <p><strong>Welcome to The Real Vacations, where your dream trip becomes a reality—effortlessly.</strong></p>
-            </div>
-        </div>
-    </section>
-
-    <section style="background: #faf5ff; padding: 60px 5%; text-align: center;">
-        <img src="trv_collage_820x1000.png" alt="Creating Real Moments - The Real Vacations" style="max-width: 820px; width: 100%; height: auto; border-radius: 16px; box-shadow: 0 8px 30px rgba(107, 45, 139, 0.2);">
-    </section>
-
-    <section class="section-alt">
-        <h2 class="section-title">What We Stand For</h2>
-        <div class="values-grid">
-            <div class="value-card"><div class="value-icon">🤝</div><h3>Connection First</h3><p>We believe travel is about more than destinations—it's about the people you experience them with. Every trip we design prioritizes connection and community.</p></div>
-            <div class="value-card"><div class="value-icon">💎</div><h3>Quality Matters</h3><p>From the hotels we choose to the experiences we curate, we never cut corners. You deserve excellence, and that's what we deliver every single time.</p></div>
-            <div class="value-card"><div class="value-icon">🎯</div><h3>Intentional Experiences</h3><p>Every detail is chosen with purpose. We don't just book trips—we craft experiences that reflect your interests, celebrate your culture, and honor your time.</p></div>
-            <div class="value-card"><div class="value-icon">💪</div><h3>Accessibility & Flexibility</h3><p>Great travel shouldn't require a trust fund. Our flexible payment plans and deposit options make unforgettable experiences accessible to everyone.</p></div>
-            <div class="value-card"><div class="value-icon">🌍</div><h3>Cultural Celebration</h3><p>We celebrate the richness of all cultures through travel. Every trip is an opportunity to honor traditions, explore new perspectives, and bring people together across all backgrounds.</p></div>
-            <div class="value-card"><div class="value-icon">❤️</div><h3>Peace of Mind</h3><p>We handle every detail so you don't have to. From booking to departure, you'll have 24/7 support and the confidence that everything is taken care of.</p></div>
-        </div>
-    </section>
-
-    <section>
-        <h2 class="section-title">By the Numbers</h2>
-        <div class="stats-grid">
-            <div class="stat-item"><div class="stat-number">20+</div><div class="stat-label">Years of Experience</div></div>
-            <div class="stat-item"><div class="stat-number">1,500+</div><div class="stat-label">Happy Travelers</div></div>
-            <div class="stat-item"><div class="stat-number">50+</div><div class="stat-label">Trips Organized</div></div>
-            <div class="stat-item"><div class="stat-number">100%</div><div class="stat-label">Commitment to Excellence</div></div>
-        </div>
-    </section>
-
-    <section class="cta-section">
-        <h2>Ready to Travel with Us?</h2>
-        <p>Let's create your next unforgettable experience together.</p>
-        <a href="/trips" class="cta-button">See Where We're Going →</a>
-    </section>
-
-    <!-- ✅ FIX: Clean footer with Blog, clean email -->
-    <footer>
-        <div class="footer-grid">
-            <div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div>
-            <div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/real-stories">Real Stories</a><a href="/blog">Blog</a></div>
-            <div class="footer-col"><h4>Resources</h4><a href="/resources">Travel Resources</a><a href="how-it-works.html#faq">FAQ</a><a href="/contact">Group Leader Program</a></div>
-            <div class="footer-col"><h4>Contact Us</h4><a href="/cdn-cgi/l/email-protection#82e1edecf6e3e1f6c2f6eae7f0e7e3eef4e3e1e3f6ebedecf1ace1edef"><span class="__cf_email__" data-cfemail="97f4f8f9e3f6f4e3d7e3fff2e5f2f6fbe1f6f4f6e3fef8f9e4b9f4f8fa">[email&#160;protected]</span></a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a
-    </div>
-          <div style="text-align:center; margin-bottom:20px;"><a href="
-<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
+async function loadAbout(){
+  var res=await _sb.from('about_content').select('*').eq('id',1).single();
+  var a=res.data;
+  if(!a)return;
+  if(a.story_text)document.getElementById('storyText').textContent=a.story_text;
+  if(a.years_experience)document.getElementById('statYears').textContent=a.years_experience+'+';
+  if(a.happy_travelers)document.getElementById('statTravelers').textContent=a.happy_travelers.toLocaleString()+'+';
+  if(a.trips_organized)document.getElementById('statTrips').textContent=a.trips_organized+'+';
+  if(a.commitment_text)document.getElementById('statCommitment').textContent=a.commitment_text;
+  if(a.values_json){
+    var vals=typeof a.values_json==='string'?JSON.parse(a.values_json):a.values_json;
+    document.getElementById('valuesGrid').innerHTML=vals.map(function(v){
+      return '<div class="value-card"><div class="value-icon">'+v.icon+'</div><h3>'+v.title+'</h3><p>'+v.desc+'</p></div>';
+    }).join('');
+  }
+}
+loadAbout();
+</script>
 </body>
 </html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Trips | The Real Vacations</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#f5f5f5;color:#333}
+nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center}nav img{height:52px}
+.nav-right{display:flex;gap:12px;align-items:center}.nav-link{color:#c084fc;font-size:13px;font-weight:600;text-decoration:none}.nav-link:hover{color:#fff}
+.nav-logout{background:#c084fc;color:#1a0533;padding:8px 16px;border-radius:20px;cursor:pointer;border:none;font-weight:600}
+.container{max-width:900px;margin:0 auto;padding:40px 24px}
+.welcome{margin-bottom:32px}.welcome h1{font-size:28px;color:#1a0533;margin-bottom:4px}.welcome p{color:#666;font-size:15px}
+.trip-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin-bottom:24px}
+.trip-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+.trip-header h2{font-size:22px;color:#1a0533}.trip-header .status{padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700}
+.status-pending{background:#fef3c7;color:#92400e}.status-confirmed{background:#d1fae5;color:#065f46}.status-overdue{background:#fee2e2;color:#991b1b}
+.countdown-strip{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px}
+.countdown-strip h3{font-size:14px;margin-bottom:8px;opacity:0.9}.countdown-nums{display:flex;justify-content:center;gap:16px}
+.cd-box{text-align:center}.cd-box .n{font-size:32px;font-weight:800;display:block}.cd-box .l{font-size:10px;text-transform:uppercase;opacity:0.8}
+.progress-section{margin-bottom:24px}.progress-bar{background:#e5e7eb;border-radius:50px;height:20px;overflow:hidden;margin:8px 0}
+.progress-fill{background:linear-gradient(90deg,#22c55e,#16a34a);height:100%;border-radius:50px;transition:width 0.5s}
+.progress-labels{display:flex;justify-content:space-between;font-size:13px;color:#555}
+.schedule-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f0f0}
+.schedule-item:last-child{border:none}.schedule-item .date{font-weight:600;color:#1a0533}.schedule-item .amount{font-weight:700;color:#7c3aed}
+.schedule-item .done{color:#22c55e}.schedule-item .pending-lbl{color:#f59e0b;font-size:12px}
+.no-trips{text-align:center;padding:60px 24px}.no-trips h2{color:#1a0533;margin-bottom:12px}.no-trips p{color:#666;margin-bottom:24px}
+.btn{display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:14px;text-decoration:none}
+.btn:hover{background:#6d28d9}
+.section-title{font-size:16px;font-weight:700;color:#1a0533;margin:20px 0 12px}
+.update-card-link{display:inline-block;margin-top:16px;color:#7c3aed;font-weight:600;font-size:13px;text-decoration:none}
+@media(max-width:768px){nav{padding:12px 16px}.container{padding:20px 16px}.countdown-nums{gap:10px}.cd-box .n{font-size:24px}}
+</style>
+</head>
+<body>
+<nav>
+    <a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a>
+    <div class="nav-right">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/trips" class="nav-link">Trips</a>
+        <button class="nav-logout" onclick="logout()">Logout</button>
+    </div>
+</nav>
+<div class="container">
+    <div class="welcome"><h1 id="welcomeMsg">Welcome back!</h1><p>Your trips, payments, and travel details — all in one place.</p></div>
+    <div id="tripsContainer"><p>Loading your trips...</p></div>
+</div>
+<script type="module">
+import { supabase } from './js/supabase-client.js';
+import { handleLogout } from './js/auth.js';
+window.logout = async function() { await handleLogout(); }
+
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) { window.location.href = '/login'; }
+
+// Check if admin — redirect to admin dashboard
+const { data: adminCheck } = await supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle();
+if (adminCheck) { window.location.href = '/dashboard'; }
+
+const { data: profile } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
+if (profile) document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + profile.first_name + '!';
+
+const { data: bookings } = await supabase.from('bookings').select('*, trips(*), payment_schedule(*), payment_history(*)').eq('user_id', user.id).order('created_at', { ascending: false });
+const container = document.getElementById('tripsContainer');
+
+if (!bookings || bookings.length === 0) {
+    container.innerHTML = '<div class="no-trips"><h2>No trips booked yet</h2><p>Browse our curated group experiences and book your next adventure.</p><a href="/trips" class="btn">Explore Trips →</a></div>';
+} else {
+    let html = '';
+    for (const b of bookings) {
+        const trip = b.trips || {};
+        const pct = b.total_amount > 0 ? Math.round((b.amount_paid / b.total_amount) * 100) : 0;
+        const sc = b.status === 'confirmed' ? 'confirmed' : b.status === 'overdue' ? 'overdue' : 'pending';
+        const tripDate = new Date(trip.dates_start); const now = new Date(); const diff = tripDate - now;
+        const days = Math.max(0, Math.floor(diff / 86400000)); const hrs = Math.max(0, Math.floor((diff % 86400000) / 3600000));
+        const scheduleHtml = (b.payment_schedule || []).sort((a,b) => a.payment_number - b.payment_number).map(p => {
+            const isDone = p.status === 'completed';
+            return '<div class="schedule-item"><div><span class="date">Payment ' + p.payment_number + '</span><br><span style="font-size:12px;color:#999;">' + p.due_date + '</span></div><div><span class="amount ' + (isDone ? 'done' : '') + '">$' + (p.amount_due / 100).toFixed(2) + (isDone ? ' ✓' : '') + '</span>' + (!isDone ? '<br><span class="pending-lbl">Scheduled</span>' : '') + '</div></div>';
+        }).join('');
+        const historyHtml = (b.payment_history || []).sort((a,b) => new Date(b.payment_date) - new Date(a.payment_date)).map(p => {
+            return '<div class="schedule-item"><div><span style="font-size:13px;">' + new Date(p.payment_date).toLocaleDateString() + '</span></div><div><span class="amount ' + (p.status === 'succeeded' ? 'done' : '') + '">$' + (p.amount / 100).toFixed(2) + (p.status === 'succeeded' ? ' ✓' : ' ✕') + '</span></div></div>';
+        }).join('');
+        html += '<div class="trip-card"><div class="trip-header"><h2>' + trip.title + '</h2><span class="status status-' + sc + '">' + b.status.toUpperCase() + '</span></div>' +
+            (diff > 0 ? '<div class="countdown-strip"><h3>Trip starts in</h3><div class="countdown-nums"><div class="cd-box"><span class="n">' + days + '</span><span class="l">Days</span></div><div class="cd-box"><span class="n">' + hrs + '</span><span class="l">Hours</span></div></div></div>' : '') +
+            '<div class="progress-section"><div class="progress-labels"><span>$' + (b.amount_paid / 100).toFixed(2) + ' paid</span><span>$' + (b.total_amount / 100).toFixed(2) + ' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-labels"><span>' + pct + '% complete</span><span>Balance: $' + (b.balance_due / 100).toFixed(2) + '</span></div></div>' +
+            (scheduleHtml ? '<div class="section-title">Payment Schedule</div>' + scheduleHtml : '') +
+            (historyHtml ? '<div class="section-title">Payment History</div>' + historyHtml : '') +
+            '<a href="/update-payment-method" class="update-card-link">Update payment method →</a></div>';
+    }
+    container.innerHTML = html;
+}
+</script>
+</body>
+</html>

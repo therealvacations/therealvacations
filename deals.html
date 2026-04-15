@@ -5,383 +5,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Travel Deals | The Real Vacations</title>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'DM Sans', 'Segoe UI', Arial, sans-serif; color: #222; background: #faf5ff; }
-  a { text-decoration: none; color: inherit; }
-
-  /* NAV */
-  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
-  nav a img { height: 52px; }
-  .nav-center { display: flex; gap: 24px; flex-wrap: wrap; align-items: center; flex: 1; justify-content: center; }
-  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
-  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
-  .nav-links a:hover, .nav-links a.active { color: #c084fc; }
-  .nav-auth { display: flex; gap: 10px; }
-  .nav-login  { border: 2px solid #c084fc; color: #c084fc; padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: all 0.2s; }
-  .nav-login:hover  { background: #c084fc; color: #1a0533; }
-  .nav-signup { background: #c084fc; color: #1a0533; padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 700; transition: all 0.2s; }
-  .nav-signup:hover { background: #7c3aed; color: #fff; }
-
-  /* HERO */
-  .hero { background: linear-gradient(135deg, #1a0533 0%, #3b0764 60%, #6b21a8 100%); color: #fff; padding: 60px 24px 50px; text-align: center; position: relative; overflow: hidden; }
-  .hero::after { content: '💸'; position: absolute; font-size: 200px; right: -20px; bottom: -30px; opacity: 0.06; line-height: 1; }
-  .hero-tag { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; color: #c084fc; font-weight: 700; margin-bottom: 14px; }
-  .hero h1 { font-size: clamp(26px, 4vw, 44px); font-weight: 800; line-height: 1.15; margin-bottom: 14px; }
-  .hero h1 span { color: #c084fc; }
-  .hero p { font-size: 16px; color: #e9d5ff; max-width: 560px; margin: 0 auto 28px; line-height: 1.6; }
-  .hero-note { font-size: 13px; color: rgba(255,255,255,0.5); font-style: italic; }
-
-  /* TRIP TABS */
-  .trip-tabs { background: #1a0533; padding: 0 24px; display: flex; justify-content: center; border-bottom: 1px solid rgba(192,132,252,0.2); }
-  .trip-tab { color: #aaa; font-size: 14px; font-weight: 600; padding: 16px 24px; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; white-space: nowrap; }
-  .trip-tab:hover { color: #c084fc; }
-  .trip-tab.active { color: #c084fc; border-bottom-color: #c084fc; }
-
-  /* MAIN */
-  .main { max-width: 1200px; margin: 0 auto; padding: 48px 24px; }
-  .section-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #7c3aed; font-weight: 700; margin-bottom: 8px; }
-  .section-title { font-size: clamp(20px, 3vw, 28px); font-weight: 800; color: #1a0533; margin-bottom: 6px; }
-  .section-sub { font-size: 14px; color: #666; margin-bottom: 28px; line-height: 1.5; }
-
-  /* DEALS GRID */
-  .deals-section { margin-bottom: 56px; }
-  .deals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
-  .deal-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 3px 16px rgba(0,0,0,0.07); border: 2px solid #f3e8ff; transition: all 0.2s; }
-  .deal-card:hover { border-color: #c084fc; transform: translateY(-4px); box-shadow: 0 10px 32px rgba(124,58,237,0.14); }
-  .deal-card-header { padding: 22px 22px 16px; display: flex; align-items: center; gap: 14px; border-bottom: 1px solid #f3e8ff; }
-  .deal-icon { font-size: 36px; flex-shrink: 0; }
-  .deal-header-text h3 { font-size: 16px; font-weight: 800; color: #1a0533; margin-bottom: 3px; }
-  .deal-header-text .deal-badge { font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; background: #f3e8ff; color: #7c3aed; padding: 3px 10px; border-radius: 20px; display: inline-block; }
-  .deal-card-body { padding: 18px 22px; }
-  .deal-card-body p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 14px; }
-  .deal-highlight { background: linear-gradient(135deg, #faf5ff, #f3e8ff); border-radius: 10px; padding: 12px 14px; margin-bottom: 16px; font-size: 13px; color: #1a0533; font-weight: 600; }
-  .deal-highlight span { color: #7c3aed; }
-  .deal-btn { display: block; text-align: center; background: #7c3aed; color: #fff; padding: 12px; border-radius: 50px; font-weight: 700; font-size: 14px; transition: all 0.2s; }
-  .deal-btn:hover { background: #6d28d9; transform: translateY(-1px); }
-  .deal-btn.green { background: #22c55e; }
-  .deal-btn.green:hover { background: #16a34a; }
-  .deal-btn.gold { background: linear-gradient(135deg, #d97706, #b45309); }
-  .deal-btn.gold:hover { opacity: 0.9; }
-  .deal-note { font-size: 11px; color: #9ca3af; text-align: center; margin-top: 8px; }
-
-  /* FEATURED DEAL */
-  .featured-deal { background: linear-gradient(135deg, #1a0533, #6b21a8); border-radius: 24px; padding: 36px; margin-bottom: 56px; color: #fff; display: flex; align-items: center; gap: 32px; flex-wrap: wrap; }
-  .featured-icon { font-size: 64px; flex-shrink: 0; }
-  .featured-content { flex: 1; min-width: 240px; }
-  .featured-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #c084fc; font-weight: 700; margin-bottom: 10px; }
-  .featured-content h2 { font-size: clamp(20px, 3vw, 28px); font-weight: 800; margin-bottom: 10px; }
-  .featured-content p { font-size: 14px; color: #c4a8e6; line-height: 1.6; margin-bottom: 20px; }
-  .featured-btn { display: inline-block; background: #22c55e; color: #fff; padding: 14px 32px; border-radius: 50px; font-weight: 700; font-size: 15px; transition: all 0.2s; }
-  .featured-btn:hover { background: #16a34a; transform: translateY(-2px); }
-  .featured-price { font-size: 13px; color: #86efac; margin-top: 8px; }
-
-  /* INSURANCE SPOTLIGHT */
-  .insurance-card { background: linear-gradient(135deg, #0f172a, #1e3a5f); border-radius: 20px; padding: 32px; color: #fff; margin-bottom: 56px; display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
-  .insurance-left { flex: 1; min-width: 240px; }
-  .insurance-tag { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #60a5fa; font-weight: 700; margin-bottom: 10px; }
-  .insurance-left h2 { font-size: 22px; font-weight: 800; margin-bottom: 12px; }
-  .insurance-left p { font-size: 14px; color: rgba(255,255,255,0.7); line-height: 1.7; margin-bottom: 20px; }
-  .insurance-perks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
-  .insurance-perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: rgba(255,255,255,0.85); }
-  .insurance-perk::before { content: '✓'; color: #22c55e; font-weight: 700; flex-shrink: 0; }
-  .insurance-btn { display: inline-block; background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; padding: 13px 28px; border-radius: 50px; font-weight: 700; font-size: 14px; transition: all 0.2s; }
-  .insurance-btn:hover { opacity: 0.9; transform: translateY(-2px); }
-  .insurance-price { font-size: 24px; font-weight: 800; color: #60a5fa; }
-  .insurance-right { text-align: center; }
-  .insurance-right .insurance-price-label { font-size: 12px; color: rgba(255,255,255,0.5); margin-bottom: 6px; }
-
-  /* TRIP PROMO BAR */
-  .trip-promo { background: linear-gradient(90deg, #7c3aed, #a855f7); color: #fff; border-radius: 16px; padding: 24px 28px; margin-bottom: 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
-  .trip-promo h3 { font-size: 17px; font-weight: 800; margin-bottom: 4px; }
-  .trip-promo p { font-size: 13px; opacity: 0.85; }
-  .trip-promo-btn { background: #fff; color: #7c3aed; padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 13px; white-space: nowrap; transition: all 0.2s; display: inline-block; }
-  .trip-promo-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(0,0,0,0.2); }
-
-  /* FOOTER */
-  footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
-  .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
-  .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-  .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; }
-  .footer-col a:hover { color: #c084fc; }
-  .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
-
-  @media (max-width: 768px) {
-    nav { padding: 12px 20px; }
-    .nav-center { flex-direction: column; gap: 10px; }
-    .nav-links { display: none; }
-    .featured-deal { flex-direction: column; gap: 20px; }
-    .insurance-card { flex-direction: column; }
-    .trip-tabs { overflow-x: auto; justify-content: flex-start; }
-    .trip-tab { padding: 14px 16px; font-size: 13px; }
-  }
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
+.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500}.nav-links a:hover{color:#c084fc}
+.hero{background:linear-gradient(135deg,#1a0533,#3b0764,#6b21a8);color:#fff;text-align:center;padding:70px 24px 60px}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}
+.section{max-width:1100px;margin:0 auto;padding:60px 24px}
+.filter-bar{background:#faf5ff;padding:20px 24px;text-align:center;border-bottom:1px solid #f0e6ff}
+.filter-tag{display:inline-block;padding:8px 20px;margin:4px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;border:2px solid #e0d0f0;color:#6b21a8;background:#fff}
+.filter-tag:hover,.filter-tag.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.deals-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px}
+.deal-card{background:#faf5ff;border-radius:20px;padding:32px 24px;text-align:center;border:2px solid #f3e8ff;transition:transform 0.2s}
+.deal-card:hover{transform:translateY(-4px);border-color:#c084fc}
+.deal-icon{font-size:42px;margin-bottom:16px}.deal-card h3{font-size:18px;font-weight:700;color:#1a0533;margin-bottom:10px}
+.deal-card p{font-size:14px;color:#555;margin-bottom:18px}
+.deal-btn{display:inline-block;background:#7c3aed;color:#fff;padding:10px 24px;border-radius:50px;font-weight:600;font-size:14px}.deal-btn:hover{background:#6d28d9}
+.cta{background:linear-gradient(135deg,#1a0533,#6b21a8);color:#fff;text-align:center;padding:60px 24px}
+.cta h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:28px}
+.cta-btn{background:#22c55e;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;display:inline-block}.cta-btn:hover{background:#16a34a}
+footer{background:#0f0620;color:#ccc;padding:40px;text-align:center;font-size:12px}footer a{color:#c084fc}
+@media(max-width:768px){.nav-links{display:none}.deals-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
+<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div></nav>
+<section class="hero"><h1>Travel Deals & Perks</h1><p>Real Vacationers get the best deals on flights, hotels, gear, and experiences</p></section>
+<div class="filter-bar"><span class="filter-tag active" onclick="filterDeals('all',this)">All</span><span class="filter-tag" onclick="filterDeals('flights',this)">✈️ Flights</span><span class="filter-tag" onclick="filterDeals('hotels',this)">🏨 Hotels</span><span class="filter-tag" onclick="filterDeals('gear',this)">🎒 Gear</span><span class="filter-tag" onclick="filterDeals('experiences',this)">🎟️ Experiences</span></div>
+<div class="section"><div class="deals-grid" id="dealsGrid"><p>Loading deals...</p></div></div>
+<section class="cta"><h2>Ready to Travel?</h2><a href="/trips" class="cta-btn">Browse Our Trips →</a></section>
+<footer>© 2026 The Real Vacations. All rights reserved. · <a href="mailto:info@therealvacations.com">info@therealvacations.com</a></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
+<script>
+var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
+var allDeals=[];
 
-<nav>
-  <a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a>
-  <div class="nav-center">
-    <div class="nav-links">
-      <a href="/">Home</a>
-      <a href="/trips">Trips</a>
-      <a href="/deals" class="active">Deals</a>
-      <a href="/real-stories">Real Stories</a>
-      <a href="/about">About</a>
-      <a href="/resources">Resources</a>
-      <a href="/contact">Contact</a>
-    </div>
-    <div class="nav-auth">
-      <a href="/login" class="nav-login">Login</a>
-      <a href="/signup" class="nav-signup">Sign Up</a>
-    </div>
-  </div>
-</nav>
+async function loadDeals(){
+  var res=await _sb.from('deals').select('*').eq('is_active',true).order('sort_order');
+  allDeals=res.data||[];
+  renderDeals(allDeals);
+}
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-tag">Travel Smarter</div>
-  <h1>Deals We Found <span>Just for You</span></h1>
-  <p>Flights, hotels, insurance, and experiences — curated around your actual trip dates. We did the searching so you don't have to.</p>
-  <div class="hero-note">Affiliate links may apply. We only share what we'd actually book ourselves.</div>
-</div>
+function renderDeals(deals){
+  var grid=document.getElementById('dealsGrid');
+  if(!deals.length){grid.innerHTML='<p>No deals available right now. Check back soon!</p>';return;}
+  grid.innerHTML=deals.map(function(d){
+    return '<div class="deal-card" data-cat="'+d.category+'"><div class="deal-icon">'+d.icon+'</div><h3>'+d.title+'</h3><p>'+d.description+'</p>'+(d.link_url?'<a href="'+d.link_url+'" class="deal-btn">'+d.link_label+'</a>':'')+'</div>';
+  }).join('');
+}
 
-<!-- TRIP TABS -->
-<div class="trip-tabs">
-  <div class="trip-tab active" onclick="setTab(this,'all')">🌍 All Deals</div>
-  <div class="trip-tab" onclick="setTab(this,'essence')">🎵 Essence — New Orleans</div>
-  <div class="trip-tab" onclick="setTab(this,'maryj')">🎤 Mary J — Las Vegas</div>
-  <div class="trip-tab" onclick="setTab(this,'keith')">🎷 Keith Sweat — Atlanta</div>
-</div>
-
-<div class="main">
-
-  <!-- FEATURED: TRAVEL INSURANCE -->
-  <div class="insurance-card">
-    <div class="insurance-left">
-      <div class="insurance-tag">⭐ We Always Recommend This</div>
-      <h2>🛡️ Protect Your Trip Investment</h2>
-      <p>You've already put down a deposit. Don't let an unexpected emergency cost you the whole trip. Travel insurance covers cancellations, medical emergencies, lost luggage and more.</p>
-      <div class="insurance-perks">
-        <div class="insurance-perk">Trip cancellation & interruption coverage</div>
-        <div class="insurance-perk">Emergency medical & evacuation</div>
-        <div class="insurance-perk">Lost, stolen, or delayed baggage</div>
-        <div class="insurance-perk">24/7 travel assistance hotline</div>
-        <div class="insurance-perk">Cancel for any reason options available</div>
-      </div>
-      <a href="https://klook.tpm.li/wG7YCPzF" target="_blank" class="insurance-btn">🛡️ Get Travel Insurance →</a>
-    </div>
-    <div class="insurance-right">
-      <div class="insurance-price-label">Plans starting from</div>
-      <div class="insurance-price">$29</div>
-      <div style="font-size:12px; color:rgba(255,255,255,0.4); margin-top:4px;">per trip</div>
-    </div>
-  </div>
-
-  <!-- FLIGHTS -->
-  <div class="deals-section">
-    <div class="section-label">✈️ Flights</div>
-    <div class="section-title">Book Your Flight</div>
-    <div class="section-sub">Compare hundreds of flights in seconds. We've pre-loaded your trip cities to save you time.</div>
-
-    <div class="deals-grid">
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">✈️</div>
-          <div class="deal-header-text">
-            <h3>Flights to New Orleans</h3>
-            <span class="deal-badge">Essence Fest · July 3–5</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Search and compare flights from hundreds of airlines to Louis Armstrong International (MSY). Book early for the best rates during Essence weekend.</p>
-          <div class="deal-highlight">💡 Tip: Fly in July 2 to arrive rested. <span>Thursday–Sunday flights fill fast.</span></div>
-          <a href="https://www.expedia.com/Flights" target="_blank" class="deal-btn">Search New Orleans Flights →</a>
-        </div>
-      </div>
-
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🎰</div>
-          <div class="deal-header-text">
-            <h3>Flights to Las Vegas</h3>
-            <span class="deal-badge">Mary J Blige · July 18</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Fly into Harry Reid International (LAS). Las Vegas has tons of flight options — you can usually find great deals even close to the date.</p>
-          <div class="deal-highlight">💡 Tip: Same-day flights back are totally fine — Vegas never sleeps. <span>Book early if you want the best prices.</span></div>
-          <a href="https://www.expedia.com/Flights" target="_blank" class="deal-btn">Search Las Vegas Flights →</a>
-        </div>
-      </div>
-
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🍑</div>
-          <div class="deal-header-text">
-            <h3>Flights to Atlanta</h3>
-            <span class="deal-badge">Keith Sweat · August 29</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Fly into Hartsfield-Jackson (ATL) — one of the busiest hubs in the world. If you're already in Atlanta, no flight needed! Check hotels below.</p>
-          <div class="deal-highlight">💡 Tip: <span>State Farm Arena is in downtown ATL.</span> Stay within 1 mile to walk to the show.</div>
-          <a href="https://www.expedia.com/Flights" target="_blank" class="deal-btn">Search Atlanta Flights →</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- HOTELS -->
-  <div class="deals-section">
-    <div class="section-label">🏨 Hotels</div>
-    <div class="section-title">Extend Your Stay</div>
-    <div class="section-sub">Your TRV package includes hotel nights — but want to arrive early or stay late? We found you options.</div>
-
-    <div class="deals-grid">
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🎺</div>
-          <div class="deal-header-text">
-            <h3>New Orleans Hotels</h3>
-            <span class="deal-badge">July 1–7 area</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>The French Quarter, Garden District, and CBD are all great bases for Essence weekend. Book early — NOLA fills up fast in July.</p>
-          <div class="deal-highlight">🏨 Options from <span>$99/night</span> near the Superdome</div>
-          <a href="https://www.expedia.com/Hotels" target="_blank" class="deal-btn">Browse NOLA Hotels →</a>
-        </div>
-      </div>
-
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🎲</div>
-          <div class="deal-header-text">
-            <h3>Las Vegas Hotels</h3>
-            <span class="deal-badge">July 16–20 area</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Your package already includes Park MGM. Want to upgrade to a suite or arrive early for more Vegas fun? Compare options on the Strip.</p>
-          <div class="deal-highlight">🏨 Strip hotels from <span>$79/night</span> on non-peak nights</div>
-          <a href="https://www.expedia.com/Hotels" target="_blank" class="deal-btn">Browse Vegas Hotels →</a>
-        </div>
-      </div>
-
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🏙️</div>
-          <div class="deal-header-text">
-            <h3>Atlanta Hotels</h3>
-            <span class="deal-badge">Aug 28–30 area</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Your package includes Omni Atlanta, connected to State Farm Arena. Want a different option or extra nights? Downtown ATL has great choices.</p>
-          <div class="deal-highlight">🏨 Downtown options from <span>$89/night</span></div>
-          <a href="https://www.expedia.com/Hotels" target="_blank" class="deal-btn">Browse Atlanta Hotels →</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- EXPERIENCES -->
-  <div class="deals-section">
-    <div class="section-label">🎟️ Add-On Experiences</div>
-    <div class="section-title">Make It Unforgettable</div>
-    <div class="section-sub">The concert is just one night. Here's what to do with the rest of your time.</div>
-
-    <!-- Trip promo bars -->
-    <div class="trip-promo">
-      <div>
-        <h3>🎵 In New Orleans for Essence? Here's What to Add.</h3>
-        <p>French Quarter food tours · Jazz cruises · Swamp tours · Cooking classes with local chefs</p>
-      </div>
-      <a href="https://www.tripadvisor.com/Attractions-g60864-Activities-New_Orleans_Louisiana.html" target="_blank" class="trip-promo-btn">Explore NOLA →</a>
-    </div>
-
-    <div class="trip-promo" style="background: linear-gradient(90deg, #c2410c, #ea580c);">
-      <div>
-        <h3>🎰 In Vegas for Mary J? Don't Just See the Show.</h3>
-        <p>VIP nightclub tables · Magic shows · Helicopter rides over the Strip · Celebrity chef dinners</p>
-      </div>
-      <a href="https://www.tripadvisor.com/Attractions-g45963-Activities-Las_Vegas_Nevada.html" target="_blank" class="trip-promo-btn">Explore Vegas →</a>
-    </div>
-
-    <div class="trip-promo" style="background: linear-gradient(90deg, #0f766e, #0d9488);">
-      <div>
-        <h3>🍑 In Atlanta for Keith Sweat? Explore the A.</h3>
-        <p>Black-owned restaurant crawls · Auburn Avenue historical tours · Rooftop bars · Piedmont Park</p>
-      </div>
-      <a href="https://www.tripadvisor.com/Attractions-g60898-Activities-Atlanta_Georgia.html" target="_blank" class="trip-promo-btn">Explore Atlanta →</a>
-    </div>
-  </div>
-
-  <!-- CARS & GEAR -->
-  <div class="deals-section">
-    <div class="section-label">🚗 Cars & Gear</div>
-    <div class="section-title">Everything Else You Need</div>
-    <div class="section-sub">Car rentals, luggage, travel gear — sorted.</div>
-
-    <div class="deals-grid">
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🚗</div>
-          <div class="deal-header-text">
-            <h3>Car Rentals</h3>
-            <span class="deal-badge">Compare Prices</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Need wheels when you land? Compare rental prices from all major companies. Best rates are usually found 2–3 weeks in advance.</p>
-          <a href="https://www.expedia.com/Car-Rentals" target="_blank" class="deal-btn">Compare Car Rentals →</a>
-        </div>
-      </div>
-
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🎒</div>
-          <div class="deal-header-text">
-            <h3>Travel Gear</h3>
-            <span class="deal-badge">Amazon Picks</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Luggage, portable chargers, travel pillows, packing cubes, neck pillows — gear we actually recommend for our trips.</p>
-          <a href="https://www.amazon.com/s?k=travel+essentials" target="_blank" class="deal-btn gold">Shop Travel Gear →</a>
-        </div>
-      </div>
-
-      <div class="deal-card">
-        <div class="deal-card-header">
-          <div class="deal-icon">🗺️</div>
-          <div class="deal-header-text">
-            <h3>Viator Experiences</h3>
-            <span class="deal-badge">Tours & Activities</span>
-          </div>
-        </div>
-        <div class="deal-card-body">
-          <p>Book tours, experiences, and activities at all three of our trip cities. Thousands of options with real traveler reviews.</p>
-          <a href="https://www.viator.com/" target="_blank" class="deal-btn">Browse Experiences →</a>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- FOOTER -->
-<footer>
-  <div class="footer-grid">
-    <div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div>
-    <div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="/deals">Travel Deals</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/real-stories">Real Stories</a><a href="/blog">Blog</a></div>
-    <div class="footer-col"><h4>Your Trips</h4><a href="/essence-festival-new-orleans-july-3-5-2026">Essence Festival</a><a href="/mary-j-blige-my-life-my-story-las-vegas-july-18-2026">Mary J. Blige Vegas</a><a href="/keith-sweat-r-and-b-tour-atlanta-august-29-2026">Keith Sweat Atlanta</a></div>
-    <div class="footer-col"><h4>Contact Us</h4><a href="/cdn-cgi/l/email-protection#85e6eaebf1e4e6f1c5f1ede0f7e0e4e9f3e4e6e4f1eceaebf6abe6eae8"><span class="__cf_email__" data-cfemail="066569687267657246726e637463676a70676567726f6968752865696b">[email&#160;protected]</span></a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a Message</a></div>
-  </div>
-  <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">👥 Facebook</a></div>
-  <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
-</footer>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/emai
+function filterDeals(cat,el){
+  document.querySelectorAll('.filter-tag').forEach(function(t){t.classList.remove('active')});el.classList.add('active');
+  if(cat==='all')renderDeals(allDeals);else renderDeals(allDeals.filter(function(d){return d.category===cat}));
+}
+loadDeals();
+</script>
+</body>
+</html>

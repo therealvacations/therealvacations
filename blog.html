@@ -7,64 +7,97 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}.nav-center{display:flex;gap:24px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center}.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500;transition:color 0.2s}.nav-links a:hover{color:#c084fc}.nav-auth{display:flex;gap:10px}.nav-login{border:2px solid #c084fc;color:#c084fc;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-login:hover{background:#c084fc;color:#1a0533}.nav-signup{background:#c084fc;color:#1a0533;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-signup:hover{background:#7c3aed;color:#fff}.hero{background:linear-gradient(135deg,#1a0533 0%,#3b0764 60%,#6b21a8 100%);color:#fff;text-align:center;padding:70px 24px 60px}.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}.filter-bar{background:#faf5ff;padding:20px 24px;text-align:center;border-bottom:1px solid #f0e6ff}.filter-tag{display:inline-block;padding:8px 20px;margin:4px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:2px solid #e0d0f0;color:#6b21a8;background:#fff}.filter-tag:hover,.filter-tag.active{background:#7c3aed;color:#fff;border-color:#7c3aed}.blog-section{max-width:1100px;margin:0 auto;padding:60px 24px}.blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px}.blog-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);transition:transform 0.2s,box-shadow 0.2s;display:flex;flex-direction:column}.blog-card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,0.12)}.blog-card-img{height:200px;background-size:cover;background-position:center;position:relative}.blog-card-tag{position:absolute;top:14px;left:14px;background:#7c3aed;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;text-transform:uppercase;letter-spacing:1px}.blog-card-tag.green{background:#22c55e}.blog-card-tag.gold{background:#d4af37;color:#1a0533}.blog-card-tag.blue{background:#3b82f6}.blog-card-body{padding:24px;flex:1;display:flex;flex-direction:column}.blog-card-date{font-size:12px;color:#999;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}.blog-card-body h3{font-size:20px;font-weight:800;color:#1a0533;margin-bottom:10px;line-height:1.3}.blog-card-body p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px;flex:1}.blog-card-link{font-size:14px;font-weight:700;color:#7c3aed;transition:color 0.2s;display:inline-block;margin-bottom:12px}.blog-card-link:hover{color:#6d28d9}.partner-badge{display:inline-flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;padding:10px 18px;border-radius:10px;font-size:13px;color:#166534;font-weight:600;margin:12px 0}.blog-cta{background:linear-gradient(135deg,#1a0533,#6b21a8);color:#fff;text-align:center;padding:60px 24px;margin-top:20px}.blog-cta h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:12px}.blog-cta p{font-size:16px;color:#e9d5ff;max-width:500px;margin:0 auto 28px}.blog-cta-btn{background:#22c55e;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;display:inline-block;transition:background 0.2s,transform 0.15s}.blog-cta-btn:hover{background:#16a34a;transform:translateY(-2px)}footer{background:#0f0620;color:#ccc;padding:50px 40px 28px}.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:36px;max-width:1100px;margin:0 auto 36px}.footer-col h4{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px}.footer-col a,.footer-col p{color:#aaa;font-size:13px;line-height:2;display:block;transition:color 0.2s}.footer-col a:hover{color:#c084fc}.footer-bottom{border-top:1px solid #2d1b4e;padding-top:20px;text-align:center;font-size:12px;color:#666}@media(max-width:768px){.nav-links{display:none}.blog-grid{grid-template-columns:1fr}.hero{padding:50px 20px 40px}}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
+.nav-center{display:flex;gap:24px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center}
+.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500;transition:color 0.2s}.nav-links a:hover{color:#c084fc}
+.nav-auth{display:flex;gap:10px}.nav-login{border:2px solid #c084fc;color:#c084fc;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-login:hover{background:#c084fc;color:#1a0533}
+.nav-signup{background:#c084fc;color:#1a0533;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-signup:hover{background:#7c3aed;color:#fff}
+.hero{background:linear-gradient(135deg,#1a0533 0%,#3b0764 60%,#6b21a8 100%);color:#fff;text-align:center;padding:70px 24px 60px}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}
+.filter-bar{background:#faf5ff;padding:20px 24px;text-align:center;border-bottom:1px solid #f0e6ff}
+.filter-tag{display:inline-block;padding:8px 20px;margin:4px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:2px solid #e0d0f0;color:#6b21a8;background:#fff}
+.filter-tag:hover,.filter-tag.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
+.blog-section{max-width:1100px;margin:0 auto;padding:60px 24px}
+.blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px}
+.blog-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);transition:transform 0.2s;display:flex;flex-direction:column}
+.blog-card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,0.12)}
+.blog-card-body{padding:24px;flex:1;display:flex;flex-direction:column}
+.blog-card-date{font-size:12px;color:#999;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.blog-card-body h3{font-size:20px;font-weight:800;color:#1a0533;margin-bottom:10px;line-height:1.3}
+.blog-card-body p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px;flex:1}
+.blog-card-tag{display:inline-block;background:#7c3aed;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px}
+.blog-card-link{font-size:14px;font-weight:700;color:#7c3aed}
+.blog-full{max-width:800px;margin:0 auto;padding:40px 24px;display:none}
+.blog-full h2{font-size:28px;font-weight:800;color:#1a0533;margin-bottom:16px}
+.blog-full .content{font-size:15px;color:#555;line-height:1.8;white-space:pre-wrap}
+.blog-full .back{display:inline-block;margin-bottom:20px;color:#7c3aed;font-weight:600;cursor:pointer}
+.cta{background:linear-gradient(135deg,#1a0533,#6b21a8);color:#fff;text-align:center;padding:60px 24px}
+.cta h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:12px}.cta p{font-size:16px;color:#e9d5ff;max-width:500px;margin:0 auto 28px}
+.cta-btn{background:#22c55e;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;display:inline-block}.cta-btn:hover{background:#16a34a}
+footer{background:#0f0620;color:#ccc;padding:50px 40px 28px}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:36px;max-width:1100px;margin:0 auto 36px}
+.footer-col h4{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px}
+.footer-col a,.footer-col p{color:#aaa;font-size:13px;line-height:2;display:block}.footer-col a:hover{color:#c084fc}
+.footer-bottom{border-top:1px solid #2d1b4e;padding-top:20px;text-align:center;font-size:12px;color:#666}
+@media(max-width:768px){.nav-links{display:none}.blog-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-center"><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div><div class="nav-auth"><a href="/login" class="nav-login">Login</a><a href="/signup" class="nav-signup">Sign Up</a></div></div></nav>
-
 <section class="hero"><h1>Travel Blog & Guides</h1><p>Packing tips, travel documents, and everything you need to travel stress-free</p></section>
+<div class="filter-bar"><span class="filter-tag active" onclick="filterPosts('all',this)">All Posts</span><span class="filter-tag" onclick="filterPosts('packing',this)">Packing</span><span class="filter-tag" onclick="filterPosts('documents',this)">Documents</span><span class="filter-tag" onclick="filterPosts('tips',this)">Tips</span><span class="filter-tag" onclick="filterPosts('destination',this)">Destinations</span></div>
+<section class="blog-section"><div class="blog-grid" id="blogGrid"><p>Loading posts...</p></div></section>
+<div class="blog-full" id="blogFull"><span class="back" onclick="showGrid()">← Back to all posts</span><h2 id="blogFullTitle"></h2><div class="content" id="blogFullContent"></div></div>
+<section class="cta"><h2>Ready to Experience It Yourself?</h2><p>Stop reading about amazing trips—book one.</p><a href="/trips" class="cta-btn">Browse Our Trips →</a></section>
+<footer><div class="footer-grid"><div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px;margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div><div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a></div><div class="footer-col"><h4>Contact Us</h4><a href="mailto:info@therealvacations.com">info@therealvacations.com</a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a Message</a></div></div><div style="text-align:center;margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">👥 Facebook</a></div><div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
+<script>
+var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
+var allPosts=[];
+var tagColors={packing:'#22c55e',documents:'#d4af37',tips:'#3b82f6',destination:'#ef4444'};
 
-<div class="filter-bar"><span class="filter-tag active" onclick="filterPosts('all',this)">All Posts</span><span class="filter-tag" onclick="filterPosts('packing',this)">Packing</span><span class="filter-tag" onclick="filterPosts('documents',this)">Documents</span><span class="filter-tag" onclick="filterPosts('tips',this)">Tips</span></div>
+async function loadPosts(){
+  var res=await _sb.from('blog_posts').select('*').eq('is_published',true).order('created_at',{ascending:false});
+  allPosts=res.data||[];
+  renderPosts(allPosts);
+}
 
-<section class="blog-section"><div class="blog-grid">
+function renderPosts(posts){
+  var grid=document.getElementById('blogGrid');
+  if(!posts.length){grid.innerHTML='<p>No blog posts yet. Check back soon!</p>';return;}
+  grid.innerHTML=posts.map(function(p){
+    var d=new Date(p.created_at);var dateStr=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+    var color=tagColors[p.category]||'#7c3aed';
+    return '<div class="blog-card" data-category="'+p.category+'"><div class="blog-card-body"><span class="blog-card-tag" style="background:'+color+'">'+p.category+'</span><div class="blog-card-date">'+dateStr+'</div><h3>'+p.title+'</h3><p>'+(p.content||'').substring(0,150)+'...</p><a href="#" class="blog-card-link" onclick="showPost(\''+p.slug+'\');return false;">Read More →</a></div></div>';
+  }).join('');
+}
 
-<div class="blog-card" data-category="packing"><div class="blog-card-img" style="background-image:url('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80');background-color:#166534;"><span class="blog-card-tag green">Packing List</span></div><div class="blog-card-body"><div class="blog-card-date">March 2026</div><h3>The Ultimate Group Trip Packing List: What to Bring (and What to Leave Home)</h3><p>Whether you're headed to wine country, a music festival, or a beach resort — here's exactly what to pack for a stress-free group trip. Includes a printable checklist.</p><span class="partner-badge">✅ Featured on TripAdvisor</span><br><br><a href="#packing-guide" class="blog-card-link">Read the Packing Guide →</a></div></div>
+function filterPosts(cat,el){
+  document.querySelectorAll('.filter-tag').forEach(function(t){t.classList.remove('active')});
+  el.classList.add('active');
+  if(cat==='all')renderPosts(allPosts);
+  else renderPosts(allPosts.filter(function(p){return p.category===cat}));
+}
 
-<div class="blog-card" data-category="documents"><div class="blog-card-img" style="background-image:url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80');background-color:#92400e;"><span class="blog-card-tag gold">Travel Documents</span></div><div class="blog-card-body"><div class="blog-card-date">March 2026</div><h3>Travel Documents Checklist: Everything You Need Before You Go</h3><p>Passport, Real ID, TSA PreCheck, travel insurance — a complete guide to making sure your paperwork is squared away before departure day. Don't get caught at the airport.</p><span class="partner-badge">✅ Featured on TripAdvisor</span><br><br><a href="#documents-guide" class="blog-card-link">Read the Document Guide →</a></div></div>
+function showPost(slug){
+  var post=allPosts.find(function(p){return p.slug===slug});
+  if(!post)return;
+  document.getElementById('blogFullTitle').textContent=post.title;
+  document.getElementById('blogFullContent').textContent=post.content;
+  document.querySelector('.blog-section').style.display='none';
+  document.querySelector('.filter-bar').style.display='none';
+  document.getElementById('blogFull').style.display='block';
+  window.scrollTo(0,0);
+}
 
-<div class="blog-card" data-category="tips"><div class="blog-card-img" style="background-image:url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80');background-color:#1e40af;"><span class="blog-card-tag blue">Tips & Advice</span></div><div class="blog-card-body"><div class="blog-card-date">March 2026</div><h3>First Time Traveling with a Group? Here's What to Expect</h3><p>Nervous about your first group trip? We break down what happens from booking to departure day, what to expect on the ground, and why solo travelers love our groups.</p><br><a href="#first-timer-guide" class="blog-card-link">Read the Tips →</a></div></div>
+function showGrid(){
+  document.querySelector('.blog-section').style.display='block';
+  document.querySelector('.filter-bar').style.display='block';
+  document.getElementById('blogFull').style.display='none';
+}
 
-</div></section>
-
-<!-- BLOG CONTENT SECTIONS -->
-<section id="packing-guide" style="max-width:800px;margin:0 auto;padding:60px 24px 40px;border-bottom:1px solid #f0e6ff;">
-<h2 style="font-size:28px;font-weight:800;color:#1a0533;margin-bottom:20px;">The Ultimate Group Trip Packing List</h2>
-<p style="font-size:15px;color:#555;margin-bottom:20px;">Whether you're headed to wine country, a music festival, or a beach resort — here's what to bring:</p>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">✅ Essentials (Every Trip)</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>Valid photo ID / passport</li><li>Phone charger + portable battery pack</li><li>Comfortable walking shoes</li><li>Sunscreen + sunglasses</li><li>Light jacket or layer</li><li>Reusable water bottle</li><li>Any prescription medications</li><li>Copy of trip confirmation / itinerary</li><li>Travel insurance documents</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">🎵 For Music Festivals & Concerts</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>Earplugs (protect your hearing!)</li><li>Small crossbody bag or fanny pack</li><li>Comfortable outfit you can dance in</li><li>Cash for vendors</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">🍷 For Wine Country & Resort Trips</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>Smart casual outfits for dinners</li><li>Swimsuit</li><li>Hat for sun protection</li><li>Light cardigan for wine caves</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">🚫 Leave at Home</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>Expensive jewelry</li><li>More than 2 pairs of shoes</li><li>Full-size toiletries (travel sizes only)</li><li>Work laptop (it's vacation!)</li></ul>
-</section>
-
-<section id="documents-guide" style="max-width:800px;margin:0 auto;padding:60px 24px 40px;border-bottom:1px solid #f0e6ff;">
-<h2 style="font-size:28px;font-weight:800;color:#1a0533;margin-bottom:20px;">Travel Documents Checklist</h2>
-<p style="font-size:15px;color:#555;margin-bottom:20px;">Don't get caught at the airport. Here's everything you need squared away before departure:</p>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">📋 Required for All Domestic Trips</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>Valid government-issued photo ID (Real ID compliant for domestic flights)</li><li>Trip confirmation email / booking reference</li><li>Travel insurance policy (highly recommended)</li><li>Emergency contact information</li><li>Health insurance card</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">🌎 For International Trips</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>Valid passport (must not expire within 6 months of return date)</li><li>Visa (if required — check destination requirements)</li><li>Copy of passport stored separately from original</li><li>International phone plan or local SIM card</li><li>Currency exchange or international debit card</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">💡 Helpful Extras</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>TSA PreCheck or Global Entry</li><li>Digital copies of all documents in your email or cloud</li><li>Airline app with boarding pass saved</li><li>Hotel confirmation with address saved offline</li></ul>
-</section>
-
-<section id="first-timer-guide" style="max-width:800px;margin:0 auto;padding:60px 24px 40px;">
-<h2 style="font-size:28px;font-weight:800;color:#1a0533;margin-bottom:20px;">First Time Traveling with a Group?</h2>
-<p style="font-size:15px;color:#555;margin-bottom:20px;">Here's what to expect from booking to departure and beyond:</p>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">📅 Before the Trip</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li><strong>After booking:</strong> You'll receive a confirmation email with your trip details and payment schedule.</li><li><strong>2-3 weeks before:</strong> We create a private group chat so you can meet your fellow travelers.</li><li><strong>1 week before:</strong> You'll get your final itinerary, packing list, and meeting point details.</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">✈️ During the Trip</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li><strong>Airport:</strong> Many travelers coordinate flights — you might have company from takeoff!</li><li><strong>Arrival:</strong> Our team handles transfers. Just follow the plan.</li><li><strong>Activities:</strong> Everything is scheduled but not forced. Want to skip a group activity? No pressure.</li><li><strong>Solo travelers:</strong> You'll never feel alone. Group dinners, shared experiences, and good vibes bring everyone together naturally.</li></ul>
-<h3 style="font-size:18px;font-weight:700;color:#1a0533;margin:24px 0 12px;">💬 Tips from Experienced Travelers</h3>
-<ul style="padding-left:24px;font-size:14px;color:#555;line-height:2;"><li>"Come with an open mind. I traveled solo and left with 15 new friends." — Jessica M.</li><li>"Don't overpack. You'll want room for souvenirs!" — Terrence B.</li><li>"The group chat before the trip is gold. Use it!" — Angela M.</li></ul>
-</section>
-
-<section class="blog-cta"><h2>Ready to Experience It Yourself?</h2><p>Stop reading about amazing trips—book one. Spin the wheel for up to $500 off.</p><a href="/trips" class="blog-cta-btn">Browse Our Trips →</a></section>
-
-<footer><div class="footer-grid"><div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px;margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div><div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a></div><div class="footer-col"><h4>Contact Us</h4><a href="/cdn-cgi/l/email-protection#dcbfb3b2a8bdbfa89ca8b4b9aeb9bdb0aabdbfbda8b5b3b2aff2bfb3b1"><span class="__cf_email__" data-cfemail="63000c0d1702001723170b061106020f15020002170a0c0d104d000c0e">[email&#160;protected]</span></a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a Message</a></div></div><div style="text-align:center;margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">👥 Facebook</a></div><div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div></footer>
-
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>function filterPosts(cat,el){document.querySelector
+loadPosts();
+</script>
+</body>
+</html>

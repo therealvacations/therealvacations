@@ -200,7 +200,7 @@ window.handleSignup = async function() {
 
   try {
     await supabaseSignup({ email, password, firstName, lastName, phone });
-    window.location.href = '/dashboard';
+    window.location.href = '/my-trips';
   } catch (error) {
     alert('Signup failed: ' + error.message);
     btn.textContent = '🎉 Create My Free Account →';

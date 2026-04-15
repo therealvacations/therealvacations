@@ -3,142 +3,247 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | The Real Vacations</title>
+    <title>Admin Dashboard | The Real Vacations</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'DM Sans', sans-serif; background: #f5f5f5; color: #333; }
-        
         nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; }
         nav img { height: 52px; }
+        .nav-right { display: flex; gap: 12px; align-items: center; }
+        .nav-link { color: #c084fc; font-size: 13px; font-weight: 600; text-decoration: none; }
+        .nav-link:hover { color: #fff; }
         .nav-logout { background: #c084fc; color: #1a0533; padding: 8px 16px; border-radius: 20px; cursor: pointer; border: none; font-weight: 600; }
-        
-        .container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
-        h1 { margin-bottom: 32px; color: #1a0533; }
-        h2 { margin-bottom: 20px; }
-        
-        .tabs { display: flex; gap: 12px; margin-bottom: 32px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
-        .tab-btn { background: none; border: none; padding: 12px 20px; cursor: pointer; font-weight: 600; color: #999; font-size: 14px; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .container { max-width: 1300px; margin: 0 auto; padding: 40px 24px; }
+        h1 { margin-bottom: 8px; color: #1a0533; }
+        .admin-sub { color: #666; font-size: 14px; margin-bottom: 32px; }
+        .tabs { display: flex; gap: 8px; margin-bottom: 32px; border-bottom: 2px solid #e0e0e0; flex-wrap: wrap; }
+        .tab-btn { background: none; border: none; padding: 10px 16px; cursor: pointer; font-weight: 600; color: #999; font-size: 13px; border-bottom: 3px solid transparent; transition: 0.2s; white-space: nowrap; }
         .tab-btn.active { color: #7c3aed; border-bottom-color: #7c3aed; }
         .tab-btn:hover { color: #7c3aed; }
-        
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        
-        .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; background: #7c3aed; color: #fff; }
+        .btn { padding: 10px 20px; border-radius: 8px; border: none; cursor: pointer; font-weight: 600; background: #7c3aed; color: #fff; font-size: 13px; }
         .btn:hover { background: #6d28d9; }
-        
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 20px; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+        .btn-red { background: #ef4444; }
+        .btn-red:hover { background: #dc2626; }
+        .btn-green { background: #22c55e; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
         .card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        .card h3 { margin-bottom: 8px; color: #1a0533; }
-        .card p { color: #666; font-size: 14px; margin-bottom: 8px; }
-        
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; }
-        .form-group textarea { min-height: 100px; }
-        
+        .card h3 { margin-bottom: 8px; color: #1a0533; font-size: 15px; }
+        .card p { color: #666; font-size: 13px; margin-bottom: 6px; line-height: 1.5; }
+        .card-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 13px; }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-family: inherit; font-size: 14px; }
+        .form-group textarea { min-height: 100px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
         .modal.active { display: flex; }
-        .modal-content { background: #fff; padding: 40px; border-radius: 16px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; }
+        .modal-content { background: #fff; padding: 32px; border-radius: 16px; max-width: 560px; width: 100%; max-height: 90vh; overflow-y: auto; }
         .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #999; float: right; }
-        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .stat-bar { display: flex; gap: 16px; margin-bottom: 32px; flex-wrap: wrap; }
+        .stat-card { background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); flex: 1; min-width: 150px; text-align: center; }
+        .stat-card .num { font-size: 28px; font-weight: 800; color: #7c3aed; }
+        .stat-card .lbl { font-size: 12px; color: #666; margin-top: 4px; }
+        .status-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .status-new { background: #dbeafe; color: #1d4ed8; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-confirmed { background: #d1fae5; color: #065f46; }
+        .status-overdue { background: #fee2e2; color: #991b1b; }
+        @media(max-width:768px) { .form-row { grid-template-columns: 1fr; } .cards-grid { grid-template-columns: 1fr; } nav { padding: 12px 16px; } .container { padding: 20px 16px; } }
     </style>
 </head>
 <body>
     <nav>
         <a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a>
-        <button class="nav-logout" onclick="logout()">Logout</button>
+        <div class="nav-right">
+            <a href="/" class="nav-link">View Site →</a>
+            <button class="nav-logout" onclick="logout()">Logout</button>
+        </div>
     </nav>
 
     <div class="container">
         <h1>Admin Dashboard</h1>
+        <p class="admin-sub">Manage your entire site from here — trips, bookings, content, and more.</p>
+
+        <!-- STATS BAR -->
+        <div class="stat-bar" id="statsBar">
+            <div class="stat-card"><div class="num" id="stat-bookings">-</div><div class="lbl">Bookings</div></div>
+            <div class="stat-card"><div class="num" id="stat-travelers">-</div><div class="lbl">Travelers</div></div>
+            <div class="stat-card"><div class="num" id="stat-subscribers">-</div><div class="lbl">Subscribers</div></div>
+            <div class="stat-card"><div class="num" id="stat-revenue">-</div><div class="lbl">Revenue</div></div>
+            <div class="stat-card"><div class="num" id="stat-contacts">-</div><div class="lbl">New Messages</div></div>
+        </div>
 
         <div class="tabs">
-            <button class="tab-btn active" onclick="switchTab('testimonials')">💬 Testimonials</button>
+            <button class="tab-btn active" onclick="switchTab('trips')">✈️ Trips</button>
+            <button class="tab-btn" onclick="switchTab('bookings')">💰 Bookings</button>
+            <button class="tab-btn" onclick="switchTab('travelers')">👥 Travelers</button>
+            <button class="tab-btn" onclick="switchTab('subscribers')">📧 Subscribers</button>
+            <button class="tab-btn" onclick="switchTab('vendors')">🏢 Vendors</button>
+            <button class="tab-btn" onclick="switchTab('testimonials')">💬 Testimonials</button>
             <button class="tab-btn" onclick="switchTab('gallery')">🖼️ Gallery</button>
-            <button class="tab-btn" onclick="switchTab('wheel')">🎡 Spin Wheel</button>
             <button class="tab-btn" onclick="switchTab('blog')">📝 Blog</button>
-            <button class="tab-btn" onclick="switchTab('trips')">✈️ Trips</button>
+            <button class="tab-btn" onclick="switchTab('faqs')">❓ FAQs</button>
+            <button class="tab-btn" onclick="switchTab('deals')">🎁 Deals</button>
+            <button class="tab-btn" onclick="switchTab('discounts')">🎟️ Discounts</button>
+            <button class="tab-btn" onclick="switchTab('wheel')">🎡 Wheel</button>
+            <button class="tab-btn" onclick="switchTab('contacts')">📩 Messages</button>
+            <button class="tab-btn" onclick="switchTab('about')">ℹ️ About</button>
+            <button class="tab-btn" onclick="switchTab('settings')">⚙️ Settings</button>
+        </div>
+
+        <!-- TRIPS -->
+        <div id="trips" class="tab-content active">
+            <h2>Manage Trips</h2>
+            <button class="btn" onclick="openModal('trip-modal')">+ Add Trip</button>
+            <div id="trips-list" class="cards-grid"></div>
+        </div>
+
+        <!-- BOOKINGS -->
+        <div id="bookings" class="tab-content">
+            <h2>All Bookings &amp; Payments</h2>
+            <div id="bookings-list" class="cards-grid"></div>
         </div>
 
         <!-- TESTIMONIALS -->
-        <div id="testimonials" class="tab-content active">
+        <div id="testimonials" class="tab-content">
             <h2>Manage Testimonials</h2>
-            <button class="btn" onclick="openTestimonialModal()">+ Add Testimonial</button>
+            <button class="btn" onclick="openModal('testimonial-modal')">+ Add Testimonial</button>
             <div id="testimonials-list" class="cards-grid"></div>
+        </div>
+
+        <!-- TRAVELERS (registered users with bookings) -->
+        <div id="travelers" class="tab-content">
+            <h2>Registered Travelers</h2>
+            <div id="travelers-list" class="cards-grid"></div>
+        </div>
+
+        <!-- SUBSCRIBERS -->
+        <div id="subscribers" class="tab-content">
+            <h2>Email Subscribers</h2>
+            <p style="color:#666;margin-bottom:20px;">People who gave their email via spin wheel, interest lists, or signup. Export for email marketing.</p>
+            <button class="btn" onclick="exportSubscribers()" style="margin-right:8px;">📥 Export CSV</button>
+            <button class="btn" onclick="openModal('subscriber-modal')">+ Add Subscriber</button>
+            <div id="subscribers-list" class="cards-grid"></div>
+        </div>
+
+        <!-- VENDORS -->
+        <div id="vendors" class="tab-content">
+            <h2>Vendor Directory</h2>
+            <button class="btn" onclick="openModal('vendor-modal')">+ Add Vendor</button>
+            <div id="vendors-list" class="cards-grid"></div>
         </div>
 
         <!-- GALLERY -->
         <div id="gallery" class="tab-content">
             <h2>Real Stories Gallery</h2>
-            <button class="btn" onclick="openGalleryModal()">+ Add Photo</button>
+            <button class="btn" onclick="openModal('gallery-modal')">+ Add Photo</button>
             <div id="gallery-list" class="cards-grid"></div>
-        </div>
-
-        <!-- WHEEL -->
-        <div id="wheel" class="tab-content">
-            <h2>Spin Wheel Settings</h2>
-            <form onsubmit="saveWheelSettings(event)">
-                <div class="form-row">
-                    <div class="form-group"><label>Prize 1</label><input type="text" id="prize_1" required></div>
-                    <div class="form-group"><label>Prize 2</label><input type="text" id="prize_2" required></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Prize 3</label><input type="text" id="prize_3" required></div>
-                    <div class="form-group"><label>Prize 4</label><input type="text" id="prize_4" required></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Prize 5</label><input type="text" id="prize_5" required></div>
-                    <div class="form-group"><label>Prize 6</label><input type="text" id="prize_6" required></div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group"><label>Prize 7</label><input type="text" id="prize_7" required></div>
-                    <div class="form-group"><label>Prize 8</label><input type="text" id="prize_8" required></div>
-                </div>
-                <button type="submit" class="btn">Save Wheel Settings</button>
-            </form>
         </div>
 
         <!-- BLOG -->
         <div id="blog" class="tab-content">
             <h2>Blog Posts</h2>
-            <button class="btn" onclick="openBlogModal()">+ New Post</button>
+            <button class="btn" onclick="openModal('blog-modal')">+ New Post</button>
             <div id="blog-list" class="cards-grid"></div>
         </div>
 
-        <!-- TRIPS -->
-        <div id="trips" class="tab-content">
-            <h2>Trip Content</h2>
-            <button class="btn" onclick="openTripModal()">+ New Trip</button>
-            <div id="trips-list" class="cards-grid"></div>
+        <!-- FAQS -->
+        <div id="faqs" class="tab-content">
+            <h2>Manage FAQs</h2>
+            <button class="btn" onclick="openModal('faq-modal')">+ Add FAQ</button>
+            <div id="faqs-list" class="cards-grid"></div>
+        </div>
+
+        <!-- DEALS -->
+        <div id="deals" class="tab-content">
+            <h2>Deals &amp; Perks</h2>
+            <button class="btn" onclick="openModal('deal-modal')">+ Add Deal</button>
+            <div id="deals-list" class="cards-grid"></div>
+        </div>
+
+        <!-- DISCOUNTS -->
+        <div id="discounts" class="tab-content">
+            <h2>Discount Codes &amp; Claims</h2>
+            <div id="discounts-list" class="cards-grid"></div>
+        </div>
+
+        <!-- WHEEL SETTINGS -->
+        <div id="wheel" class="tab-content">
+            <h2>Spin Wheel Settings</h2>
+            <div id="wheel-form"></div>
+        </div>
+
+        <!-- CONTACT SUBMISSIONS -->
+        <div id="contacts" class="tab-content">
+            <h2>Contact Messages</h2>
+            <div id="contacts-list" class="cards-grid"></div>
+        </div>
+
+        <!-- ABOUT PAGE -->
+        <div id="about" class="tab-content">
+            <h2>About Page Content</h2>
+            <div id="about-form"></div>
+        </div>
+
+        <!-- SITE SETTINGS -->
+        <div id="settings" class="tab-content">
+            <h2>Site Settings</h2>
+            <div id="settings-form"></div>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- ===== MODALS ===== -->
+
+    <!-- TRIP MODAL -->
+    <div id="trip-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('trip-modal')">×</button>
+            <h2 style="margin-top:16px;">Add/Edit Trip</h2>
+            <form onsubmit="saveTrip(event)">
+                <div class="form-group"><label>Trip Name</label><input type="text" id="trip_name" required></div>
+                <div class="form-group"><label>Location</label><input type="text" id="trip_location_field" required></div>
+                <div class="form-group"><label>Dates</label><input type="text" id="trip_dates" placeholder="July 3-5, 2026"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Deposit ($)</label><input type="number" id="trip_deposit" min="0"></div>
+                    <div class="form-group"><label>Total ($)</label><input type="number" id="trip_total" min="0"></div>
+                </div>
+                <div class="form-group"><label>Short Description</label><textarea id="trip_description" rows="3"></textarea></div>
+                <div class="form-group"><label>Stripe Booking Link</label><input type="url" id="trip_stripe_url" placeholder="https://book.stripe.com/..."></div>
+                <div class="form-group"><label>Status</label><select id="trip_status"><option value="active">Active</option><option value="coming_soon">Coming Soon</option><option value="sold_out">Sold Out</option><option value="past">Past</option></select></div>
+                <button type="submit" class="btn">Save Trip</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TESTIMONIAL MODAL -->
     <div id="testimonial-modal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeTestimonialModal()">×</button>
-            <h2 style="margin-top: 20px;">Add Testimonial</h2>
+            <button class="close-btn" onclick="closeModal('testimonial-modal')">×</button>
+            <h2 style="margin-top:16px;">Add Testimonial</h2>
             <form onsubmit="saveTestimonial(event)">
                 <div class="form-group"><label>Author Name</label><input type="text" id="author_name" required></div>
                 <div class="form-group"><label>Initials</label><input type="text" id="author_initials" maxlength="2"></div>
                 <div class="form-group"><label>Trip Location</label><input type="text" id="trip_location"></div>
-                <div class="form-group"><label>Trip Date</label><input type="text" id="trip_date"></div>
+                <div class="form-group"><label>Trip Date</label><input type="text" id="trip_date" placeholder="March 2025"></div>
+                <div class="form-group"><label>Rating (1-5)</label><input type="number" id="rating" min="1" max="5" value="5"></div>
                 <div class="form-group"><label>Review</label><textarea id="review_text" required></textarea></div>
                 <button type="submit" class="btn">Save</button>
             </form>
         </div>
     </div>
 
+    <!-- GALLERY MODAL -->
     <div id="gallery-modal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeGalleryModal()">×</button>
-            <h2 style="margin-top: 20px;">Add Photo</h2>
+            <button class="close-btn" onclick="closeModal('gallery-modal')">×</button>
+            <h2 style="margin-top:16px;">Add Photo</h2>
             <form onsubmit="saveGalleryItem(event)">
-                <div class="form-group"><label>Image Filename</label><input type="text" id="image_url" required></div>
+                <div class="form-group"><label>Image Filename (e.g. IMG_1234.jpg)</label><input type="text" id="image_url" required></div>
                 <div class="form-group"><label>Caption</label><input type="text" id="caption"></div>
                 <div class="form-group"><label>Alt Text</label><input type="text" id="alt_text" required></div>
                 <button type="submit" class="btn">Add</button>
@@ -146,160 +251,179 @@
         </div>
     </div>
 
+    <!-- BLOG MODAL -->
     <div id="blog-modal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeBlogModal()">×</button>
-            <h2 style="margin-top: 20px;">New Blog Post</h2>
+            <button class="close-btn" onclick="closeModal('blog-modal')">×</button>
+            <h2 style="margin-top:16px;">New Blog Post</h2>
             <form onsubmit="saveBlogPost(event)">
                 <div class="form-group"><label>Title</label><input type="text" id="blog_title" required></div>
-                <div class="form-group"><label>Category</label><select id="blog_category"><option>packing</option><option>documents</option><option>tips</option></select></div>
-                <div class="form-group"><label>Content</label><textarea id="blog_content" required></textarea></div>
+                <div class="form-group"><label>Category</label><select id="blog_category"><option>packing</option><option>documents</option><option>tips</option><option>destination</option></select></div>
+                <div class="form-group"><label>Image URL (optional)</label><input type="text" id="blog_image"></div>
+                <div class="form-group"><label>Content</label><textarea id="blog_content" required rows="8"></textarea></div>
                 <button type="submit" class="btn">Publish</button>
             </form>
         </div>
     </div>
 
-    <div id="trip-modal" class="modal">
+    <!-- FAQ MODAL -->
+    <div id="faq-modal" class="modal">
         <div class="modal-content">
-            <button class="close-btn" onclick="closeTripModal()">×</button>
-            <h2 style="margin-top: 20px;">Add Trip</h2>
-            <form onsubmit="saveTripContent(event)">
-                <div class="form-group"><label>Trip Name</label><input type="text" id="trip_name" required></div>
-                <div class="form-group"><label>Location</label><input type="text" id="trip_location_field" required></div>
-                <div class="form-group"><label>Dates</label><input type="text" id="trip_dates"></div>
-                <div class="form-row">
-                    <div class="form-group"><label>Deposit ($)</label><input type="number" id="trip_deposit" min="0"></div>
-                    <div class="form-group"><label>Total ($)</label><input type="number" id="trip_total" min="0"></div>
-                </div>
-                <div class="form-group"><label>Description</label><textarea id="trip_description"></textarea></div>
-                <button type="submit" class="btn">Add</button>
+            <button class="close-btn" onclick="closeModal('faq-modal')">×</button>
+            <h2 style="margin-top:16px;">Add FAQ</h2>
+            <form onsubmit="saveFaq(event)">
+                <div class="form-group"><label>Question</label><input type="text" id="faq_question" required></div>
+                <div class="form-group"><label>Answer</label><textarea id="faq_answer" required rows="4"></textarea></div>
+                <div class="form-group"><label>Show On Page</label><select id="faq_page"><option value="homepage">Homepage</option><option value="how-it-works">How It Works</option><option value="both">Both</option></select></div>
+                <div class="form-group"><label>Sort Order</label><input type="number" id="faq_order" value="0" min="0"></div>
+                <button type="submit" class="btn">Save</button>
             </form>
         </div>
     </div>
 
-    <script>
-        const supabaseUrl = 'https://lqdflvnkiskzmvvknmmh.supabase.co'
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey)
+    <!-- DEAL MODAL -->
+    <div id="deal-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('deal-modal')">×</button>
+            <h2 style="margin-top:16px;">Add Deal</h2>
+            <form onsubmit="saveDeal(event)">
+                <div class="form-group"><label>Title</label><input type="text" id="deal_title" required></div>
+                <div class="form-group"><label>Description</label><textarea id="deal_description" rows="3"></textarea></div>
+                <div class="form-group"><label>Category</label><select id="deal_category"><option value="flights">Flights</option><option value="hotels">Hotels</option><option value="gear">Gear</option><option value="experiences">Experiences</option></select></div>
+                <div class="form-group"><label>Icon (emoji)</label><input type="text" id="deal_icon" value="✈️" maxlength="4"></div>
+                <div class="form-group"><label>Link URL</label><input type="url" id="deal_url"></div>
+                <div class="form-group"><label>Link Label</label><input type="text" id="deal_label" value="View Deal →"></div>
+                <button type="submit" class="btn">Save</button>
+            </form>
+        </div>
+    </div>
 
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'))
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'))
-            document.getElementById(tabName).classList.add('active')
-            event.target.classList.add('active')
-            
-            if (tabName === 'testimonials') loadTestimonials()
-            if (tabName === 'gallery') loadGallery()
-            if (tabName === 'wheel') loadWheelSettings()
-            if (tabName === 'blog') loadBlogPosts()
-            if (tabName === 'trips') loadTrips()
+    <!-- SUBSCRIBER MODAL -->
+    <div id="subscriber-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('subscriber-modal')">×</button>
+            <h2 style="margin-top:16px;">Add Subscriber</h2>
+            <form onsubmit="saveSubscriber(event)">
+                <div class="form-group"><label>Email</label><input type="email" id="sub_email" required></div>
+                <div class="form-group"><label>First Name</label><input type="text" id="sub_name"></div>
+                <div class="form-group"><label>Source</label><select id="sub_source"><option value="manual">Manual Add</option><option value="interest-list">Interest List</option><option value="spin-wheel">Spin Wheel</option><option value="signup">Account Signup</option></select></div>
+                <div class="form-group"><label>Trip Interest</label><input type="text" id="sub_trip" placeholder="e.g. Essence Festival"></div>
+                <button type="submit" class="btn">Add Subscriber</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- VENDOR MODAL -->
+    <div id="vendor-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('vendor-modal')">×</button>
+            <h2 style="margin-top:16px;">Add Vendor</h2>
+            <form onsubmit="saveVendor(event)">
+                <div class="form-group"><label>Company Name</label><input type="text" id="vendor_company" required></div>
+                <div class="form-group"><label>Contact Name</label><input type="text" id="vendor_contact"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Email</label><input type="email" id="vendor_email"></div>
+                    <div class="form-group"><label>Phone</label><input type="tel" id="vendor_phone"></div>
+                </div>
+                <div class="form-group"><label>Category</label><select id="vendor_category"><option value="hotel">Hotel / Resort</option><option value="transport">Transportation</option><option value="venue">Venue</option><option value="restaurant">Restaurant / Catering</option><option value="tour">Tour / Experience</option><option value="entertainment">Entertainment</option><option value="other">Other</option></select></div>
+                <div class="form-group"><label>Website</label><input type="url" id="vendor_website"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>City</label><input type="text" id="vendor_city"></div>
+                    <div class="form-group"><label>State</label><input type="text" id="vendor_state"></div>
+                </div>
+                <div class="form-group"><label>Assigned Trip</label><input type="text" id="vendor_trip" placeholder="e.g. Essence Festival 2026"></div>
+                <div class="form-group"><label>Notes</label><textarea id="vendor_notes" rows="3"></textarea></div>
+                <button type="submit" class="btn">Save Vendor</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- VENDOR MODAL -->
+    <div id="vendor-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('vendor-modal')">×</button>
+            <h2 style="margin-top:16px;">Add Vendor</h2>
+            <form onsubmit="saveVendor(event)">
+                <div class="form-group"><label>Company Name</label><input type="text" id="vendor_name" required></div>
+                <div class="form-group"><label>Type</label><select id="vendor_type"><option value="hotel">Hotel</option><option value="venue">Venue</option><option value="transport">Transportation</option><option value="restaurant">Restaurant</option><option value="entertainment">Entertainment</option><option value="other">Other</option></select></div>
+                <div class="form-row">
+                    <div class="form-group"><label>Contact Name</label><input type="text" id="vendor_contact_name"></div>
+                    <div class="form-group"><label>Contact Email</label><input type="email" id="vendor_contact_email"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Phone</label><input type="tel" id="vendor_contact_phone"></div>
+                    <div class="form-group"><label>Website</label><input type="url" id="vendor_website"></div>
+                </div>
+                <div class="form-group"><label>Address</label><input type="text" id="vendor_address"></div>
+                <div class="form-row">
+                    <div class="form-group"><label>City</label><input type="text" id="vendor_city"></div>
+                    <div class="form-group"><label>State</label><input type="text" id="vendor_state"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Contract Amount ($)</label><input type="number" id="vendor_contract" min="0"></div>
+                    <div class="form-group"><label>Contract Status</label><select id="vendor_contract_status"><option value="pending">Pending</option><option value="signed">Signed</option><option value="paid">Paid</option><option value="completed">Completed</option></select></div>
+                </div>
+                <div class="form-group"><label>Notes</label><textarea id="vendor_notes" rows="3"></textarea></div>
+                <button type="submit" class="btn">Save Vendor</button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabase-client.js';
+        import { checkAuth, handleLogout } from './js/auth.js';
+
+        // Auth guard
+        const user = await checkAuth();
+        if (!user) { window.location.href = '/login'; }
+
+        // ===== GLOBAL HELPERS =====
+        window.logout = async function() { await handleLogout(); }
+
+        window.openModal = function(id) { document.getElementById(id).classList.add('active'); }
+        window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); }
+
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            loaders[tabName] && loaders[tabName]();
         }
 
-        function openTestimonialModal() { document.getElementById('testimonial-modal').classList.add('active') }
-        function closeTestimonialModal() { document.getElementById('testimonial-modal').classList.remove('active') }
-        function openGalleryModal() { document.getElementById('gallery-modal').classList.add('active') }
-        function closeGalleryModal() { document.getElementById('gallery-modal').classList.remove('active') }
-        function openBlogModal() { document.getElementById('blog-modal').classList.add('active') }
-        function closeBlogModal() { document.getElementById('blog-modal').classList.remove('active') }
-        function openTripModal() { document.getElementById('trip-modal').classList.add('active') }
-        function closeTripModal() { document.getElementById('trip-modal').classList.remove('active') }
+        async function deleteRow(table, idCol, idVal, loader) {
+            if (!confirm('Are you sure you want to delete this?')) return;
+            const { error } = await supabase.from(table).delete().eq(idCol, idVal);
+            if (error) alert('Error: ' + error.message);
+            else loader();
+        }
+        window.deleteRow = deleteRow;
 
-        async function saveTestimonial(e) {
-            e.preventDefault()
-            const { error } = await supabase.from('testimonials').insert([{
-                author_name: document.getElementById('author_name').value,
-                author_initials: document.getElementById('author_initials').value,
-                trip_location: document.getElementById('trip_location').value,
-                trip_date: document.getElementById('trip_date').value,
-                review_text: document.getElementById('review_text').value,
-                rating: 5
-            }])
-            if (error) alert('Error: ' + error.message)
-            else {
-                alert('Saved!')
-                e.target.reset()
-                closeTestimonialModal()
-                loadTestimonials()
-            }
+        // ===== STATS =====
+        async function loadStats() {
+            const { count: bk } = await supabase.from('bookings').select('*', { count: 'exact', head: true });
+            const { count: us } = await supabase.from('users').select('*', { count: 'exact', head: true });
+            const { count: sb } = await supabase.from('subscribers').select('*', { count: 'exact', head: true }).eq('is_active', true);
+            const { data: rev } = await supabase.from('bookings').select('amount_paid');
+            const { count: ct } = await supabase.from('contact_submissions').select('*', { count: 'exact', head: true }).eq('status', 'new');
+            document.getElementById('stat-bookings').textContent = bk || 0;
+            document.getElementById('stat-travelers').textContent = us || 0;
+            document.getElementById('stat-subscribers').textContent = sb || 0;
+            const total = (rev || []).reduce((s, r) => s + (r.amount_paid || 0), 0);
+            document.getElementById('stat-revenue').textContent = '$' + (total / 100).toLocaleString();
+            document.getElementById('stat-contacts').textContent = ct || 0;
         }
 
-        async function loadTestimonials() {
-            const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false })
-            const html = (data || []).map(t => `<div class="card"><h3>${t.author_name}</h3><p>"${t.review_text.substring(0, 60)}..."</p><p>${t.trip_location} - ${t.trip_date}</p></div>`).join('')
-            document.getElementById('testimonials-list').innerHTML = html || '<p>No testimonials yet.</p>'
+        // ===== TRIPS =====
+        async function loadTrips() {
+            const { data } = await supabase.from('trip_content').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(t => '<div class="card"><h3>' + t.trip_name + '</h3><p>📍 ' + (t.location || '') + '</p><p>📅 ' + (t.dates || '') + '</p><p>💰 Deposit: $' + (t.price_deposit || 0) + ' · Total: $' + (t.price_total || 0) + '</p><p>Status: <span class="status-badge status-' + (t.is_active ? 'confirmed' : 'pending') + '">' + (t.is_active ? 'Active' : 'Inactive') + '</span></p><div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'trip_content\',\'trip_id\',\'' + t.trip_id + '\',loadTrips)">Delete</button></div></div>').join('');
+            document.getElementById('trips-list').innerHTML = html || '<p>No trips yet. Add your first trip above.</p>';
         }
 
-        async function saveGalleryItem(e) {
-            e.preventDefault()
-            const { error } = await supabase.from('real_stories_gallery').insert([{
-                image_url: document.getElementById('image_url').value,
-                caption: document.getElementById('caption').value,
-                alt_text: document.getElementById('alt_text').value
-            }])
-            if (error) alert('Error: ' + error.message)
-            else {
-                alert('Saved!')
-                e.target.reset()
-                closeGalleryModal()
-                loadGallery()
-            }
-        }
-
-        async function loadGallery() {
-            const { data } = await supabase.from('real_stories_gallery').select('*')
-            const html = (data || []).map(g => `<div class="card"><p><strong>${g.caption}</strong></p><p>${g.image_url}</p></div>`).join('')
-            document.getElementById('gallery-list').innerHTML = html || '<p>No gallery items yet.</p>'
-        }
-
-        async function loadWheelSettings() {
-            const { data } = await supabase.from('wheel_settings').select('*').limit(1)
-            if (data && data[0]) {
-                const w = data[0]
-                for (let i = 1; i <= 8; i++) {
-                    const el = document.getElementById(`prize_${i}`)
-                    if (el) el.value = w[`prize_${i}`] || ''
-                }
-            }
-        }
-
-        async function saveWheelSettings(e) {
-            e.preventDefault()
-            const updateData = {}
-            for (let i = 1; i <= 8; i++) {
-                updateData[`prize_${i}`] = document.getElementById(`prize_${i}`).value
-            }
-            const { error } = await supabase.from('wheel_settings').update(updateData).eq('id', 1)
-            alert(error ? 'Error: ' + error.message : 'Saved!')
-        }
-
-        async function saveBlogPost(e) {
-            e.preventDefault()
-            const { error } = await supabase.from('blog_posts').insert([{
-                title: document.getElementById('blog_title').value,
-                slug: document.getElementById('blog_title').value.toLowerCase().replace(/\s+/g, '-'),
-                category: document.getElementById('blog_category').value,
-                content: document.getElementById('blog_content').value,
-                is_published: true
-            }])
-            if (error) alert('Error: ' + error.message)
-            else {
-                alert('Published!')
-                e.target.reset()
-                closeBlogModal()
-                loadBlogPosts()
-            }
-        }
-
-        async function loadBlogPosts() {
-            const { data } = await supabase.from('blog_posts').select('*').eq('is_published', true)
-            const html = (data || []).map(b => `<div class="card"><h3>${b.title}</h3><p>${b.content.substring(0, 60)}...</p></div>`).join('')
-            document.getElementById('blog-list').innerHTML = html || '<p>No blog posts yet.</p>'
-        }
-
-        async function saveTripContent(e) {
-            e.preventDefault()
+        window.saveTrip = async function(e) {
+            e.preventDefault();
             const { error } = await supabase.from('trip_content').insert([{
-                trip_id: document.getElementById('trip_name').value.toLowerCase().replace(/\s+/g, '-'),
                 trip_name: document.getElementById('trip_name').value,
                 trip_slug: document.getElementById('trip_name').value.toLowerCase().replace(/\s+/g, '-'),
                 location: document.getElementById('trip_location_field').value,
@@ -307,31 +431,365 @@
                 price_deposit: parseInt(document.getElementById('trip_deposit').value) || 0,
                 price_total: parseInt(document.getElementById('trip_total').value) || 0,
                 description: document.getElementById('trip_description').value,
-                is_active: true
-            }])
-            if (error) alert('Error: ' + error.message)
-            else {
-                alert('Added!')
-                e.target.reset()
-                closeTripModal()
-                loadTrips()
+                stripe_url: document.getElementById('trip_stripe_url').value,
+                is_active: document.getElementById('trip_status').value === 'active'
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else { alert('Trip saved!'); e.target.reset(); closeModal('trip-modal'); loadTrips(); }
+        }
+
+        // ===== BOOKINGS =====
+        async function loadBookings() {
+            const { data } = await supabase.from('bookings').select('*, users(*), trips(*)').order('created_at', { ascending: false });
+            const html = (data || []).map(b => {
+                const pct = b.total_amount > 0 ? Math.round((b.amount_paid / b.total_amount) * 100) : 0;
+                const statusClass = b.status === 'confirmed' ? 'confirmed' : b.status === 'overdue' ? 'overdue' : 'pending';
+                return '<div class="card"><h3>' + (b.users?.first_name || '') + ' ' + (b.users?.last_name || '') + '</h3><p><strong>' + (b.trips?.title || 'Unknown Trip') + '</strong></p><p>Status: <span class="status-badge status-' + statusClass + '">' + b.status + '</span></p><p>Paid: $' + (b.amount_paid / 100).toFixed(2) + ' / $' + (b.total_amount / 100).toFixed(2) + ' (' + pct + '%)</p><p>Balance: $' + (b.balance_due / 100).toFixed(2) + '</p></div>';
+            }).join('');
+            document.getElementById('bookings-list').innerHTML = html || '<p>No bookings yet.</p>';
+        }
+
+        // ===== TESTIMONIALS =====
+        async function loadTestimonials() {
+            const { data } = await supabase.from('testimonials').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(t => '<div class="card"><h3>' + t.author_name + ' <span style="color:#999;font-size:12px;">(' + (t.author_initials || '') + ')</span></h3><p>"' + (t.review_text || '').substring(0, 100) + '..."</p><p>📍 ' + (t.trip_location || '') + ' · ' + (t.trip_date || '') + '</p><p>⭐ ' + (t.rating || 5) + '/5</p><div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'testimonials\',\'id\',' + t.id + ',loadTestimonials)">Delete</button></div></div>').join('');
+            document.getElementById('testimonials-list').innerHTML = html || '<p>No testimonials yet.</p>';
+        }
+
+        window.saveTestimonial = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('testimonials').insert([{
+                author_name: document.getElementById('author_name').value,
+                author_initials: document.getElementById('author_initials').value,
+                trip_location: document.getElementById('trip_location').value,
+                trip_date: document.getElementById('trip_date').value,
+                review_text: document.getElementById('review_text').value,
+                rating: parseInt(document.getElementById('rating').value) || 5
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else { alert('Saved!'); e.target.reset(); closeModal('testimonial-modal'); loadTestimonials(); }
+        }
+
+        // ===== GALLERY =====
+        async function loadGallery() {
+            const { data } = await supabase.from('real_stories_gallery').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(g => '<div class="card"><p><strong>' + (g.caption || 'No caption') + '</strong></p><p>📷 ' + g.image_url + '</p><p style="color:#999;font-size:12px;">' + (g.alt_text || '') + '</p><div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'real_stories_gallery\',\'id\',' + g.id + ',loadGallery)">Delete</button></div></div>').join('');
+            document.getElementById('gallery-list').innerHTML = html || '<p>No gallery items yet.</p>';
+        }
+
+        window.saveGalleryItem = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('real_stories_gallery').insert([{
+                image_url: document.getElementById('image_url').value,
+                caption: document.getElementById('caption').value,
+                alt_text: document.getElementById('alt_text').value
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else { alert('Added!'); e.target.reset(); closeModal('gallery-modal'); loadGallery(); }
+        }
+
+        // ===== BLOG =====
+        async function loadBlogPosts() {
+            const { data } = await supabase.from('blog_posts').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(b => '<div class="card"><h3>' + b.title + '</h3><p>📂 ' + (b.category || '') + '</p><p>' + (b.content || '').substring(0, 80) + '...</p><div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'blog_posts\',\'id\',' + b.id + ',loadBlogPosts)">Delete</button></div></div>').join('');
+            document.getElementById('blog-list').innerHTML = html || '<p>No blog posts yet.</p>';
+        }
+
+        window.saveBlogPost = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('blog_posts').insert([{
+                title: document.getElementById('blog_title').value,
+                slug: document.getElementById('blog_title').value.toLowerCase().replace(/\s+/g, '-'),
+                category: document.getElementById('blog_category').value,
+                image_url: document.getElementById('blog_image').value,
+                content: document.getElementById('blog_content').value,
+                is_published: true
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else { alert('Published!'); e.target.reset(); closeModal('blog-modal'); loadBlogPosts(); }
+        }
+
+        // ===== FAQS =====
+        async function loadFaqs() {
+            const { data } = await supabase.from('faqs').select('*').order('sort_order');
+            const html = (data || []).map(f => '<div class="card"><h3>' + f.question + '</h3><p>' + (f.answer || '').substring(0, 100) + '...</p><p>Page: <strong>' + f.page + '</strong> · Order: ' + f.sort_order + '</p><div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'faqs\',\'faq_id\',\'' + f.faq_id + '\',loadFaqs)">Delete</button></div></div>').join('');
+            document.getElementById('faqs-list').innerHTML = html || '<p>No FAQs yet.</p>';
+        }
+
+        window.saveFaq = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('faqs').insert([{
+                question: document.getElementById('faq_question').value,
+                answer: document.getElementById('faq_answer').value,
+                page: document.getElementById('faq_page').value,
+                sort_order: parseInt(document.getElementById('faq_order').value) || 0
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else { alert('FAQ saved!'); e.target.reset(); closeModal('faq-modal'); loadFaqs(); }
+        }
+
+        // ===== DEALS =====
+        async function loadDeals() {
+            const { data } = await supabase.from('deals').select('*').order('sort_order');
+            const html = (data || []).map(d => '<div class="card"><h3>' + d.icon + ' ' + d.title + '</h3><p>' + (d.description || '') + '</p><p>Category: ' + d.category + '</p><p>🔗 ' + (d.link_url || 'No link') + '</p><div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'deals\',\'deal_id\',\'' + d.deal_id + '\',loadDeals)">Delete</button></div></div>').join('');
+            document.getElementById('deals-list').innerHTML = html || '<p>No deals yet.</p>';
+        }
+
+        window.saveDeal = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('deals').insert([{
+                title: document.getElementById('deal_title').value,
+                description: document.getElementById('deal_description').value,
+                category: document.getElementById('deal_category').value,
+                icon: document.getElementById('deal_icon').value,
+                link_url: document.getElementById('deal_url').value,
+                link_label: document.getElementById('deal_label').value
+            }]);
+            if (error) alert('Error: ' + error.message);
+            else { alert('Deal saved!'); e.target.reset(); closeModal('deal-modal'); loadDeals(); }
+        }
+
+        // ===== DISCOUNTS =====
+        async function loadDiscountClaims() {
+            const { data } = await supabase.from('discount_codes').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(d => '<div class="card"><h3>🎟️ ' + d.code + '</h3><p>Amount: $' + (d.discount_amount || 0) + ' off</p><p>Type: ' + (d.discount_type || 'fixed') + '</p><p>Used: ' + (d.used_count || 0) + ' / ' + (d.max_uses || '∞') + '</p><p>Expires: ' + (d.expires_at ? new Date(d.expires_at).toLocaleDateString() : 'Never') + '</p></div>').join('');
+            document.getElementById('discounts-list').innerHTML = html || '<p>No discount codes yet. Codes are auto-created when visitors spin the wheel.</p>';
+        }
+
+        // ===== WHEEL SETTINGS =====
+        async function loadWheelSettings() {
+            const { data } = await supabase.from('wheel_settings').select('*').limit(1);
+            const w = data && data[0] ? data[0] : {};
+            let html = '<form onsubmit="saveWheelSettings(event)">';
+            for (let i = 1; i <= 8; i++) {
+                html += '<div class="form-group"><label>Prize ' + i + '</label><input type="text" id="prize_' + i + '" value="' + (w['prize_' + i] || '') + '"></div>';
             }
+            html += '<button type="submit" class="btn">Save Wheel Settings</button></form>';
+            document.getElementById('wheel-form').innerHTML = html;
         }
 
-        async function loadTrips() {
-            const { data } = await supabase.from('trip_content').select('*').eq('is_active', true)
-            const html = (data || []).map(t => `<div class="card"><h3>${t.trip_name}</h3><p>${t.location}</p><p>${t.dates}</p></div>`).join('')
-            document.getElementById('trips-list').innerHTML = html || '<p>No trips yet.</p>'
+        window.saveWheelSettings = async function(e) {
+            e.preventDefault();
+            const updateData = {};
+            for (let i = 1; i <= 8; i++) updateData['prize_' + i] = document.getElementById('prize_' + i).value;
+            const { error } = await supabase.from('wheel_settings').update(updateData).eq('id', 1);
+            alert(error ? 'Error: ' + error.message : 'Wheel settings saved!');
         }
 
-        function logout() {
-            supabase.auth.signOut()
-            window.location.href = 'login.html'
+        // ===== CONTACT SUBMISSIONS =====
+        async function loadContacts() {
+            const { data } = await supabase.from('contact_submissions').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(c => {
+                const statusClass = c.status === 'new' ? 'new' : 'confirmed';
+                return '<div class="card"><h3>' + c.full_name + ' <span class="status-badge status-' + statusClass + '">' + c.status + '</span></h3><p>📧 ' + c.email + '</p>' + (c.phone ? '<p>📱 ' + c.phone + '</p>' : '') + (c.trip_interest ? '<p>✈️ Interested in: ' + c.trip_interest + '</p>' : '') + '<p>' + (c.message || '').substring(0, 120) + '</p><p style="color:#999;font-size:11px;">' + new Date(c.created_at).toLocaleString() + '</p><div class="card-actions"><button class="btn btn-sm btn-green" onclick="markRead(\'' + c.submission_id + '\')">Mark Read</button></div></div>';
+            }).join('');
+            document.getElementById('contacts-list').innerHTML = html || '<p>No messages yet.</p>';
         }
 
-        window.addEventListener('load', () => {
-            loadTestimonials()
-        })
+        window.markRead = async function(id) {
+            await supabase.from('contact_submissions').update({ status: 'read' }).eq('submission_id', id);
+            loadContacts();
+            loadStats();
+        }
+
+        // ===== ABOUT PAGE =====
+        async function loadAbout() {
+            const { data } = await supabase.from('about_content').select('*').eq('id', 1).single();
+            const a = data || {};
+            document.getElementById('about-form').innerHTML = `
+                <form onsubmit="saveAbout(event)">
+                    <div class="form-group"><label>Our Story (full text)</label><textarea id="about_story" rows="10">${a.story_text || ''}</textarea></div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Years Experience</label><input type="number" id="about_years" value="${a.years_experience || 20}"></div>
+                        <div class="form-group"><label>Happy Travelers</label><input type="number" id="about_travelers" value="${a.happy_travelers || 1500}"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Trips Organized</label><input type="number" id="about_trips" value="${a.trips_organized || 50}"></div>
+                        <div class="form-group"><label>Commitment Text</label><input type="text" id="about_commitment" value="${a.commitment_text || '100%'}"></div>
+                    </div>
+                    <button type="submit" class="btn">Save About Page</button>
+                </form>`;
+        }
+
+        window.saveAbout = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('about_content').update({
+                story_text: document.getElementById('about_story').value,
+                years_experience: parseInt(document.getElementById('about_years').value),
+                happy_travelers: parseInt(document.getElementById('about_travelers').value),
+                trips_organized: parseInt(document.getElementById('about_trips').value),
+                commitment_text: document.getElementById('about_commitment').value,
+                updated_at: new Date().toISOString()
+            }).eq('id', 1);
+            alert(error ? 'Error: ' + error.message : 'About page saved!');
+        }
+
+        // ===== SITE SETTINGS =====
+        async function loadSettings() {
+            const { data } = await supabase.from('site_settings').select('*').eq('id', 1).single();
+            const s = data || {};
+            document.getElementById('settings-form').innerHTML = `
+                <form onsubmit="saveSettings(event)">
+                    <h3 style="margin-bottom:16px;">Countdown Banner</h3>
+                    <div class="form-group"><label>Trip Name</label><input type="text" id="set_trip_name" value="${s.countdown_trip_name || ''}"></div>
+                    <div class="form-group"><label>Countdown Deadline (YYYY-MM-DDTHH:MM:SS)</label><input type="text" id="set_deadline" value="${s.countdown_deadline || ''}"></div>
+                    <div class="form-group"><label>Booking URL</label><input type="url" id="set_book_url" value="${s.countdown_book_url || ''}"></div>
+                    <div class="form-group"><label>Button Label</label><input type="text" id="set_book_label" value="${s.countdown_book_label || ''}"></div>
+                    <div class="form-group"><label>Active Message</label><input type="text" id="set_active_msg" value="${s.countdown_active_msg || ''}"></div>
+                    <div class="form-group"><label>Banner Active?</label><select id="set_banner_active"><option value="true" ${s.banner_active !== false ? 'selected' : ''}>Yes</option><option value="false" ${s.banner_active === false ? 'selected' : ''}>No</option></select></div>
+                    <button type="submit" class="btn">Save Settings</button>
+                </form>`;
+        }
+
+        window.saveSettings = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('site_settings').update({
+                countdown_trip_name: document.getElementById('set_trip_name').value,
+                countdown_deadline: document.getElementById('set_deadline').value,
+                countdown_book_url: document.getElementById('set_book_url').value,
+                countdown_book_label: document.getElementById('set_book_label').value,
+                countdown_active_msg: document.getElementById('set_active_msg').value,
+                banner_active: document.getElementById('set_banner_active').value === 'true',
+                updated_at: new Date().toISOString()
+            }).eq('id', 1);
+            alert(error ? 'Error: ' + error.message : 'Site settings saved!');
+        }
+
+        // ===== TRAVELERS (registered users) =====
+        async function loadTravelers() {
+            const { data } = await supabase.from('users').select('*, bookings(*, trips(*))').order('created_at', { ascending: false });
+            const html = (data || []).map(u => {
+                const bookingCount = (u.bookings || []).length;
+                const totalPaid = (u.bookings || []).reduce((s, b) => s + (b.amount_paid || 0), 0);
+                const tripNames = (u.bookings || []).map(b => b.trips?.title || 'Unknown').join(', ');
+                return '<div class="card"><h3>' + u.first_name + ' ' + u.last_name + '</h3>' +
+                    '<p>📧 ' + (u.user_id ? u.user_id.substring(0, 8) + '...' : '') + '</p>' +
+                    (u.phone ? '<p>📱 ' + u.phone + '</p>' : '') +
+                    '<p>✈️ Trips: ' + bookingCount + (tripNames ? ' — ' + tripNames : '') + '</p>' +
+                    '<p>💰 Total Paid: $' + (totalPaid / 100).toFixed(2) + '</p>' +
+                    '<p style="color:#999;font-size:11px;">Joined: ' + new Date(u.created_at).toLocaleDateString() + '</p></div>';
+            }).join('');
+            document.getElementById('travelers-list').innerHTML = html || '<p>No registered travelers yet.</p>';
+        }
+
+        // ===== SUBSCRIBERS =====
+        async function loadSubscribers() {
+            const { data } = await supabase.from('subscribers').select('*').order('created_at', { ascending: false });
+            const html = (data || []).map(s => {
+                const active = s.is_active !== false;
+                return '<div class="card"><h3>' + (s.first_name || 'No name') + ' <span class="status-badge ' + (active ? 'status-confirmed' : 'status-overdue') + '">' + (active ? 'Active' : 'Unsubscribed') + '</span></h3>' +
+                    '<p>📧 ' + s.email + '</p>' +
+                    '<p>Source: ' + (s.source || 'unknown') + '</p>' +
+                    (s.trip_interest ? '<p>✈️ Interested in: ' + s.trip_interest + '</p>' : '') +
+                    (s.spin_prize ? '<p>🎡 Won: ' + s.spin_prize + ' (code: ' + (s.spin_code || '') + ')</p>' : '') +
+                    '<p style="color:#999;font-size:11px;">' + new Date(s.created_at).toLocaleString() + '</p>' +
+                    '<div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'subscribers\',\'subscriber_id\',\'' + s.subscriber_id + '\',loadSubscribers)">Remove</button></div></div>';
+            }).join('');
+            document.getElementById('subscribers-list').innerHTML = html || '<p>No subscribers yet. They\'ll appear here when people spin the wheel or join interest lists.</p>';
+        }
+
+        window.saveSubscriber = async function(e) {
+            e.preventDefault();
+            const { error } = await supabase.from('subscribers').upsert([{
+                email: document.getElementById('sub_email').value,
+                first_name: document.getElementById('sub_name').value,
+                source: document.getElementById('sub_source').value,
+                trip_interest: document.getElementById('sub_trip').value
+            }], { onConflict: 'email' });
+            if (error) alert('Error: ' + error.message);
+            else { alert('Subscriber added!'); e.target.reset(); closeModal('subscriber-modal'); loadSubscribers(); loadStats(); }
+        }
+
+        window.exportSubscribers = async function() {
+            const { data } = await supabase.from('subscribers').select('*').eq('is_active', true).order('created_at', { ascending: false });
+            if (!data || !data.length) { alert('No subscribers to export.'); return; }
+            const headers = 'Email,First Name,Source,Trip Interest,Spin Prize,Date\n';
+            const rows = data.map(s => [s.email, s.first_name || '', s.source || '', s.trip_interest || '', s.spin_prize || '', new Date(s.created_at).toLocaleDateString()].join(',')).join('\n');
+            const blob = new Blob([headers + rows], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'trv-subscribers-' + new Date().toISOString().split('T')[0] + '.csv'; a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        // ===== VENDORS =====
+        async function loadVendors() {
+            const { data } = await supabase.from('vendors').select('*, vendor_trip_assignments(*)').order('company_name');
+            const html = (data || []).map(v => {
+                const trips = (v.vendor_trip_assignments || []).map(a => a.trip_name || 'Unassigned').join(', ');
+                const catIcons = { hotel: '🏨', transport: '🚐', venue: '🎪', restaurant: '🍽️', tour: '🗺️', entertainment: '🎤', other: '📋' };
+                return '<div class="card"><h3>' + (catIcons[v.category] || '📋') + ' ' + v.company_name + '</h3>' +
+                    (v.contact_name ? '<p>👤 ' + v.contact_name + '</p>' : '') +
+                    (v.email ? '<p>📧 ' + v.email + '</p>' : '') +
+                    (v.phone ? '<p>📱 ' + v.phone + '</p>' : '') +
+                    '<p>Category: <strong>' + v.category + '</strong></p>' +
+                    (trips ? '<p>✈️ Trips: ' + trips + '</p>' : '') +
+                    (v.website ? '<p>🔗 <a href="' + v.website + '" target="_blank" style="color:#7c3aed;">' + v.website + '</a></p>' : '') +
+                    (v.notes ? '<p style="color:#999;font-size:12px;">' + v.notes + '</p>' : '') +
+                    '<div class="card-actions"><button class="btn btn-sm btn-red" onclick="deleteRow(\'vendors\',\'vendor_id\',\'' + v.vendor_id + '\',loadVendors)">Delete</button></div></div>';
+            }).join('');
+            document.getElementById('vendors-list').innerHTML = html || '<p>No vendors yet. Add hotels, venues, transport companies, and other partners.</p>';
+        }
+
+        window.saveVendor = async function(e) {
+            e.preventDefault();
+            const { data: vendor, error } = await supabase.from('vendors').insert([{
+                company_name: document.getElementById('vendor_company').value,
+                contact_name: document.getElementById('vendor_contact').value,
+                email: document.getElementById('vendor_email').value,
+                phone: document.getElementById('vendor_phone').value,
+                category: document.getElementById('vendor_category').value,
+                website: document.getElementById('vendor_website').value,
+                city: document.getElementById('vendor_city').value,
+                state: document.getElementById('vendor_state').value,
+                notes: document.getElementById('vendor_notes').value
+            }]).select().single();
+            if (error) { alert('Error: ' + error.message); return; }
+            // If trip assigned, create assignment
+            const tripName = document.getElementById('vendor_trip').value;
+            if (tripName && vendor) {
+                await supabase.from('vendor_trip_assignments').insert([{
+                    vendor_id: vendor.vendor_id,
+                    trip_name: tripName,
+                    role: document.getElementById('vendor_category').value
+                }]);
+            }
+            alert('Vendor saved!'); e.target.reset(); closeModal('vendor-modal'); loadVendors();
+        }
+
+        // ===== TAB LOADERS MAP =====
+        const loaders = {
+            trips: loadTrips,
+            bookings: loadBookings,
+            travelers: loadTravelers,
+            subscribers: loadSubscribers,
+            vendors: loadVendors,
+            testimonials: loadTestimonials,
+            gallery: loadGallery,
+            blog: loadBlogPosts,
+            faqs: loadFaqs,
+            deals: loadDeals,
+            discounts: loadDiscountClaims,
+            wheel: loadWheelSettings,
+            contacts: loadContacts,
+            about: loadAbout,
+            settings: loadSettings
+        };
+
+        // Make loaders available globally for delete callbacks
+        window.loadTrips = loadTrips;
+        window.loadTravelers = loadTravelers;
+        window.loadSubscribers = loadSubscribers;
+        window.loadVendors = loadVendors;
+        window.loadTestimonials = loadTestimonials;
+        window.loadGallery = loadGallery;
+        window.loadBlogPosts = loadBlogPosts;
+        window.loadFaqs = loadFaqs;
+        window.loadDeals = loadDeals;
+        window.loadContacts = loadContacts;
+
+        // Initial load
+        loadStats();
+        loadTrips();
     </script>
 </body>
 </html>

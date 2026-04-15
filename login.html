@@ -182,7 +182,7 @@ window.handleLogin = async function() {
 
   try {
     await supabaseLogin(email, password);
-    window.location.href = '/dashboard';
+    window.location.href = '/my-trips';
   } catch (error) {
     alert('Login failed: ' + error.message);
     btn.textContent = 'Sign In to My Dashboard →';

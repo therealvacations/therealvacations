@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contact Us | The Real Vacations</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
+.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500;transition:color 0.2s}.nav-links a:hover{color:#c084fc}
+.hero{background:linear-gradient(135deg,#1a0533 0%,#3b0764 60%,#6b21a8 100%);color:#fff;text-align:center;padding:70px 24px 60px}
+.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}
+.section{max-width:1100px;margin:0 auto;padding:60px 24px}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1000px;margin:0 auto}
+.info-card{background:#faf5ff;border-radius:16px;padding:28px;margin-bottom:20px}.info-card h3{font-size:18px;font-weight:700;color:#1a0533;margin-bottom:8px}
+.info-card p,.info-card a{font-size:14px;color:#555;line-height:1.8}.info-card a{color:#7c3aed;font-weight:600}
+.form-group{margin-bottom:18px}.form-group label{display:block;font-size:13px;font-weight:600;color:#1a0533;margin-bottom:6px}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border 0.2s}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:#7c3aed}
+.form-group textarea{min-height:120px;resize:vertical}
+.submit-btn{background:#7c3aed;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;border:none;cursor:pointer;width:100%;transition:background 0.2s}
+.submit-btn:hover{background:#6d28d9}.submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+.msg{padding:14px;border-radius:12px;margin-bottom:20px;font-size:14px;display:none}.msg.success{display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}.msg.error{display:block;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+footer{background:#0f0620;color:#ccc;padding:40px;text-align:center;font-size:12px}footer a{color:#c084fc}
+@media(max-width:768px){.nav-links{display:none}.contact-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div></nav>
+<section class="hero"><h1>Get In Touch</h1><p>Ready to book your next adventure? We're here to help!</p></section>
+<div class="section">
+<div class="contact-grid">
+<div>
+<div class="info-card"><h3>📧 Email</h3><p>For booking inquiries, trip questions, or general information:</p><a href="mailto:info@therealvacations.com">info@therealvacations.com</a></div>
+<div class="info-card"><h3>📱 Phone</h3><p>Speak with a travel specialist:</p><a href="tel:4049230017">404-923-0017</a><p>Mon-Fri: 9AM-6PM EST · Sat: 10AM-4PM EST</p></div>
+<div class="info-card"><h3>💬 Text Us</h3><p>Prefer to text? Send us a message:</p><a href="sms:4049230017">404-923-0017</a></div>
+</div>
+<div>
+<h2 style="font-size:24px;font-weight:800;color:#1a0533;margin-bottom:20px;">Send Us a Message</h2>
+<div id="formMsg" class="msg"></div>
+<form id="contactForm">
+<div class="form-group"><label>Full Name *</label><input type="text" id="cf_name" required></div>
+<div class="form-group"><label>Email Address *</label><input type="email" id="cf_email" required></div>
+<div class="form-group"><label>Phone Number</label><input type="tel" id="cf_phone"></div>
+<div class="form-group"><label>Interested Trip</label><select id="cf_trip"><option value="">Select a trip (optional)</option></select></div>
+<div class="form-group"><label>Number of Travelers</label><input type="number" id="cf_num" min="1" max="50"></div>
+<div class="form-group"><label>Message *</label><textarea id="cf_message" required></textarea></div>
+<button type="submit" class="submit-btn" id="cf_btn">Send Message →</button>
+</form>
+</div>
+</div>
+</div>
+<footer>© 2026 The Real Vacations. All rights reserved. · <a href="mailto:info@therealvacations.com">info@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
+<script>
+var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
+
+// Load trips into dropdown
+_sb.from('trip_content').select('trip_name').eq('is_active',true).then(function(res){
+  var sel=document.getElementById('cf_trip');
+  (res.data||[]).forEach(function(t){var o=document.createElement('option');o.value=t.trip_name;o.textContent=t.trip_name;sel.appendChild(o)});
+  var o2=document.createElement('option');o2.value='Custom Trip / Group Inquiry';o2.textContent='Custom Trip / Group Inquiry';sel.appendChild(o2);
+  var o3=document.createElement('option');o3.value='General Question';o3.textContent='General Question';sel.appendChild(o3);
+});
+
+document.getElementById('contactForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var btn=document.getElementById('cf_btn');var msg=document.getElementById('formMsg');
+  btn.disabled=true;btn.textContent='Sending...';
+  var res=await _sb.from('contact_submissions').insert([{
+    full_name:document.getElementById('cf_name').value,
+    email:document.getElementById('cf_email').value,
+    phone:document.getElementById('cf_phone').value||null,
+    trip_interest:document.getElementById('cf_trip').value||null,
+    num_travelers:parseInt(document.getElementById('cf_num').value)||null,
+    message:document.getElementById('cf_message').value
+  }]);
+  if(res.error){msg.className='msg error';msg.textContent='Error: '+res.error.message;btn.disabled=false;btn.textContent='Send Message →';}
+  else{msg.className='msg success';msg.textContent='✅ Message sent! We will get back to you within 24 hours.';e.target.reset();btn.textContent='Sent ✓';}
+});
+</script>
+</body>
+</html>
