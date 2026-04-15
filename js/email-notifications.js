@@ -1,60 +1,104 @@
-// email-notifications.js
-// Function to trigger email notifications via Supabase Functions using SendGrid or similar service.
-async function sendPaymentReminder(bookingId) {
-    const response = await fetch(`https://lqdflvnkiskzmvvknmmh.supabase.co/functions/v1/sendPaymentReminder`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ bookingId }),
-    });
-    return response.json();
+import { supabase } from './supabase-client.js'
+
+// All emails route through the Supabase Edge Function "send-email"
+// which calls SendGrid on the server side (keeps API key secret)
+
+async function callEmailFunction(templateType, data) {
+  const { data: result, error } = await supabase.functions.invoke('send-email', {
+    body: { templateType, ...data }
+  })
+
+  if (error) {
+    console.error('Email send error:', error)
+    throw new Error(error.message)
+  }
+
+  return result
 }
-async function sendPaymentSuccessful(bookingId) {
-    const response = await fetch(`https://lqdflvnkiskzmvvknmmh.supabase.co/functions/v1/sendPaymentSuccessful`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ bookingId }),
-    });
-    return response.json();
+
+// ==========================================
+// EMAIL TEMPLATES
+// ==========================================
+
+// Booking confirmation after deposit
+export async function sendBookingConfirmation(booking, trip, user) {
+  return callEmailFunction('bookingConfirmation', {
+    to: user.email,
+    userName: user.first_name,
+    tripTitle: trip.title,
+    tripDates: `${trip.dates_start} – ${trip.dates_end}`,
+    tripLocation: trip.location,
+    depositAmount: (booking.deposit_amount / 100).toFixed(2),
+    totalAmount: (booking.total_amount / 100).toFixed(2),
+    balanceDue: (booking.balance_due / 100).toFixed(2),
+    bookingId: booking.booking_id
+  })
 }
-async function sendPaymentFailed(bookingId) {
-    const response = await fetch(`https://lqdflvnkiskzmvvknmmh.supabase.co/functions/v1/sendPaymentFailed`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ bookingId }),
-    });
-    return response.json();
+
+// Payment reminder (upcoming)
+export async function sendPaymentReminder(booking, trip, user, nextPayment) {
+  return callEmailFunction('paymentReminder', {
+    to: user.email,
+    userName: user.first_name,
+    tripTitle: trip.title,
+    amountDue: (nextPayment.amount_due / 100).toFixed(2),
+    dueDate: nextPayment.due_date,
+    balanceRemaining: (booking.balance_due / 100).toFixed(2),
+    bookingId: booking.booking_id
+  })
 }
-async function sendFinalWarning(bookingId) {
-    const response = await fetch(`https://lqdflvnkiskzmvvknmmh.supabase.co/functions/v1/sendFinalWarning`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ bookingId }),
-    });
-    return response.json();
+
+// Payment successful
+export async function sendPaymentSuccess(booking, trip, user, amount) {
+  return callEmailFunction('paymentSuccess', {
+    to: user.email,
+    userName: user.first_name,
+    tripTitle: trip.title,
+    amountPaid: (amount / 100).toFixed(2),
+    totalPaid: (booking.amount_paid / 100).toFixed(2),
+    balanceDue: (booking.balance_due / 100).toFixed(2),
+    bookingId: booking.booking_id
+  })
 }
-async function sendBookingCancelled(bookingId) {
-    const response = await fetch(`https://lqdflvnkiskzmvvknmmh.supabase.co/functions/v1/sendBookingCancelled`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ bookingId }),
-    });
-    return response.json();
+
+// Payment failed
+export async function sendPaymentFailed(booking, trip, user, errorMsg) {
+  return callEmailFunction('paymentFailed', {
+    to: user.email,
+    userName: user.first_name,
+    tripTitle: trip.title,
+    errorMessage: errorMsg,
+    bookingId: booking.booking_id
+  })
 }
-// Exporting functions for use in other modules
-export {
-    sendPaymentReminder,
-    sendPaymentSuccessful,
-    sendPaymentFailed,
-    sendFinalWarning,
-    sendBookingCancelled,
-};
+
+// Final warning — balance due soon
+export async function sendFinalWarning(booking, trip, user) {
+  return callEmailFunction('finalWarning', {
+    to: user.email,
+    userName: user.first_name,
+    tripTitle: trip.title,
+    balanceDue: (booking.balance_due / 100).toFixed(2),
+    finalDeadline: booking.final_payment_deadline,
+    bookingId: booking.booking_id
+  })
+}
+
+// Spin wheel discount code delivery
+export async function sendDiscountCode(name, email, prize, code, expiresAt) {
+  return callEmailFunction('discountCode', {
+    to: email,
+    userName: name,
+    prize: prize,
+    code: code,
+    expiresAt: expiresAt
+  })
+}
+
+// Welcome email after signup
+export async function sendWelcomeEmail(email, firstName) {
+  return callEmailFunction('welcome', {
+    to: email,
+    userName: firstName
+  })
+}
