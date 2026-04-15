@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join the VIP List | The Real Vacations</title>
+<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #faf5ff; min-height: 100vh; }
+  a { text-decoration: none; color: inherit; }
+  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+  nav a img { height: 52px; }
+  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: #c084fc; }
+  .page-wrap { min-height: calc(100vh - 80px); display: flex; align-items: center; justify-content: center; padding: 48px 24px; }
+  .card { background: #fff; border-radius: 24px; box-shadow: 0 8px 40px rgba(109,40,217,0.12); max-width: 480px; width: 100%; overflow: hidden; }
+  .card-header { background: linear-gradient(135deg, #1a0533, #6b21a8); padding: 36px 32px 28px; text-align: center; }
+  .card-header .icon { font-size: 36px; margin-bottom: 10px; }
+  .card-header h1 { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+  .card-header p { font-size: 14px; color: #d8b4fe; line-height: 1.6; }
+  .card-header .prize-pill { display: inline-block; background: rgba(192,132,252,0.2); border: 1px solid #c084fc; color: #c084fc; font-size: 13px; font-weight: 700; padding: 5px 16px; border-radius: 20px; margin-top: 12px; }
+  .card-body { padding: 32px; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .field { margin-bottom: 18px; }
+  .field label { display: block; font-size: 13px; font-weight: 600; color: #1a0533; margin-bottom: 6px; }
+  .field input { width: 100%; padding: 13px 16px; border: 2px solid #e9d5ff; border-radius: 12px; font-size: 15px; outline: none; transition: border 0.2s; color: #222; }
+  .field input:focus { border-color: #7c3aed; }
+  .btn-main { width: 100%; background: #7c3aed; color: #fff; padding: 14px; border-radius: 50px; font-weight: 700; font-size: 16px; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; margin-top: 4px; }
+  .btn-main:hover { background: #6d28d9; transform: translateY(-2px); }
+  .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+  .divider hr { flex: 1; border: none; border-top: 1px solid #e9d5ff; }
+  .divider span { font-size: 12px; color: #9ca3af; }
+  .btn-login-link { width: 100%; background: transparent; border: 2px solid #7c3aed; color: #7c3aed; padding: 13px; border-radius: 50px; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+  .btn-login-link:hover { background: #7c3aed; color: #fff; }
+  .form-note { font-size: 12px; color: #9ca3af; text-align: center; margin-top: 14px; line-height: 1.6; }
+  .benefits { background: #faf5ff; border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; }
+  .benefits p { font-size: 13px; color: #555; line-height: 1.8; }
+  .benefits p span { color: #7c3aed; font-weight: 700; margin-right: 6px; }
+  .code-field input { font-size: 20px; font-weight: 700; letter-spacing: 4px; text-align: center; color: #1a0533; }
+  .success-wrap { text-align: center; padding: 16px 0; }
+  .success-wrap .big-icon { font-size: 56px; margin-bottom: 12px; }
+  .success-wrap h2 { font-size: 22px; font-weight: 800; color: #1a0533; margin-bottom: 10px; }
+  .success-wrap p { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 20px; }
+  .btn-book { display: inline-block; background: #22c55e; color: #fff; padding: 13px 28px; border-radius: 50px; font-weight: 700; font-size: 15px; transition: background 0.2s; }
+  .btn-book:hover { background: #16a34a; }
+  .back-link { display: block; text-align: center; margin-top: 16px; font-size: 13px; color: #9ca3af; cursor: pointer; }
+  .back-link:hover { color: #7c3aed; }
+  footer { background: #0f0620; color: #888; text-align: center; padding: 20px; font-size: 12px; }
+  footer a { color: #c084fc; }
+</style>
+</head>
+<body>
+
+<!-- ✅ FIX: Blog added to nav -->
+<nav>
+  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="trips.html">Trips</a>
+    <a href="real-stories.html">Real Stories</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html">How It Works</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<div class="page-wrap">
+  <div class="card">
+
+    <!-- SUBSCRIBE PANEL -->
+    <div id="panelSubscribe" class="panel active">
+      <div class="card-header">
+        <div class="icon">🎡</div>
+        <h1>Claim Your Wheel Prize!</h1>
+        <p>Create your free VIP account to receive your discount code and get exclusive early access to every trip we drop.</p>
+        <div class="prize-pill">✨ Your prize is waiting in your email</div>
+      </div>
+      <div class="card-body">
+        <div class="benefits">
+          <p><span>✓</span>Early access to new trips before they go public</p>
+          <p><span>✓</span>Exclusive VIP-only pricing and promos</p>
+          <p><span>✓</span>Your wheel prize code delivered to your inbox</p>
+        </div>
+        <div class="field"><label>First Name</label><input type="text" id="subFirstName" placeholder="Your first name" autocomplete="given-name"/></div>
+        <div class="field"><label>Last Name</label><input type="text" id="subLastName" placeholder="Your last name" autocomplete="family-name"/></div>
+        <div class="field"><label>Email Address</label><input type="email" id="subEmail" placeholder="your@email.com" autocomplete="email"/></div>
+        <button class="btn-main" onclick="handleSubscribe()">🎉 Create My VIP Account</button>
+        <div class="divider"><hr><span>already a member?</span><hr></div>
+        <button class="btn-login-link" onclick="showPanel('panelLogin')">Have an account? Login here →</button>
+        <p class="form-note">🔒 No spam, ever. Unsubscribe anytime. Your prize code will be in your welcome email.</p>
+      </div>
+    </div>
+
+    <!-- CHECK EMAIL PANEL -->
+    <div id="panelCheckEmail" class="panel">
+      <div class="card-header">
+        <div class="icon">📧</div>
+        <h1>Check Your Email!</h1>
+        <p>Your VIP account is created. A welcome email is on its way to you right now.</p>
+      </div>
+      <div class="card-body">
+        <div class="benefits">
+          <p>Your welcome email contains:</p>
+          <p><span>→</span>A button to verify your email</p>
+          <p><span>→</span>A verification code to claim your wheel prize</p>
+          <p><span>→</span>Your login link to your new VIP account</p>
+        </div>
+        <p style="font-size:14px; color:#555; line-height:1.7; margin-bottom:20px;">Once you click <strong>"Verify Email"</strong> in that email, you'll be brought back here to log in and enter your verification code to release your prize promo code.</p>
+        <button class="btn-main" onclick="showPanel('panelLogin')">I verified — Login here →</button>
+        <!-- ✅ FIX: Clean email link -->
+        <p class="form-note">Didn't get the email? Check your spam folder or <a href="/cdn-cgi/l/email-protection#3b5854554f5a584f7b4f535e495e5a574d5a585a4f5254554815585456"><span class="__cf_email__" data-cfemail="44272b2a3025273004302c213621252832252725302d2b2a376a272b29">[email&#160;protected]</span></a>.</p>
+      </div>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div id="panelLogin" class="panel">
+      <div class="card-header">
+        <div class="icon">🔐</div>
+        <h1>Login to Your VIP Account</h1>
+        <p>Welcome back! Log in to access your account and claim any prizes.</p>
+      </div>
+      <div class="card-body">
+        <div class="field"><label>Email Address</label><input type="email" id="loginEmail" placeholder="your@email.com" autocomplete="email"/></div>
+        <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password"/></div>
+        <button class="btn-main" onclick="handleLogin()">Login to My Account →</button>
+        <div class="divider"><hr><span>new here?</span><hr></div>
+        <button class="btn-login-link" onclick="showPanel('panelSubscribe')">Create a free VIP account →</button>
+        <p class="form-note"><a href="#" onclick="showPanel('panelForgot')" style="color:#7c3aed;">Forgot your password?</a></p>
+      </div>
+    </div>
+
+    <!-- CLAIM CODE PANEL -->
+    <div id="panelClaim" class="panel">
+      <div class="card-header">
+        <div class="icon">🎟️</div>
+        <h1>Claim Your Wheel Prize</h1>
+        <p>Enter the verification code from your welcome email below to release your discount promo code.</p>
+        <div class="prize-pill">Code sent to your email after verification</div>
+      </div>
+      <div class="card-body">
+        <div class="field code-field"><label>Verification Code (from your welcome email)</label><input type="text" id="verifyCodeInput" placeholder="Enter code" maxlength="8" autocomplete="off"/></div>
+        <button class="btn-main" onclick="handleVerifyCode()">🎉 Claim My Prize Code →</button>
+        <p class="form-note">Your prize promo code will be emailed to you instantly once verified. It can only be used once.</p>
+        <span class="back-link" onclick="showPanel('panelLogin')">← Back to login</span>
+      </div>
+    </div>
+
+    <!-- FORGOT PASSWORD PANEL -->
+    <div id="panelForgot" class="panel">
+      <div class="card-header">
+        <div class="icon">🔑</div>
+        <h1>Reset Your Password</h1>
+        <p>Enter your email and we'll send you a link to reset your password.</p>
+      </div>
+      <div class="card-body">
+        <div class="field"><label>Email Address</label><input type="email" id="forgotEmail" placeholder="your@email.com"/></div>
+        <button class="btn-main" onclick="handleForgot()">Send Reset Link →</button>
+        <span class="back-link" onclick="showPanel('panelLogin')">← Back to login</span>
+      </div>
+    </div>
+
+    <!-- SUCCESS PANEL -->
+    <div id="panelSuccess" class="panel">
+      <div class="card-header" style="padding-bottom:20px;">
+        <div class="icon">🎊</div>
+        <h1>Prize Code Is On Its Way!</h1>
+        <p>Your promo code has been emailed to you. Check your inbox now!</p>
+      </div>
+      <div class="card-body">
+        <div class="success-wrap">
+          <p>Your exclusive discount code is in your inbox right now. Enter it at Youli checkout when booking any trip. Remember — it's <strong>single use only</strong> and expires in 30 days.</p>
+          <a href="https://youli.io/t/the-real-vacations/juneteenth-napa-weekend-june-18-21-2026" target="_blank" class="btn-book">🍷 Book Napa Now — Use My Code →</a>
+          <br><br>
+          <a href="trips.html" style="font-size:13px; color:#7c3aed;">Browse all upcoming trips →</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ✅ FIX: Clean footer email -->
+<footer>
+  <a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc; margin:0 8px;" title="Instagram">📷</a>
+  <a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc; margin:0 8px;" title="Facebook">📘</a>
+  <br>
+  © 2026 The Real Vacations &nbsp;·&nbsp;
+  <a href="/cdn-cgi/l/email-protection#31525e5f45505245714559544354505d4750525045585e5f421f525e5c"><span class="__cf_email__" data-cfemail="8deee2e3f9eceef9cdf9e5e8ffe8ece1fbeceeecf9e4e2e3fea3eee2e0">[email&#160;protected]</span></a> &nbsp;·&nbsp;
+  <a href="tel:4049230017">404-923-0017</a>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('view') === 'login' || params.get('verify') === '1') {
+    showPanel('panelLogin');
+  }
+})();
+
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(function(p) { p.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleSubscribe() {
+  var first = document.getElementById('subFirstName').value.trim();
+  var last  = document.getElementById('subLastName').value.trim();
+  var email = document.getElementById('subEmail').value.trim();
+  if (!first) { alert('Please enter your first name.'); return; }
+  if (!last)  { alert('Please enter your last name.'); return; }
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  // TODO: Connect to EmailJS or Formspree to create subscriber and trigger welcome email
+  console.log('Subscribe:', first, last, email);
+  showPanel('panelCheckEmail');
+}
+
+function handleLogin() {
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass  = document.getElementById('loginPassword').value.trim();
+  if (!email || !email.includes('@')) { alert('Please enter your email address.'); return; }
+  if (!pass) { alert('Please enter your password.'); return; }
+  console.log('Login:', email);
+  showPanel('panelClaim');
+}
+
+function handleVerifyCode() {
+  var code = document.getElementById('verifyCodeInput').value.trim().toUpperCase();
+  if (!code || code.length < 4) { alert('Please enter your verification code from the welcome email.'); return; }
+  console.log('V
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
+</body>
+</html>

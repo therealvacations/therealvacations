@@ -1,56 +1,342 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Our Trips | The Real Vacations</title>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
-nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
-.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500}.nav-links a:hover{color:#c084fc}
-.hero{background:linear-gradient(135deg,#1a0533 0%,#3b0764 60%,#6b21a8 100%);color:#fff;text-align:center;padding:70px 24px 60px}
-.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}
-.note{text-align:center;padding:16px;background:#faf5ff;font-size:14px;color:#555;border-bottom:1px solid #f0e6ff}
-.section{max-width:1100px;margin:0 auto;padding:60px 24px}
-.trips-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px}
-.trip-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);transition:transform 0.2s}
-.trip-card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,0.12)}
-.trip-card-header{background:linear-gradient(135deg,#1a0533,#6b21a8);padding:24px 22px;color:#fff}
-.trip-card-header h3{font-size:20px;font-weight:800;margin-bottom:6px}
-.trip-card-header .date-loc{font-size:13px;color:#e9d5ff}
-.trip-card-body{padding:22px}.trip-card-body p{color:#555;font-size:14px;line-height:1.6;margin-bottom:12px}
-.trip-price{font-size:14px;color:#7c3aed;font-weight:700;margin-bottom:16px}
-.trip-btn{display:block;text-align:center;background:#7c3aed;color:#fff;padding:12px;border-radius:50px;font-weight:700;font-size:14px}.trip-btn:hover{background:#6d28d9}
-.trip-detail-link{display:block;text-align:center;margin-top:8px;font-size:13px;color:#7c3aed;font-weight:600}
-footer{background:#0f0620;color:#ccc;padding:40px;text-align:center;font-size:12px}footer a{color:#c084fc}
-@media(max-width:768px){.nav-links{display:none}.trips-grid{grid-template-columns:1fr}}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Trips | The Real Vacations</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* Header */
+        header {
+            background: #1a1a2e;
+            color: white;
+            padding: 1rem 5%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-decoration: none;
+        }        
+        .logo img {
+            height: 70px;
+            width: auto;
+        }
+
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 2rem;
+            transition: color 0.3s;
+            font-weight: 500;
+        }
+        
+        nav a:hover {
+            color: #667eea;
+        }
+        
+        /* Hero */
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 80px 5%;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 800px;
+            margin: 0 auto;
+            opacity: 0.95;
+        }
+        
+        /* Trips Section */
+        section {
+            padding: 80px 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .trips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .trip-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .trip-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .trip-header {
+            padding: 40px 20px;
+            color: white;
+            text-align: center;
+        }
+        
+        .essence-header {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .keith-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .mary-header {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        }
+        
+        .napa-header {
+            background: linear-gradient(135deg, #30cfd0 0%, #330867 100%);
+        }
+        
+        .trip-header h3 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .trip-header p {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        .trip-body {
+            padding: 30px;
+        }
+        
+        .trip-body p {
+            color: #666;
+            margin-bottom: 1.5rem;
+            line-height: 1.7;
+        }
+        
+        .price-tag {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 1.5rem;
+        }
+        
+        .trip-link {
+            display: inline-block;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            padding: 10px 25px;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            transition: all 0.3s;
+        }
+        
+        .trip-link:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        /* Footer */
+        footer {
+            background: #1a1a2e;
+            color: white;
+            padding: 40px 5%;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-links {
+            margin: 2rem 0;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1.5rem;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: #667eea;
+        }
+        
+        .contact-info a {
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+            
+            nav {
+                display: none;
+            }
+        }
+    
+  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  nav a img { height: 52px; }
+  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; text-decoration: none; }
+  .nav-links a:hover { color: #c084fc; }
+  footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
+  .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; text-decoration: none; }
+  .footer-col a:hover { color: #c084fc; }
+  .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
 </style>
 </head>
 <body>
-<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div></nav>
-<section class="hero"><h1>Our Upcoming Trips</h1><p>Choose your next unforgettable adventure</p></section>
-<div class="note">All prices are per person. Most popular: double occupancy (2 per room). Deposit secures your spot with flexible payment plans.</div>
-<div class="section"><div class="trips-grid" id="tripsGrid"><p>Loading trips...</p></div></div>
-<footer>© 2026 The Real Vacations. All rights reserved. · <a href="mailto:info@therealvacations.com">info@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
-<script>
-var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
+    <!-- Header -->
+    <nav>
+  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="trips.html">Trips</a>
+    <a href="real-stories.html">Real Stories</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html">How It Works</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
 
-async function loadTrips(){
-  var res=await _sb.from('trip_content').select('*').eq('is_active',true).order('created_at');
-  var trips=res.data||[];
-  var grid=document.getElementById('tripsGrid');
-  if(!trips.length){grid.innerHTML='<p>No trips available right now. Check back soon!</p>';return;}
-  grid.innerHTML=trips.map(function(t){
-    var slug=t.trip_slug||t.trip_id;
-    return '<div class="trip-card"><div class="trip-card-header"><h3>'+t.trip_name+'</h3><div class="date-loc">'+(t.dates||'')+' · '+(t.location||'')+'</div></div><div class="trip-card-body"><p>'+(t.description||'')+'</p>'+(t.price_deposit?'<div class="trip-price">From $'+t.price_deposit+' deposit · $'+t.price_total+' total</div>':'')+
-    (t.stripe_url?'<a href="'+t.stripe_url+'" target="_blank" class="trip-btn">🎟️ Book Now — $'+t.price_deposit+' Deposit</a>':'<a href="/contact" class="trip-btn">Contact to Book</a>')+
-    '<a href="/'+slug+'" class="trip-detail-link">View Full Trip Details →</a></div></div>';
-  }).join('');
-}
-loadTrips();
-</script>
+    <!-- Hero -->
+        <!-- Spin Wheel Promo Strip -->
+    <div style="background: linear-gradient(90deg, #7c3aed, #a855f7); color: #fff; text-align: center; padding: 16px 24px; margin-bottom: 0;">
+      <p style="font-size:15px; font-weight:600;">🎡 Spin the wheel on our <a href="index.html" style="color:#fde68a; font-weight:700;">homepage</a> to win up to $500 off any trip!</p>
+    </div>
+    <section class="hero">
+        <h1>Our Upcoming Trips</h1>
+        <p>Choose your next unforgettable adventure</p>
+    </section>
+
+    <!-- Trips Grid -->
+    <section>
+        <div class="trips-grid">
+            <!-- Napa Juneteenth -->
+            <div class="trip-card">
+                <div class="trip-header napa-header">
+                    <h3>Napa Valley Juneteenth 2026</h3>
+                    <!-- ✅ FIX: Date now matches detail page and homepage (June 18-21) -->
+                    <p>June 18-21, 2026 • California</p>
+                </div>
+                <div class="trip-body">
+                    <p>Celebrate freedom with wine tastings at Black-owned vineyards, cultural experiences, and the beauty of Napa Valley wine country.</p>
+                    <!-- ✅ FIX #1: Price updated to match detail page (was "$2,595/pp quad to $2,895/pp single") -->
+                    <div class="price-tag">From $2,895/pp (General) to $3,995/pp (VIP) · Double occupancy</div>
+                    <a href="napa-juneteenth-june-18-21-2026.html" class="trip-link">View Details →</a>
+                </div>
+            </div>
+
+            <!-- Essence Festival -->
+            <div class="trip-card">
+                <div class="trip-header essence-header">
+                    <h3>Essence Festival 2026</h3>
+                    <p>July 3-5, 2026 • New Orleans</p>
+                </div>
+                <div class="trip-body">
+                    <p>Experience the world's largest celebration of Black culture and music at the iconic Caesars Superdome. 4 nights of unforgettable performances, culture, and NOLA hospitality.</p>
+                    <!-- ✅ FIX #2: Price updated to match detail page (was "$2,195/pp quad to $2,495/pp single") -->
+                    <div class="price-tag">From $2,495/pp (General) to $3,695/pp (VIP) · Double occupancy</div>
+                    <a href="essence-festival-new-orleans-july-3-5-2026.html" class="trip-link">View Details →</a>
+                </div>
+            </div>
+
+            <!-- Mary J Blige -->
+            <div class="trip-card">
+                <div class="trip-header mary-header">
+                    <h3>Mary J Blige Residency Finale 2026</h3>
+                    <p>July 18, 2026 • Las Vegas</p>
+                </div>
+                <div class="trip-body">
+                    <p>Witness the final show of Mary J's "My Life, My Story" residency at Dolby Live. An intimate, powerful performance you'll never forget.</p>
+                    <!-- ✅ FIX #3: Price updated to match detail page (was "$1,695/pp quad to $1,995/pp single") -->
+                    <div class="price-tag">From $1,995/pp (General) to $2,995/pp (VIP) · Double occupancy</div>
+                    <a href="mary-j-blige-my-life-my-story-las-vegas-july-18-2026.html" class="trip-link">View Details →</a>
+                </div>
+            </div>
+
+            <!-- Keith Sweat -->
+            <div class="trip-card">
+                <div class="trip-header keith-header">
+                    <h3>Keith Sweat R&B Lovers Tour 2026</h3>
+                    <p>August 29, 2026 • Atlanta</p>
+                </div>
+                <div class="trip-body">
+                    <p>An epic night of classic R&B with Keith Sweat, Joe, Dru Hill, Ginuwine, and Kut Klose at State Farm Arena. VIP packages with exclusive perks available.</p>
+                    <!-- ✅ FIX #4: Price updated to match detail page (was "$995/pp quad to $1,295/pp single") -->
+                    <div class="price-tag">From $1,295/pp (General) to $2,195/pp (VIP) · Double occupancy</div>
+                    <a href="keith-sweat-r-and-b-tour-atlanta-august-29-2026.html" class="trip-link">View Details →</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="logo"><img src="logo.jpeg" alt="The Real Vacations"></div>
+            <div class="footer-links">
+                <a href="index.html">Home</a>
+                <a href="trips.html">Trips</a>
+                <a href="real-stories.html">Real Stories</a>
+                <a href="about.html">About</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="resources.html">Resources</a>
+                <a href="blog.html">Blog</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <div class="contact-info">
+                <!-- ✅ FIX #5: Cleaned up Cloudflare encoded email to proper mailto -->
+                <p>Email: <a href="/cdn-cgi/l/email-protection#99faf6f7edf8faedd9edf1fcebfcf8f5eff8faf8edf0f6f7eab7faf6f4"><span class="__cf_email__" data-cfemail="ff9c90918b9e9c8bbf8b979a8d9a9e93899e9c9e8b9690918cd19c9092">[email&#160;protected]</span></a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="colo
+  <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">📸 Instagram</a><a href="https://www.facebook.com/t
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
 </body>
 </html>

@@ -1,82 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>How It Works | The Real Vacations</title>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
-nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
-.nav-center{display:flex;gap:24px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center}
-.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500}.nav-links a:hover{color:#c084fc}
-.nav-auth{display:flex;gap:10px}.nav-login{border:2px solid #c084fc;color:#c084fc;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-login:hover{background:#c084fc;color:#1a0533}
-.nav-signup{background:#c084fc;color:#1a0533;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-signup:hover{background:#7c3aed;color:#fff}
-.hero{background:linear-gradient(135deg,#1a0533,#3b0764,#6b21a8);color:#fff;text-align:center;padding:70px 24px 60px}
-.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:700px;margin:0 auto}
-.section{max-width:1100px;margin:0 auto;padding:60px 24px}.section-header{text-align:center;margin-bottom:48px}
-.section-header h2{font-size:clamp(22px,4vw,36px);font-weight:800;color:#1a0533;margin-bottom:10px}
-.section-header p{font-size:16px;color:#555;max-width:700px;margin:0 auto}
-.steps-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:36px}
-.step-card{text-align:center}.step-num{display:inline-flex;align-items:center;justify-content:center;width:60px;height:60px;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border-radius:50%;font-size:24px;font-weight:800;margin-bottom:20px}
-.step-card h3{font-size:20px;font-weight:700;color:#1a0533;margin-bottom:12px}.step-card p{font-size:14px;color:#555}
-.payment-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:28px}
-.payment-card{background:#faf5ff;border:2px solid #e0d0f0;border-radius:20px;padding:36px 24px;text-align:center;transition:all 0.2s}
-.payment-card:hover{border-color:#7c3aed}.payment-card h3{font-size:22px;font-weight:800;color:#1a0533;margin-bottom:12px}
-.payment-card .price{font-size:32px;font-weight:800;color:#7c3aed;margin:20px 0}
-.payment-card p{font-size:14px;color:#555;margin:8px 0}
-.payment-btn{display:inline-block;background:#7c3aed;color:#fff;padding:12px 32px;border-radius:50px;font-weight:700;font-size:14px;margin-top:20px}.payment-btn:hover{background:#6d28d9}
-.faq-section{max-width:800px;margin:0 auto}
-details{background:#fff;border-radius:12px;padding:18px 22px;box-shadow:0 2px 8px rgba(0,0,0,0.06);margin-bottom:16px}
-summary{font-weight:700;font-size:15px;color:#1a0533;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center}
-summary::after{content:'+';font-size:20px;color:#7c3aed}details[open] summary::after{content:'−'}
-details p{margin-top:12px;color:#555;font-size:14px;line-height:1.65}
-.cta{background:linear-gradient(135deg,#1a0533,#6b21a8);color:#fff;text-align:center;padding:60px 24px}
-.cta h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:12px}.cta p{font-size:16px;color:#e9d5ff;max-width:500px;margin:0 auto 28px}
-.cta-btn{background:#22c55e;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;display:inline-block}.cta-btn:hover{background:#16a34a}
-footer{background:#0f0620;color:#ccc;padding:50px 40px 28px}
-.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:36px;max-width:1100px;margin:0 auto 36px}
-.footer-col h4{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px}
-.footer-col a,.footer-col p{color:#aaa;font-size:13px;line-height:2;display:block}.footer-col a:hover{color:#c084fc}
-.footer-bottom{border-top:1px solid #2d1b4e;padding-top:20px;text-align:center;font-size:12px;color:#666}
-@media(max-width:768px){.nav-links{display:none}.steps-grid{gap:24px}.payment-grid{grid-template-columns:1fr}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How It Works | The Real Vacations</title>
+    <meta name="description" content="Learn how to book your all-inclusive group trip with The Real Vacations. Easy booking process, flexible payment plans, we handle everything.">
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-purple: #6B2D8B; --primary-green: #2E8B57; --dark-purple: #4A1D6A;
+            --light-purple: #F5F0F8; --accent-gold: #D4AF37; --dark-bg: #1a1a2e;
+            --text-dark: #2D2D2D; --text-medium: #555; --text-light: #777; --white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-green) 100%);
+            --gradient-hero: linear-gradient(135deg, #1a1a2e 0%, #4A1D6A 50%, #2E8B57 100%);
+            --shadow-soft: 0 4px 20px rgba(107, 45, 139, 0.15);
+            --shadow-hover: 0 8px 30px rgba(107, 45, 139, 0.25);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; line-height: 1.7; color: var(--text-dark); background: var(--white); }
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; line-height: 1.3; }
+        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        nav a img { height: 52px; }
+        .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; text-decoration: none; }
+        .nav-links a:hover { color: #c084fc; }
+        .hero { background: var(--gradient-hero); color: var(--white); padding: 80px 5%; text-align: center; position: relative; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 30% 70%, rgba(46, 139, 87, 0.3) 0%, transparent 50%); }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; font-weight: 700; }
+        .hero p { font-size: 1.3rem; opacity: 0.95; }
+        section { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
+        .section-alt { background: var(--light-purple); }
+        .section-title { font-size: 2.5rem; margin-bottom: 3rem; color: var(--dark-purple); text-align: center; }
+        .steps-container { max-width: 900px; margin: 0 auto; }
+        .step { background: var(--white); padding: 2.5rem 2.5rem 2.5rem 120px; margin-bottom: 2rem; border-radius: 20px; box-shadow: var(--shadow-soft); position: relative; transition: all 0.3s; }
+        .step:hover { transform: translateX(10px); box-shadow: var(--shadow-hover); }
+        .step-number { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); width: 60px; height: 60px; background: var(--gradient-primary); color: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; font-weight: 700; font-family: 'Playfair Display', serif; box-shadow: 0 8px 20px rgba(107, 45, 139, 0.3); }
+        .step h3 { font-size: 1.5rem; color: var(--dark-purple); margin-bottom: 0.75rem; }
+        .step p { font-size: 1.05rem; color: var(--text-medium); line-height: 1.7; }
+        .payment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .payment-card { background: var(--white); padding: 2.5rem; border-radius: 20px; box-shadow: var(--shadow-soft); text-align: center; transition: all 0.3s; }
+        .payment-card:hover { transform: translateY(-8px); box-shadow: var(--shadow-hover); }
+        .payment-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .payment-card h3 { font-size: 1.4rem; color: var(--dark-purple); margin-bottom: 1rem; }
+        .payment-card p { color: var(--text-medium); line-height: 1.7; }
+        .faq-container { max-width: 900px; margin: 0 auto; }
+        .faq-item { background: var(--white); border-radius: 16px; margin-bottom: 1rem; box-shadow: var(--shadow-soft); overflow: hidden; }
+        .faq-question { padding: 1.75rem 2rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: var(--dark-purple); transition: background 0.3s; font-size: 1.05rem; }
+        .faq-question:hover { background: var(--light-purple); }
+        .faq-icon { font-size: 1.5rem; transition: transform 0.3s; color: var(--primary-purple); }
+        .faq-item.active .faq-icon { transform: rotate(45deg); }
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; }
+        .faq-answer-inner { padding: 0 2rem 1.75rem; color: var(--text-medium); font-size: 1rem; line-height: 1.8; }
+        .faq-item.active .faq-answer { max-height: 300px; }
+        .cta-section { background: var(--gradient-primary); color: var(--white); text-align: center; padding: 80px 5%; }
+        .cta-section h2 { font-size: 2.5rem; margin-bottom: 1rem; color: var(--white); }
+        .cta-section p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95; }
+        .cta-button { display: inline-block; background: var(--white); color: var(--primary-purple); padding: 18px 45px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 1.1rem; transition: all 0.3s; }
+        .cta-button:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
+        .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; text-decoration: none; }
+        .footer-col a:hover { color: #c084fc; }
+        .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
+        @media (max-width: 768px) { .nav-links { display: none; } .hero h1 { font-size: 2rem; } .step { padding: 100px 2rem 2rem; } .step-number { left: 50%; top: 30px; transform: translateX(-50%); } }
+    </style>
 </head>
 <body>
-<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-center"><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div><div class="nav-auth"><a href="/login" class="nav-login">Login</a><a href="/signup" class="nav-signup">Sign Up</a></div></div></nav>
-<section class="hero"><h1>How It Works</h1><p>From discovery to departure — here's everything you need to know about booking your unforgettable group trip with us</p></section>
-<div class="section"><div class="section-header"><h2>Six Simple Steps to Your Dream Trip</h2><p>Book, pay, travel, and create memories with The Real Vacations</p></div>
-<div class="steps-grid">
-<div class="step-card"><div class="step-num">1</div><h3>Explore Our Trips</h3><p>Browse our curated selection of group trips. Each one is handpicked for amazing experiences, great vibes, and unforgettable memories.</p></div>
-<div class="step-card"><div class="step-num">2</div><h3>Choose Your Trip</h3><p>Found the one? Review the itinerary, dates, price, and group details. Make sure it fits your vibe and your schedule.</p></div>
-<div class="step-card"><div class="step-num">3</div><h3>Secure Your Spot</h3><p>Book now and lock in your place. We'll collect a deposit to hold your spot. Spots fill up fast on our best trips.</p></div>
-<div class="step-card"><div class="step-num">4</div><h3>Make Payments</h3><p>Pay the remainder on a flexible schedule before the deadline. We offer payment plans to make it easier on your budget.</p></div>
-<div class="step-card"><div class="step-num">5</div><h3>Get Ready & Connect</h3><p>Access your trip dashboard. Download the itinerary, connect with your travel group, and get travel tips to prepare.</p></div>
-<div class="step-card"><div class="step-num">6</div><h3>Travel & Enjoy</h3><p>Show up, embrace the experience, and make memories with your group. This is what it's all about.</p></div>
-</div></div>
-<div class="section"><div class="section-header"><h2>Payment Options</h2><p>Choose the payment plan that works best for you</p></div>
-<div class="payment-grid">
-<div class="payment-card"><h3>Pay in Full</h3><div class="price">Full Price</div><p>Pay entire trip cost upfront</p><p>Secure your spot immediately</p><p>No additional fees</p><p>Full refund eligibility (24 hours)</p><a href="/trips" class="payment-btn">Book Now</a></div>
-<div class="payment-card" style="border-color:#7c3aed;"><h3>Split Payment</h3><div class="price">2 Payments</div><p>Deposit to secure spot</p><p>Balance due before trip</p><p>No interest or fees</p><p>Flexible timeline</p><a href="/trips" class="payment-btn">Book Now</a></div>
-<div class="payment-card"><h3>Payment Plan</h3><div class="price">3+ Payments</div><p>Spread payments over time</p><p>Lock in your spot today</p><p>Auto-payment reminders</p><p>Build your travel savings</p><a href="/contact" class="payment-btn">Learn More</a></div>
-</div></div>
-<div class="section" style="background:#faf5ff;"><div class="section-header"><h2>Frequently Asked Questions</h2><p>Everything you need to know</p></div>
-<div class="faq-section" id="faqSection"><p>Loading FAQs...</p></div></div>
-<section class="cta"><h2>Ready to Book?</h2><p>Your next unforgettable experience is just a few clicks away.</p><a href="/trips" class="cta-btn">Browse Trips →</a></section>
-<footer><div class="footer-grid"><div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px;margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div><div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a></div><div class="footer-col"><h4>Contact Us</h4><a href="mailto:info@therealvacations.com">info@therealvacations.com</a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a Message</a></div></div><div style="text-align:center;margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">👥 Facebook</a></div><div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
-<script>
-var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
+    <!-- ✅ FIX: Blog added to nav -->
+    <nav>
+        <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="trips.html">Trips</a>
+            <a href="real-stories.html">Real Stories</a>
+            <a href="about.html">About</a>
+            <a href="how-it-works.html">How It Works</a>
+            <a href="resources.html">Resources</a>
+            <a href="blog.html">Blog</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
 
-async function loadFaqs(){
-  var res=await _sb.from('faqs').select('*').eq('is_active',true).order('sort_order');
-  var faqs=res.data||[];
-  var el=document.getElementById('faqSection');
-  if(!faqs.length){el.innerHTML='<p>No FAQs yet.</p>';return;}
-  el.innerHTML=faqs.map(function(f){return '<details><summary>'+f.question+'</summary><p>'+f.answer+'</p></details>'}).join('');
-}
-loadFaqs();
-</script>
+    <section class="hero">
+        <div class="hero-content">
+            <h1>How It Works</h1>
+            <p>Group travel without the group headache. Here's the process.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">The Booking Process</h2>
+        <div class="steps-container">
+            <div class="step"><div class="step-number">1</div><h3>Browse & Choose Your Trip</h3><p>Explore our curated experiences—from music events to wine country escapes. Each trip page includes detailed information about venues, accommodations, what's included, and pricing for both General and VIP packages.</p></div>
+            <div class="step"><div class="step-number">2</div><h3>Contact Us to Reserve</h3><p>Once you've found your perfect trip, reach out via phone, email, or our contact form. We'll walk you through the booking process, answer any questions, and help you select the right package for your group.</p></div>
+            <div class="step"><div class="step-number">3</div><h3>Pay Your Deposit</h3><p>Secure your spot with a deposit (amounts vary by trip). Deposits are processed securely and you'll receive confirmation immediately along with your trip details and payment schedule.</p></div>
+            <div class="step"><div class="step-number">4</div><h3>Choose Your Payment Plan</h3><p>We offer flexible monthly payment plans to fit your budget. Pay in full upfront or spread payments over several months leading up to your trip. Final payment is typically due 45-60 days before departure.</p></div>
+            <div class="step"><div class="step-number">5</div><h3>We Handle Everything</h3><p>Once you're booked, sit back and relax. We coordinate all accommodations, transportation, event tickets, and experiences. You'll receive regular updates, itineraries, and packing lists as your trip approaches.</p></div>
+            <div class="step"><div class="step-number">6</div><h3>Pack Your Bags & Go</h3><p>When departure day arrives, all you need to do is show up. Your trip coordinator will be available 24/7 throughout your journey to ensure everything runs smoothly and you have the time of your life.</p></div>
+        </div>
+    </section>
+
+    <section class="section-alt">
+        <h2 class="section-title">Flexible Payment Options</h2>
+        <div class="payment-grid">
+            <div class="payment-card"><div class="payment-icon">💳</div><h3>Deposit Booking</h3><p>Secure your spot with a deposit (typically $200-$600 depending on the trip) and pay the balance over time with our flexible monthly payment plans.</p></div>
+            <div class="payment-card"><div class="payment-icon">📅</div><h3>Monthly Installments</h3><p>Break your trip cost into manageable monthly payments. Choose a schedule that works for you, with final payment due before departure.</p></div>
+            <div class="payment-card"><div class="payment-icon">✅</div><h3>Pay in Full</h3><p>Prefer to handle everything at once? Pay in full at booking and you're all set. No more payments to worry about—just pack and go.</p></div>
+        </div>
+    </section>
+
+    <section id="faq">
+        <h2 class="section-title">Frequently Asked Questions</h2>
+        <div class="faq-container">
+            <div class="faq-item"><div class="faq-question"><span>What's included in the trip price?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Every trip includes accommodations, event tickets or experiences, transportation (airport transfers and local), and select meals or receptions. Specific inclusions vary by trip—check individual trip pages for detailed breakdowns.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>Do I need to book flights?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Flights are not included in the base package price, but we offer flight bookings as an optional add-on for your convenience. We provide round-trip airport transfers regardless, and can provide arrival/departure recommendations to coordinate with the group.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>What's your cancellation policy?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Full refund if you cancel within 24 hours of booking. After 24 hours, deposits are non-refundable but can be transferred to another traveler for a $50 fee. We strongly recommend travel insurance for peace of mind.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>Can I transfer my spot to someone else?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Yes! If you can't make the trip, you can transfer your reservation to another person for a $50 administrative fee. Just contact us at least 30 days before departure to process the transfer.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>Do you offer travel insurance?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">We partner with travel insurance providers and highly recommend purchasing coverage. Insurance protects you against unexpected cancellations, medical emergencies, and travel disruptions. We'll provide options at booking.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>What if I'm traveling solo?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Solo travelers are welcome! Our prices are based on double occupancy, but we can arrange single room options (subject to availability and additional cost). Many solo travelers join our groups and make lifelong friends.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>Do you offer group discounts?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Yes! If you bring 10 or more travelers, you'll earn group organizer credits that can be applied to future trips or upgrades. Contact us to discuss special group pricing and perks.</div></div></div>
+            <div class="faq-item"><div class="faq-question"><span>When is final payment due?</span><span class="faq-icon">+</span></div><div class="faq-answer"><div class="faq-answer-inner">Final payment is typically due 45-60 days before your trip departure date (exact timing varies by trip). We'll send payment reminders and your trip coordinator will keep you updated on deadlines.</div></div></div>
+        </div>
+    </section>
+
+    <section class="cta-section">
+        <h2>Ready to Book Your Trip?</h2>
+        <p>Let's get you on the road to your next adventure.</p>
+        <a href="contact.html" class="cta-button">Contact Us Now →</a>
+    </section>
+
+    <!-- ✅ FIX: Clean footer with Blog -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div>
+            <div class="footer-col"><h4>Quick Links</h4><a href="trips.html">Upcoming Trips</a><a href="about.html">About Us</a><a href="how-it-works.html">How It Works</a><a href="real-stories.html">Real Stories</a><a href="blog.html">Blog</a></div>
+            <div class="footer-col"><h4>Contact Us</h4><a href="/cdn-cgi/l/email-protection#385b57564c595b4c784c505d4a5d59544e595b594c5157564b165b5755"><span class="__cf_email__" data-cfemail="d9bab6b7adb8baad99adb1bcabbcb8b5afb8bab8adb0b6b7aaf7bab6b4">[email&#160;protected]</span></a><a href="tel:4049230017">404-923-0017</a><a href="contact.html">Send a Message</a></div>
+        </div>
+            <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" targ
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
 </body>
 </html>

@@ -4,100 +4,304 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Travel Blog & Guides | The Real Vacations</title>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/jpeg" href="favicon.jpeg">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
-nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
-.nav-center{display:flex;gap:24px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center}
-.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500;transition:color 0.2s}.nav-links a:hover{color:#c084fc}
-.nav-auth{display:flex;gap:10px}.nav-login{border:2px solid #c084fc;color:#c084fc;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-login:hover{background:#c084fc;color:#1a0533}
-.nav-signup{background:#c084fc;color:#1a0533;padding:7px 18px;border-radius:50px;font-size:13px;font-weight:600}.nav-signup:hover{background:#7c3aed;color:#fff}
-.hero{background:linear-gradient(135deg,#1a0533 0%,#3b0764 60%,#6b21a8 100%);color:#fff;text-align:center;padding:70px 24px 60px}
-.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}
-.filter-bar{background:#faf5ff;padding:20px 24px;text-align:center;border-bottom:1px solid #f0e6ff}
-.filter-tag{display:inline-block;padding:8px 20px;margin:4px;border-radius:50px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;border:2px solid #e0d0f0;color:#6b21a8;background:#fff}
-.filter-tag:hover,.filter-tag.active{background:#7c3aed;color:#fff;border-color:#7c3aed}
-.blog-section{max-width:1100px;margin:0 auto;padding:60px 24px}
-.blog-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:28px}
-.blog-card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);transition:transform 0.2s;display:flex;flex-direction:column}
-.blog-card:hover{transform:translateY(-6px);box-shadow:0 12px 32px rgba(0,0,0,0.12)}
-.blog-card-body{padding:24px;flex:1;display:flex;flex-direction:column}
-.blog-card-date{font-size:12px;color:#999;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
-.blog-card-body h3{font-size:20px;font-weight:800;color:#1a0533;margin-bottom:10px;line-height:1.3}
-.blog-card-body p{font-size:14px;color:#555;line-height:1.6;margin-bottom:16px;flex:1}
-.blog-card-tag{display:inline-block;background:#7c3aed;color:#fff;font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;margin-bottom:12px}
-.blog-card-link{font-size:14px;font-weight:700;color:#7c3aed}
-.blog-full{max-width:800px;margin:0 auto;padding:40px 24px;display:none}
-.blog-full h2{font-size:28px;font-weight:800;color:#1a0533;margin-bottom:16px}
-.blog-full .content{font-size:15px;color:#555;line-height:1.8;white-space:pre-wrap}
-.blog-full .back{display:inline-block;margin-bottom:20px;color:#7c3aed;font-weight:600;cursor:pointer}
-.cta{background:linear-gradient(135deg,#1a0533,#6b21a8);color:#fff;text-align:center;padding:60px 24px}
-.cta h2{font-size:clamp(22px,4vw,36px);font-weight:800;margin-bottom:12px}.cta p{font-size:16px;color:#e9d5ff;max-width:500px;margin:0 auto 28px}
-.cta-btn{background:#22c55e;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;display:inline-block}.cta-btn:hover{background:#16a34a}
-footer{background:#0f0620;color:#ccc;padding:50px 40px 28px}
-.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:36px;max-width:1100px;margin:0 auto 36px}
-.footer-col h4{color:#fff;font-size:14px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px}
-.footer-col a,.footer-col p{color:#aaa;font-size:13px;line-height:2;display:block}.footer-col a:hover{color:#c084fc}
-.footer-bottom{border-top:1px solid #2d1b4e;padding-top:20px;text-align:center;font-size:12px;color:#666}
-@media(max-width:768px){.nav-links{display:none}.blog-grid{grid-template-columns:1fr}}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; color: #222; background: #fff; line-height: 1.7; }
+  a { text-decoration: none; color: inherit; }
+
+  nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+  nav a img { height: 52px; }
+  .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+  .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; }
+  .nav-links a:hover { color: #c084fc; }
+
+  .hero { background: linear-gradient(135deg, #1a0533 0%, #3b0764 60%, #6b21a8 100%); color: #fff; text-align: center; padding: 70px 24px 60px; }
+  .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; margin-bottom: 12px; }
+  .hero p { font-size: 18px; color: #e9d5ff; max-width: 600px; margin: 0 auto; }
+
+  .filter-bar { background: #faf5ff; padding: 20px 24px; text-align: center; border-bottom: 1px solid #f0e6ff; }
+  .filter-tag { display: inline-block; padding: 8px 20px; margin: 4px; border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: 2px solid #e0d0f0; color: #6b21a8; background: #fff; }
+  .filter-tag:hover, .filter-tag.active { background: #7c3aed; color: #fff; border-color: #7c3aed; }
+
+  .blog-section { max-width: 1100px; margin: 0 auto; padding: 60px 24px; }
+  .blog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 28px; }
+
+  .blog-card { background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); transition: transform 0.2s, box-shadow 0.2s; display: flex; flex-direction: column; }
+  .blog-card:hover { transform: translateY(-6px); box-shadow: 0 12px 32px rgba(0,0,0,0.12); }
+  .blog-card-img { height: 200px; background-size: cover; background-position: center; position: relative; }
+  .blog-card-tag { position: absolute; top: 14px; left: 14px; background: #7c3aed; color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: 1px; }
+  .blog-card-tag.green { background: #22c55e; }
+  .blog-card-tag.gold { background: #d4af37; color: #1a0533; }
+  .blog-card-tag.blue { background: #3b82f6; }
+  .blog-card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
+  .blog-card-date { font-size: 12px; color: #999; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+  .blog-card-body h3 { font-size: 20px; font-weight: 800; color: #1a0533; margin-bottom: 10px; line-height: 1.3; }
+  .blog-card-body p { font-size: 14px; color: #555; line-height: 1.6; margin-bottom: 16px; flex: 1; }
+
+  .blog-card-link { font-size: 14px; font-weight: 700; color: #7c3aed; transition: color 0.2s; display: inline-block; margin-bottom: 12px; }
+  .blog-card-link:hover { color: #6d28d9; }
+
+  /* Emotional Ticketmaster CTA buttons */
+  .ticket-btn { display: block; text-align: center; background: linear-gradient(135deg, #7c3aed, #a855f7); color: #fff; padding: 13px 20px; border-radius: 50px; font-weight: 700; font-size: 13px; transition: background 0.2s, transform 0.15s; line-height: 1.3; }
+  .ticket-btn:hover { background: linear-gradient(135deg, #6d28d9, #9333ea); transform: translateY(-2px); }
+  .ticket-btn span { display: block; font-size: 11px; font-weight: 500; opacity: 0.85; margin-top: 2px; }
+
+  .partner-badge { display: inline-flex; align-items: center; gap: 8px; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 18px; border-radius: 10px; font-size: 13px; color: #166534; font-weight: 600; margin: 12px 0; }
+  .partner-badge.trip { background: #eff6ff; border-color: #bfdbfe; color: #1e40af; }
+
+  .blog-cta { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; text-align: center; padding: 60px 24px; margin-top: 20px; }
+  .blog-cta h2 { font-size: clamp(22px, 4vw, 36px); font-weight: 800; margin-bottom: 12px; }
+  .blog-cta p { font-size: 16px; color: #e9d5ff; max-width: 500px; margin: 0 auto 28px; }
+  .blog-cta-btn { background: #22c55e; color: #fff; padding: 14px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; display: inline-block; transition: background 0.2s, transform 0.15s; }
+  .blog-cta-btn:hover { background: #16a34a; transform: translateY(-2px); }
+
+  footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
+  .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
+  .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+  .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; }
+  .footer-col a:hover { color: #c084fc; }
+  .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
+
+  @media (max-width: 768px) {
+    .nav-links { display: none; }
+    .blog-grid { grid-template-columns: 1fr; }
+    .hero { padding: 50px 20px 40px; }
+  }
 </style>
 </head>
 <body>
-<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-center"><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div><div class="nav-auth"><a href="/login" class="nav-login">Login</a><a href="/signup" class="nav-signup">Sign Up</a></div></div></nav>
-<section class="hero"><h1>Travel Blog & Guides</h1><p>Packing tips, travel documents, and everything you need to travel stress-free</p></section>
-<div class="filter-bar"><span class="filter-tag active" onclick="filterPosts('all',this)">All Posts</span><span class="filter-tag" onclick="filterPosts('packing',this)">Packing</span><span class="filter-tag" onclick="filterPosts('documents',this)">Documents</span><span class="filter-tag" onclick="filterPosts('tips',this)">Tips</span><span class="filter-tag" onclick="filterPosts('destination',this)">Destinations</span></div>
-<section class="blog-section"><div class="blog-grid" id="blogGrid"><p>Loading posts...</p></div></section>
-<div class="blog-full" id="blogFull"><span class="back" onclick="showGrid()">← Back to all posts</span><h2 id="blogFullTitle"></h2><div class="content" id="blogFullContent"></div></div>
-<section class="cta"><h2>Ready to Experience It Yourself?</h2><p>Stop reading about amazing trips—book one.</p><a href="/trips" class="cta-btn">Browse Our Trips →</a></section>
-<footer><div class="footer-grid"><div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px;margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div><div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a></div><div class="footer-col"><h4>Contact Us</h4><a href="mailto:info@therealvacations.com">info@therealvacations.com</a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a Message</a></div></div><div style="text-align:center;margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc;font-size:14px;margin:0 12px;">👥 Facebook</a></div><div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
-<script>
-var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
-var allPosts=[];
-var tagColors={packing:'#22c55e',documents:'#d4af37',tips:'#3b82f6',destination:'#ef4444'};
 
-async function loadPosts(){
-  var res=await _sb.from('blog_posts').select('*').eq('is_published',true).order('created_at',{ascending:false});
-  allPosts=res.data||[];
-  renderPosts(allPosts);
-}
+<!-- =============================================
+  ✏️ HOW TO ADD, EDIT, OR REMOVE BLOG POSTS
+  =============================================
+  
+  Each blog post is a <div class="blog-card"> block.
+  
+  TO ADD A NEW POST:
+  1. Copy an existing blog-card block (from <div class="blog-card"> to its closing </div>)
+  2. Paste it inside the <div class="blog-grid"> section
+  3. Update the image, tag, date, title, description, and link
+  
+  TO EDIT A POST:
+  1. Find the blog-card you want to change
+  2. Edit the text, image URL, or link
+  
+  TO REMOVE A POST:
+  1. Delete the entire <div class="blog-card">...</div> block
+  
+  TAG COLORS:
+  - Purple (default): "blog-card-tag"         → for Destination Guides
+  - Green:            "blog-card-tag green"    → for Packing Lists
+  - Gold:             "blog-card-tag gold"     → for Travel Documents
+  - Blue:             "blog-card-tag blue"     → for Tips & Advice
+  
+  IMAGE:
+  - Use style="background-image: url('YOUR-IMAGE-FILENAME.jpg')"
+  - Upload the image to GitHub in the same folder
+  - Or use a URL from an external source
+  
+  CATEGORY (data-category):
+  - Add data-category="packing" or "documents" or "destination" or "tips"
+  - This powers the filter tags at the top of the page
 
-function renderPosts(posts){
-  var grid=document.getElementById('blogGrid');
-  if(!posts.length){grid.innerHTML='<p>No blog posts yet. Check back soon!</p>';return;}
-  grid.innerHTML=posts.map(function(p){
-    var d=new Date(p.created_at);var dateStr=d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-    var color=tagColors[p.category]||'#7c3aed';
-    return '<div class="blog-card" data-category="'+p.category+'"><div class="blog-card-body"><span class="blog-card-tag" style="background:'+color+'">'+p.category+'</span><div class="blog-card-date">'+dateStr+'</div><h3>'+p.title+'</h3><p>'+(p.content||'').substring(0,150)+'...</p><a href="#" class="blog-card-link" onclick="showPost(\''+p.slug+'\');return false;">Read More →</a></div></div>';
-  }).join('');
-}
+  TICKETMASTER BUTTON:
+  - Each destination guide has a ticket-btn that links to ticketmaster.com
+  - Update the href to a specific event page when available
+  - Edit the button text to match the event name
+  ============================================= -->
 
-function filterPosts(cat,el){
-  document.querySelectorAll('.filter-tag').forEach(function(t){t.classList.remove('active')});
-  el.classList.add('active');
-  if(cat==='all')renderPosts(allPosts);
-  else renderPosts(allPosts.filter(function(p){return p.category===cat}));
-}
+<!-- Nav -->
+<nav>
+  <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations"></a>
+  <div class="nav-links">
+    <a href="index.html">Home</a>
+    <a href="trips.html">Trips</a>
+    <a href="real-stories.html">Real Stories</a>
+    <a href="about.html">About</a>
+    <a href="how-it-works.html">How It Works</a>
+    <a href="resources.html">Resources</a>
+    <a href="blog.html">Blog</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
 
-function showPost(slug){
-  var post=allPosts.find(function(p){return p.slug===slug});
-  if(!post)return;
-  document.getElementById('blogFullTitle').textContent=post.title;
-  document.getElementById('blogFullContent').textContent=post.content;
-  document.querySelector('.blog-section').style.display='none';
-  document.querySelector('.filter-bar').style.display='none';
-  document.getElementById('blogFull').style.display='block';
-  window.scrollTo(0,0);
-}
+<!-- Hero -->
+<section class="hero">
+  <h1>Travel Blog & Guides</h1>
+  <p>Destination guides, packing tips, travel documents, and everything you need to travel stress-free</p>
+</section>
 
-function showGrid(){
-  document.querySelector('.blog-section').style.display='block';
-  document.querySelector('.filter-bar').style.display='block';
-  document.getElementById('blogFull').style.display='none';
-}
+<!-- Filter Tags -->
+<div class="filter-bar">
+  <span class="filter-tag active" onclick="filterPosts('all')">All Posts</span>
+  <span class="filter-tag" onclick="filterPosts('destination')">🎵 Destination Guides</span>
+  <span class="filter-tag" onclick="filterPosts('packing')">🧳 Packing Lists</span>
+  <span class="filter-tag" onclick="filterPosts('documents')">📄 Travel Documents</span>
+  <span class="filter-tag" onclick="filterPosts('tips')">💡 Tips & Advice</span>
+</div>
 
-loadPosts();
-</script>
+<!-- Blog Grid -->
+<section class="blog-section">
+  <div class="blog-grid" id="blogGrid">
+
+    <!-- ============================================= -->
+    <!-- POST 1: Destination Guide — Essence Festival  -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="destination">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1571997478779-2adcbbe9ab2f?w=600&q=80'); background-color: #2d1b4e;">
+        <span class="blog-card-tag">Destination Guide</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>New Orleans Destination Guide: Essence Festival 2026</h3>
+        <p>Everything you need to know about Essence Festival — from the best restaurants in the French Quarter to where to stay near the Superdome. Plus, how to experience NOLA like a local.</p>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#essence-guide" class="blog-card-link">Read the Full Guide →</a>
+        <!-- ✏️ Update href to specific Ticketmaster event page when available -->
+        <a href="https://www.ticketmaster.com/2026-essence-festival-of-culture-3-new-orleans-louisiana-07-03-2026/event/1B0063758A1698AB" target="_blank" class="ticket-btn">🎶 Don't Just Read About It — Experience Essence Live<span>Essence Festival 2026 — Tickets on Ticketmaster</span></a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- POST 2: Destination Guide — Mary J Blige      -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="destination">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1605540436563-5bca919ae766?w=600&q=80'); background-color: #2d1b4e;">
+        <span class="blog-card-tag">Destination Guide</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>Las Vegas Guide: Mary J Blige Residency Finale at Dolby Live</h3>
+        <p>Your ultimate guide to Vegas for the Mary J Blige farewell show — the best hotels on the Strip, dining near Park MGM, and how to make it a full weekend experience.</p>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#maryj-guide" class="blog-card-link">Read the Full Guide →</a>
+        <!-- ✏️ Update href to specific Ticketmaster event page when available -->
+        <a href="https://www.ticketmaster.com/mary-j-blige-my-life-my-las-vegas-nevada-07-18-2026/event/2E006428C7A1422C" target="_blank" class="ticket-btn">🎤 Be There for the Finale — This Night Won't Come Again<span>Mary J Blige Residency Finale — Tickets on Ticketmaster</span></a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- POST 3: Destination Guide — Keith Sweat       -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="destination">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1575444758702-4a6b9222336e?w=600&q=80'); background-color: #2d1b4e;">
+        <span class="blog-card-tag">Destination Guide</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>Atlanta Guide: Keith Sweat R&B Lovers Tour at State Farm Arena</h3>
+        <p>The ATL insider guide — where to eat, what to do, and how to turn a concert night into an unforgettable Atlanta weekend. Plus hotel tips near State Farm Arena.</p>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#keithsweat-guide" class="blog-card-link">Read the Full Guide →</a>
+        <!-- ✏️ Update href to specific Ticketmaster event page when available -->
+        <a href="https://www.ticketmaster.com/the-rb-lovers-tour-atlanta-georgia-08-29-2026/event/0E006443B2676A3C" target="_blank" class="ticket-btn">🎷 Feel the Music Live — Your Night in Atlanta Starts Here<span>Keith Sweat R&B Lovers Tour — Tickets on Ticketmaster</span></a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- POST 4: Destination Guide — Napa Juneteenth   -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="destination">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?w=600&q=80'); background-color: #2d1b4e;">
+        <span class="blog-card-tag">Destination Guide</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>Napa Valley Guide: Juneteenth Wine Country Celebration 2026</h3>
+        <p>Discover the wineries, restaurants, and cultural experiences that make our Napa Juneteenth trip unforgettable. From Trinitas Cellars cave tastings to Juneteenth celebration dinners.</p>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#napa-guide" class="blog-card-link">Read the Full Guide →</a>
+        <a href="https://youli.io/t/the-real-vacations/juneteenth-napa-weekend-june-18-21-2026" target="_blank" class="ticket-btn" style="background: linear-gradient(135deg, #22c55e, #16a34a);">🍷 Celebrate Freedom in Wine Country — Book Your Spot<span>Napa Valley Juneteenth 2026 — Limited Spots</span></a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- POST 5: Packing List                          -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="packing">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80'); background-color: #166534;">
+        <span class="blog-card-tag green">Packing List</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>The Ultimate Group Trip Packing List: What to Bring (and What to Leave Home)</h3>
+        <p>Whether you're headed to wine country, a music festival, or a beach resort — here's exactly what to pack for a stress-free group trip. Includes a printable checklist.</p>
+        <span class="partner-badge">✅ Featured on TripAdvisor</span>
+        <br><br>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#packing-guide" class="blog-card-link">Read the Packing Guide →</a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- POST 6: Travel Documents                      -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="documents">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600&q=80'); background-color: #92400e;">
+        <span class="blog-card-tag gold">Travel Documents</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>Travel Documents Checklist: Everything You Need Before You Go</h3>
+        <p>Passport, Real ID, TSA PreCheck, travel insurance — a complete guide to making sure your paperwork is squared away before departure day. Don't get caught at the airport.</p>
+        <span class="partner-badge">✅ Featured on TripAdvisor</span>
+        <br><br>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#documents-guide" class="blog-card-link">Read the Document Guide →</a>
+      </div>
+    </div>
+
+    <!-- ============================================= -->
+    <!-- POST 7: Tips — First Time Group Traveler      -->
+    <!-- ============================================= -->
+    <div class="blog-card" data-category="tips">
+      <div class="blog-card-img" style="background-image: url('https://images.unsplash.com/photo-1506929562872-bb421503ef21?w=600&q=80'); background-color: #1e40af;">
+        <span class="blog-card-tag blue">Tips & Advice</span>
+      </div>
+      <div class="blog-card-body">
+        <div class="blog-card-date">March 2026</div>
+        <h3>First Time Traveling with a Group? Here's What to Expect</h3>
+        <p>Nervous about your first group trip? We break down what happens from booking to departure day, what to expect on the ground, and why solo travelers love our groups.</p>
+        <br>
+        <!-- ✏️ Replace # with link to full blog post page when ready -->
+        <a href="#first-timer-guide" class="blog-card-link">Read the Tips →</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="blog-cta">
+  <h2>Ready to Experience It Yourself?</h2>
+  <p>Stop reading about amazing trips — book one. Spin the wheel for up to $500 off.</p>
+  <a href="trips.html" class="blog-cta-btn">Browse Our Trips →</a>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;">
+      <p>Creating unforgettable group travel experiences for over 20 years.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Quick Links</h4>
+      <a href="trips.html">Upcoming Trips</a>
+      <a href="about.html">About Us</a>
+      <a href="how-it-works.html">How It Works</a>
+      <a href="real-stories.html">Real Stories</a>
+      <a href="blog.html">Blog</a>
+    </div>
+    <div class="footer-col">
+      <h4>Contact Us</h4>
+      <a href="/cdn-cgi/l/email-protection#7f1c10110b1e1c0b3f0b171a0d1a1e13091e1c1e0b1610110c511c1012"><span class="__cf_email__" data-cfemail="c2a1adacb6a3a1b682b6aaa7b0a7a3aeb4a3a1a3b6abadacb1eca1adaf">[email&#160;protected]</span></a>
+      <a href="tel:4049230017">404-923-0017</a>
+      <a href="contact.html">Send a Message</a>
+    </div>
+  </div>
+      <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="display:inline-block; margin:0 10px; col
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
 </body>
 </html>

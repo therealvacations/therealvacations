@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Napa Valley Juneteenth | Wine Country Celebration | The Real Vacations</title>
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; }
+        header { background: #1a1a2e; color: white; padding: 1rem 5%; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header-content { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.8rem; font-weight: bold; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-decoration: none; }
+        .logo img { height: 70px; width: auto; }
+        nav a { color: white; text-decoration: none; margin-left: 2rem; transition: color 0.3s; font-weight: 500; }
+        nav a:hover { color: #667eea; }
+        .promo-banner { background: linear-gradient(90deg, #D4AF37, #F4D03F, #D4AF37); background-size: 200% auto; animation: shimmer 3s linear infinite; color: #1a1a2e; padding: 12px 5%; text-align: center; font-weight: 600; }
+        .promo-banner a { color: #330867; text-decoration: underline; font-weight: 700; }
+        @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+        .hero { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); color: white; padding: 80px 5%; text-align: center; }
+        .hero-content { max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; font-weight: 700; }
+        .hero-subtitle { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .hero-details { font-size: 1.2rem; opacity: 0.95; }
+        section { padding: 60px 5%; max-width: 1200px; margin: 0 auto; }
+        .section-alt { background: #f8f9fa; }
+        .section-title { font-size: 2.5rem; margin-bottom: 2rem; color: #1a1a2e; text-align: center; }
+        .wineries-section { background: white; }
+        .wineries-intro { text-align: center; max-width: 800px; margin: 0 auto 3rem; }
+        .wineries-intro p { font-size: 1.1rem; color: #666; line-height: 1.7; }
+        .wineries-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem; }
+        .winery-card { background: #f8f9fa; padding: 2rem; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .winery-card:hover { transform: translateY(-5px); }
+        .winery-card h3 { font-size: 1.5rem; color: #30cfd0; margin-bottom: 1rem; }
+        .winery-card p { color: #666; line-height: 1.7; margin-bottom: 1rem; }
+        .winery-link { display: inline-block; color: #30cfd0; text-decoration: none; font-weight: 600; padding: 10px 20px; border: 2px solid #30cfd0; border-radius: 25px; transition: all 0.3s; margin-top: 0.5rem; }
+        .winery-link:hover { background: #30cfd0; color: white; }
+        .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 3rem; }
+        .package-card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 3px 15px rgba(0,0,0,0.1); }
+        .package-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .package-card h3 { font-size: 1.5rem; color: #1a1a2e; margin-bottom: 1rem; }
+        .package-card p { color: #666; line-height: 1.7; }
+        .spin-section { background: linear-gradient(135deg, #330867 0%, #30cfd0 100%); color: white; padding: 60px 5%; text-align: center; }
+        .spin-container { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: center; gap: 4rem; flex-wrap: wrap; }
+        .spin-content { flex: 1; min-width: 300px; text-align: left; }
+        .spin-content h2 { font-size: 2rem; margin-bottom: 1rem; }
+        .spin-content p { font-size: 1.1rem; opacity: 0.95; margin-bottom: 1.5rem; }
+        .spin-tiers { margin-bottom: 2rem; }
+        .spin-tier { background: rgba(255,255,255,0.1); padding: 1rem 1.5rem; border-radius: 10px; margin-bottom: 0.75rem; display: flex; justify-content: space-between; align-items: center; }
+        .spin-tier.active { background: rgba(212, 175, 55, 0.3); border: 1px solid #D4AF37; }
+        .spin-tier .amount { font-size: 1.3rem; font-weight: 700; color: #D4AF37; }
+        .spin-form { display: flex; gap: 1rem; flex-wrap: wrap; }
+        .spin-form input { flex: 1; min-width: 200px; padding: 14px 20px; border: none; border-radius: 30px; font-size: 1rem; }
+        .spin-btn { background: #D4AF37; color: #1a1a2e; padding: 14px 30px; border: none; border-radius: 30px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; }
+        .spin-btn:hover { transform: scale(1.05); box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .wheel-container { position: relative; width: 250px; height: 250px; }
+        .wheel { width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(#D4AF37 0deg 45deg, #30cfd0 45deg 90deg, #667eea 90deg 135deg, #330867 135deg 180deg, #D4AF37 180deg 225deg, #30cfd0 225deg 270deg, #667eea 270deg 315deg, #330867 315deg 360deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(0,0,0,0.3); transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
+        .wheel-center { width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: #330867; font-size: 0.85rem; text-align: center; }
+        .wheel-pointer { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 20px solid white; }
+        .why-trip { background: #f8f9fa; }
+        .why-content { max-width: 800px; margin: 0 auto; }
+        .why-content p { font-size: 1.1rem; color: #666; line-height: 1.8; margin-bottom: 1.5rem; }
+        .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 3rem; margin-top: 3rem; }
+        .details-column h3 { font-size: 1.8rem; margin-bottom: 1.5rem; color: #1a1a2e; }
+        .details-column ul { list-style: none; }
+        .details-column li { padding: 0.7rem 0; padding-left: 2rem; position: relative; color: #666; }
+        .details-column li:before { content: "✓"; position: absolute; left: 0; color: #30cfd0; font-weight: bold; font-size: 1.2rem; }
+        .excluded li:before { content: "✗"; color: #999; }
+        .cta-footer { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-align: center; padding: 60px 5%; }
+        .cta-footer h2 { font-size: 2.5rem; margin-bottom: 1rem; }
+        .cta-footer p { font-size: 1.2rem; margin-bottom: 2rem; opacity: 0.95; }
+        .cta-button { display: inline-block; background: white; color: #667eea; padding: 15px 40px; text-decoration: none; border-radius: 30px; font-weight: 600; font-size: 1.1rem; transition: all 0.3s; }
+        .cta-button:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+        footer { background: #1a1a2e; color: white; padding: 40px 5%; text-align: center; }
+        .footer-content { max-width: 1200px; margin: 0 auto; }
+        .footer-links { margin: 2rem 0; }
+        .footer-links a { color: white; text-decoration: none; margin: 0 1.5rem; transition: color 0.3s; }
+        .footer-links a:hover { color: #667eea; }
+        .contact-info a { color: #667eea; text-decoration: none; }
+        @media (max-width: 768px) { .hero h1 { font-size: 2rem; } .hero-subtitle { font-size: 1.2rem; } nav { display: none; } .spin-container { flex-direction: column; } .spin-content { text-align: center; } }
+        .packages { padding: 56px 24px; }
+        .packages h2 { text-align: center; font-size: 28px; font-weight: 800; color: #1a0533; margin-bottom: 36px; }
+        .packages-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; max-width: 740px; margin: 0 auto; }
+        .pkg { border-radius: 20px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .pkg-header { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; padding: 28px 24px; text-align: center; }
+        .pkg-header h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+        .pkg-price { font-size: 36px; font-weight: 900; color: #c084fc; }
+        .pkg-price span { font-size: 14px; color: #e9d5ff; font-weight: 400; }
+        .pkg-body { background: #fff; padding: 24px; }
+        .pkg-body ul { list-style: none; margin-bottom: 24px; }
+        .pkg-body ul li { font-size: 14px; color: #444; padding: 6px 0; border-bottom: 1px solid #f3e8ff; display: flex; align-items: center; gap: 8px; }
+        .pkg-body ul li::before { content: "✓"; color: #7c3aed; font-weight: 700; }
+        .pkg-btn { display: block; text-align: center; background: #7c3aed; color: #fff; padding: 14px; border-radius: 50px; font-weight: 700; font-size: 14px; transition: background 0.2s; text-decoration: none; }
+        .pkg-btn:hover { background: #6d28d9; }
+        .pkg-btn.outline { background: transparent; border: 2px solid #7c3aed; color: #7c3aed; }
+        .pkg-btn.outline:hover { background: #7c3aed; color: #fff; }
+        .pkg-note { font-size: 12px; color: #888; text-align: center; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="promo-banner">
+        🎰 <strong>SPIN TO WIN!</strong> Up to $500 off when you pay in full. <a href="#spin-wheel">Spin Now →</a>
+    </div>
+
+    <header>
+        <div class="header-content">
+            <a href="index.html" class="logo"><img src="logo.jpeg" alt="The Real Vacations"></a>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="trips.html">Trips</a>
+                <a href="real-stories.html">Real Stories</a>
+                <a href="about.html">About</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="resources.html">Resources</a>
+                <a href="blog.html">Blog</a>
+                <a href="contact.html">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Napa Valley Juneteenth</h1>
+            <p class="hero-subtitle">Celebrate Freedom in Wine Country</p>
+            <p class="hero-details">June 18-21, 2026 • Napa Valley, California</p>
+        </div>
+    </section>
+
+    <!-- Napa Valley Tour Video -->
+    <section style="background: #0f0620; padding: 48px 5%; text-align: center;">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <h2 style="font-size: 1.8rem; color: #fff; margin-bottom: 8px; font-family: 'Playfair Display', serif;">🍷 See What Awaits You</h2>
+        <p style="color: #c084fc; font-size: 15px; margin-bottom: 24px;">A taste of the Napa Valley experience</p>
+        <video controls playsinline preload="metadata" poster="" style="width: 100%; max-width: 800px; border-radius: 16px; box-shadow: 0 8px 30px rgba(107, 45, 139, 0.4);">
+          <source src="napa_valley_tour.mp4" type="video/mp4">
+          Your browser does not support the video tag.
+        </video>
+      </div>
+    </section>
+
+    <section class="wineries-section">
+        <h2 class="section-title">Featured Wineries</h2>
+        <div class="wineries-intro">
+            <p>This Juneteenth, we're celebrating freedom in wine country. Every tasting, every vineyard, every experience on this trip has been handpicked to give you an unforgettable Napa Valley experience.</p>
+        </div>
+        <div class="wineries-grid">
+            <div class="winery-card">
+                <h3>Trinitas Cellars</h3>
+                <p>An extraordinary underground estate cave tasting room in Napa Valley — intimate, stunning, and unlike anything else in wine country. Your Thursday evening welcome experience begins here.</p>
+                <a href="https://www.trinitascellars.com" class="winery-link" target="_blank">Step Inside →</a>
+            </div>
+            <div class="winery-card">
+                <h3>Black Stallion Estate Winery</h3>
+                <p>One of Napa's most breathtaking estate wineries — striking architecture, world-class Cabernet, and a setting you have to see to believe. Your Juneteenth morning wine experience.</p>
+                <a href="https://www.blackstallionwinery.com" class="winery-link" target="_blank">Picture Yourself Here →</a>
+            </div>
+            <div class="winery-card">
+                <h3>JaM Cellars</h3>
+                <p>Napa's most iconic music-inspired tasting lounge in the heart of downtown. Great wine, great music, great energy — your Saturday night finale in wine country.</p>
+                <a href="https://www.jamcellars.com" class="winery-link" target="_blank">Get a Taste →</a>
+            </div>
+            <div class="winery-card">
+                <h3>The Meritage Resort and Spa</h3>
+                <p>Your home base for the weekend — nestled among rolling Napa vineyards with a cave spa, multiple pools, and wine caves right on property. Luxury and relaxation await.</p>
+                <a href="https://www.meritagecollection.com/meritage-resort" class="winery-link" target="_blank">Discover What Awaits →</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="section-alt">
+        <h2 class="section-title">What's Included</h2>
+        <div class="package-grid">
+            <div class="package-card">
+                <div class="package-icon">🍷</div>
+                <h3>Wine Experiences</h3>
+                <p>Curated tastings at Trinitas Cellars, Black Stallion Estate Winery, and JaM Cellars. All reservations handled for you.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🏨</div>
+                <h3>Accommodations</h3>
+                <p><strong>3 nights at The Meritage Resort and Spa</strong> nestled among Napa Valley's rolling vineyards. General package: Standard rooms. VIP package: Premium vineyard-view suites with resort access including the cave spa and pools.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🚐</div>
+                <h3>Transportation</h3>
+                <p>Round-trip airport transfers and daily wine tour transportation via Napa Valley Chauffeur. Professional, personalized service with deep knowledge of the area.</p>
+            </div>
+            <div class="package-card">
+                <div class="package-icon">🎭</div>
+                <h3>Cultural Experiences</h3>
+                <p>Juneteenth celebration dinner featuring local restaurants (Lil Sistas Goodys, Buster's BBQ), live music, and optional add-ons: cooking class, spa day, or hot air balloon ride.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="spin-section" id="spin-wheel">
+        <div class="spin-container">
+            <div class="spin-content">
+                <h2>🎰 Spin to Win Your Discount</h2>
+                <p>Subscribe to spin the wheel and win up to $500 off when you pay in full at booking!</p>
+                <div class="spin-tiers">
+                    <div class="spin-tier active">
+                        <div>
+                            <strong>Book before April 19</strong>
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Pay in full to receive discount</div>
+                        </div>
+                        <div class="amount">Up to $500 OFF</div>
+                    </div>
+                    <div class="spin-tier">
+                        <div>
+                            <strong>Book after April 19</strong>
+                            <div style="font-size: 0.85rem; opacity: 0.9;">Pay in full to receive discount</div>
+                        </div>
+                        <div class="amount">Up to $250 OFF</div>
+                    </div>
+                </div>
+                <form class="spin-form">
+                    <input type="email" placeholder="Enter your email" required>
+                    <button type="submit" class="spin-btn">🎰 Let Me Spin!</button>
+                </form>
+            </div>
+            <div class="wheel-container">
+                <div class="wheel-pointer"></div>
+                <div class="wheel" id="wheel">
+                    <div class="wheel-center">SPIN<br>TO WIN</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<section class="packages">
+  <div class="container">
+    <h2>Choose Your Package</h2>
+    <div class="packages-grid">
+      <div class="pkg">
+        <div class="pkg-header">
+          <h3>General Package</h3>
+          <div class="pkg-price">$2,895 <span>per person (double occupancy)</span></div>
+        </div>
+        <div class="pkg-body">
+          <ul>
+            <li>3 nights at The Meritage Resort and Spa</li>
+            <li>Curated winery tastings (Trinitas, Black Stallion, JaM Cellars)</li>
+            <li>Daily wine tour transportation</li>
+            <li>Round-trip airport transfers</li>
+            <li>Juneteenth celebration dinner</li>
+            <li>Welcome wine reception</li>
+          </ul>
+          <a href="https://youli.io/t/the-real-vacations/juneteenth-napa-weekend-june-18-21-2026" target="_blank" class="pkg-btn outline">Secure My Napa Spot — Pay $500 Deposit</a>
+          <p class="pkg-note">Book before April 19 & save $100 automatically · Flexible payment plans available</p>
+        </div>
+      </div>
+      <div class="pkg">
+        <div class="pkg-header">
+          <h3>VIP Package</h3>
+          <div class="pkg-price">$3,995 <span>per person (double occupancy)</span></div>
+        </div>
+        <div class="pkg-body">
+          <ul>
+            <li>3 nights premium vineyard-view suite</li>
+            <li>Private winery tours & barrel tastings</li>
+            <li>Premium transportation service</li>
+            <li>Private chef dinner experience</li>
+            <li>Cave spa treatment at The Meritage</li>
+          </ul>
+          <a href="https://youli.io/t/the-real-vacations/juneteenth-napa-weekend-june-18-21-2026" target="_blank" class="pkg-btn">Secure My Napa VIP Spot — Pay $500 Deposit</a>
+          <p class="pkg-note">Book before April 19 & save $100 automatically · Flexible payment plans available</p>
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center; margin-top:20px; font-size:13px; color:#888;">Only a few spots left — secure yours now with a $500 deposit. Flexible payment plans available after deposit.</p>
+  </div>
+</section>
+
+    <section class="why-trip">
+        <div class="why-content">
+            <h2 class="section-title">Why This Trip is Special</h2>
+            <p>Juneteenth isn't just a holiday—it's a celebration of freedom, resilience, and culture. And there's no better place to honor that than in Napa Valley, surrounded by world-class wines, stunning vineyards, and incredible food.</p>
+            <p>This trip is intentionally curated to give you an experience you won't find anywhere else. From the wineries you visit to the restaurants where you dine, from the chauffeur who drives you to the cultural experiences that frame your journey—every detail has been thoughtfully planned so you can relax and enjoy.</p>
+            <p>You'll taste incredible wines, connect with the people behind them, and hear their stories. It's wine country with purpose. It's celebration with meaning. And it's a trip you'll never forget.</p>
+        </div>
+    </section>
+
+    <section>
+        <h2 class="section-title">Trip Details</h2>
+        <div class="details-grid">
+            <div class="details-column">
+                <h3>What's Included</h3>
+                <ul>
+                    <li>3 nights at The Meritage Resort and Spa</li>
+                    <li>Trinitas Cellars, Black Stallion Estate &amp; JaM Cellars tastings</li>
+                    <li>Daily wine tour transportation</li>
+                    <li>Round-trip airport transfers</li>
+                    <li>Juneteenth celebration dinner</li>
+                    <li>Welcome wine reception with group</li>
+                    <li>Guided vineyard tours</li>
+                    <li>24/7 trip coordinator support</li>
+                    <li>Travel insurance option</li>
+                </ul>
+            </div>
+            <div class="details-column excluded">
+                <h3>What's Not Included</h3>
+                <ul>
+                    <li>Airfare (available as optional add-on)</li>
+                    <li>Most meals (beyond celebration dinner)</li>
+                    <li>Wine purchases & shipments (General package)</li>
+                    <li>Personal expenses & souvenirs</li>
+                    <li>Optional add-on experiences</li>
+                    <li>Gratuities for drivers/guides</li>
+                </ul>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 3rem; color: #666; font-size: 0.95rem;"><strong>Cancellation Policy:</strong> Full refund if cancelled within 24 hours of booking. After 24 hours, deposits are non-refundable but transferable to another traveler with $50 fee. Travel insurance highly recommended.</p>
+    </section>
+
+    <section class="cta-footer">
+        <h2>Ready to Celebrate Freedom in Wine Country?</h2>
+        <p>Book now with a $500 deposit and pay monthly. Celebrate freedom while making memories!</p>
+        <a href="https://youli.io/t/the-real-vacations/juneteenth-napa-weekend-june-18-21-2026" target="_blank" class="cta-button">🍷 Book Now — Secure Your Spot</a>
+    </section>
+
+    <footer>
+        <div class="footer-content">
+            <div class="logo"><img src="logo.jpeg" alt="The Real Vacations"></div>
+            <div class="footer-links">
+                <a href="trips.html">Trips</a>
+                <a href="about.html">About</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="real-stories.html">Real Stories</a>
+                <a href="resources.html">Resources</a>
+                <a href="blog.html">Blog</a>
+                <a href="contact.html">Contact</a>
+            </div>
+            <div class="contact-info">
+                <p>Email: <a href="/cdn-cgi/l/email-protection#55363a3b2134362115213d302730343923343634213c3a3b267b363a38"><span class="__cf_email__" data-cfemail="42212d2c3623213602362a273027232e34232123362b2d2c316c212d2f">[email&#160;protected]</span></a></p>
+                <p>Phone: <a href="tel:4049230017">404-923-0017</a></p>
+            </div>
+            <div style="text-align:center; margin-top:1.5rem;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">📸 Instagram</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">👥 Facebook</a></div>
+            <p style="margin-top: 2rem; opacity: 0.7;">&copy; 2026 The Real Vacations. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        var wheel = document.getElementById('wheel');
+        var isSpinning = false;
+        document.querySelector('.spin-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (isSpinning) return;
+            isSpinning = true;
+            var randomDegrees = 1440 + Math.flo
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
+</body>
+</html>

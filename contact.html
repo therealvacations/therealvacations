@@ -1,85 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Contact Us | The Real Vacations</title>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;color:#222;background:#fff;line-height:1.7}a{text-decoration:none;color:inherit}
-nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}nav img{height:52px}
-.nav-links{display:flex;gap:24px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px;font-weight:500;transition:color 0.2s}.nav-links a:hover{color:#c084fc}
-.hero{background:linear-gradient(135deg,#1a0533 0%,#3b0764 60%,#6b21a8 100%);color:#fff;text-align:center;padding:70px 24px 60px}
-.hero h1{font-size:clamp(28px,5vw,48px);font-weight:800;margin-bottom:12px}.hero p{font-size:18px;color:#e9d5ff;max-width:600px;margin:0 auto}
-.section{max-width:1100px;margin:0 auto;padding:60px 24px}
-.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;max-width:1000px;margin:0 auto}
-.info-card{background:#faf5ff;border-radius:16px;padding:28px;margin-bottom:20px}.info-card h3{font-size:18px;font-weight:700;color:#1a0533;margin-bottom:8px}
-.info-card p,.info-card a{font-size:14px;color:#555;line-height:1.8}.info-card a{color:#7c3aed;font-weight:600}
-.form-group{margin-bottom:18px}.form-group label{display:block;font-size:13px;font-weight:600;color:#1a0533;margin-bottom:6px}
-.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:10px;font-size:14px;font-family:inherit;outline:none;transition:border 0.2s}
-.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:#7c3aed}
-.form-group textarea{min-height:120px;resize:vertical}
-.submit-btn{background:#7c3aed;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:16px;border:none;cursor:pointer;width:100%;transition:background 0.2s}
-.submit-btn:hover{background:#6d28d9}.submit-btn:disabled{opacity:0.5;cursor:not-allowed}
-.msg{padding:14px;border-radius:12px;margin-bottom:20px;font-size:14px;display:none}.msg.success{display:block;background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}.msg.error{display:block;background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
-footer{background:#0f0620;color:#ccc;padding:40px;text-align:center;font-size:12px}footer a{color:#c084fc}
-@media(max-width:768px){.nav-links{display:none}.contact-grid{grid-template-columns:1fr}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us | The Real Vacations</title>
+    <meta name="description" content="Contact The Real Vacations to book your group trip or ask questions. Phone, email, or fill out our contact form.">
+    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700;800&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-purple: #6B2D8B;
+            --primary-green: #2E8B57;
+            --dark-purple: #4A1D6A;
+            --light-purple: #F5F0F8;
+            --accent-gold: #D4AF37;
+            --dark-bg: #1a1a2e;
+            --text-dark: #2D2D2D;
+            --text-medium: #555;
+            --text-light: #777;
+            --white: #ffffff;
+            --gradient-primary: linear-gradient(135deg, var(--primary-purple) 0%, var(--primary-green) 100%);
+            --gradient-hero: linear-gradient(135deg, #1a1a2e 0%, #4A1D6A 50%, #2E8B57 100%);
+            --shadow-soft: 0 4px 20px rgba(107, 45, 139, 0.15);
+            --shadow-hover: 0 8px 30px rgba(107, 45, 139, 0.25);
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; line-height: 1.7; color: var(--text-dark); background: var(--white); }
+        h1, h2, h3, h4 { font-family: 'Playfair Display', serif; font-weight: 600; line-height: 1.3; }
+
+        /* Nav */
+        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        nav a img { height: 52px; }
+        .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; text-decoration: none; }
+        .nav-links a:hover { color: #c084fc; }
+        
+        .hero { background: var(--gradient-hero); color: var(--white); padding: 80px 5%; text-align: center; position: relative; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 30% 70%, rgba(46, 139, 87, 0.3) 0%, transparent 50%); }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; font-weight: 700; }
+        .hero p { font-size: 1.3rem; opacity: 0.95; }
+        
+        section { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
+        
+        .contact-container { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; }
+        
+        .contact-info-section h2 { font-size: 2rem; color: var(--dark-purple); margin-bottom: 2rem; }
+        
+        .contact-method { background: var(--light-purple); padding: 2rem; margin-bottom: 1.5rem; border-radius: 16px; transition: all 0.3s; }
+        .contact-method:hover { transform: translateX(10px); box-shadow: var(--shadow-soft); }
+        .contact-method h3 { font-size: 1.3rem; color: var(--primary-purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.75rem; }
+        .contact-method p { color: var(--text-medium); line-height: 1.7; }
+        .contact-method a { color: var(--primary-purple); text-decoration: none; font-weight: 600; }
+        .contact-method a:hover { text-decoration: underline; }
+        
+        .hours-section { background: var(--gradient-primary); color: var(--white); padding: 2rem; border-radius: 16px; margin-top: 2rem; text-align: center; }
+        .hours-section h3 { font-size: 1.5rem; color: var(--white); margin-bottom: 1rem; }
+        .hours-section p { opacity: 0.95; margin-bottom: 0.5rem; }
+        .hours-section .note { margin-top: 1rem; font-size: 0.9rem; opacity: 0.8; }
+        
+        .contact-form-section h2 { font-size: 2rem; color: var(--dark-purple); margin-bottom: 2rem; }
+        
+        .contact-form { background: var(--light-purple); padding: 3rem; border-radius: 24px; }
+        
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-dark); font-weight: 600; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Montserrat', sans-serif;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background: var(--white);
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-purple);
+            box-shadow: 0 0 0 4px rgba(107, 45, 139, 0.1);
+        }
+        .form-group textarea { resize: vertical; min-height: 150px; }
+        
+        .submit-button {
+            background: var(--gradient-primary);
+            color: var(--white);
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .submit-button:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); }
+
+        /* Newsletter */
+        .newsletter-section { background: linear-gradient(135deg, #1a0533, #6b21a8); color: #fff; padding: 60px 5%; text-align: center; }
+        .newsletter-section h2 { font-size: 2rem; font-weight: 700; margin-bottom: 10px; }
+        .newsletter-section p { font-size: 1.1rem; color: #e9d5ff; max-width: 500px; margin: 0 auto 24px; }
+        .newsletter-form { display: flex; gap: 12px; max-width: 500px; margin: 0 auto; flex-wrap: wrap; justify-content: center; }
+        .newsletter-form input { flex: 1; min-width: 220px; padding: 14px 20px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50px; font-size: 1rem; background: rgba(255,255,255,0.1); color: #fff; outline: none; font-family: 'Montserrat', sans-serif; }
+        .newsletter-form input::placeholder { color: #c4b5d9; }
+        .newsletter-form input:focus { border-color: #c084fc; }
+        .newsletter-form button { background: #22c55e; color: #fff; padding: 14px 32px; border-radius: 50px; font-weight: 700; font-size: 1rem; border: none; cursor: pointer; transition: background 0.2s, transform 0.15s; font-family: 'Montserrat', sans-serif; }
+        .newsletter-form button:hover { background: #16a34a; transform: translateY(-2px); }
+        .newsletter-note { font-size: 12px; color: #9ca3af; margin-top: 12px; }
+
+        /* Footer */
+        footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
+        .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; text-decoration: none; }
+        .footer-col a:hover { color: #c084fc; }
+        .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
+        
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero h1 { font-size: 2rem; }
+            .contact-container { grid-template-columns: 1fr; gap: 2rem; }
+        }
+    </style>
 </head>
 <body>
-<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a></div></nav>
-<section class="hero"><h1>Get In Touch</h1><p>Ready to book your next adventure? We're here to help!</p></section>
-<div class="section">
-<div class="contact-grid">
-<div>
-<div class="info-card"><h3>📧 Email</h3><p>For booking inquiries, trip questions, or general information:</p><a href="mailto:info@therealvacations.com">info@therealvacations.com</a></div>
-<div class="info-card"><h3>📱 Phone</h3><p>Speak with a travel specialist:</p><a href="tel:4049230017">404-923-0017</a><p>Mon-Fri: 9AM-6PM EST · Sat: 10AM-4PM EST</p></div>
-<div class="info-card"><h3>💬 Text Us</h3><p>Prefer to text? Send us a message:</p><a href="sms:4049230017">404-923-0017</a></div>
-</div>
-<div>
-<h2 style="font-size:24px;font-weight:800;color:#1a0533;margin-bottom:20px;">Send Us a Message</h2>
-<div id="formMsg" class="msg"></div>
-<form id="contactForm">
-<div class="form-group"><label>Full Name *</label><input type="text" id="cf_name" required></div>
-<div class="form-group"><label>Email Address *</label><input type="email" id="cf_email" required></div>
-<div class="form-group"><label>Phone Number</label><input type="tel" id="cf_phone"></div>
-<div class="form-group"><label>Interested Trip</label><select id="cf_trip"><option value="">Select a trip (optional)</option></select></div>
-<div class="form-group"><label>Number of Travelers</label><input type="number" id="cf_num" min="1" max="50"></div>
-<div class="form-group"><label>Message *</label><textarea id="cf_message" required></textarea></div>
-<button type="submit" class="submit-btn" id="cf_btn">Send Message →</button>
-</form>
-</div>
-</div>
-</div>
-<footer>© 2026 The Real Vacations. All rights reserved. · <a href="mailto:info@therealvacations.com">info@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a></footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
-<script>
-var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co","eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k");
+    <!-- Nav -->
+    <!-- ✅ FIX: Added Blog to nav -->
+    <nav>
+        <a href="index.html"><img src="logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="trips.html">Trips</a>
+            <a href="real-stories.html">Real Stories</a>
+            <a href="about.html">About</a>
+            <a href="how-it-works.html">How It Works</a>
+            <a href="resources.html">Resources</a>
+            <a href="blog.html">Blog</a>
+            <a href="contact.html">Contact</a>
+        </div>
+    </nav>
 
-// Load trips into dropdown
-_sb.from('trip_content').select('trip_name').eq('is_active',true).then(function(res){
-  var sel=document.getElementById('cf_trip');
-  (res.data||[]).forEach(function(t){var o=document.createElement('option');o.value=t.trip_name;o.textContent=t.trip_name;sel.appendChild(o)});
-  var o2=document.createElement('option');o2.value='Custom Trip / Group Inquiry';o2.textContent='Custom Trip / Group Inquiry';sel.appendChild(o2);
-  var o3=document.createElement('option');o3.value='General Question';o3.textContent='General Question';sel.appendChild(o3);
-});
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Get In Touch</h1>
+            <p>Ready to book your next adventure? We're here to help!</p>
+        </div>
+    </section>
 
-document.getElementById('contactForm').addEventListener('submit',async function(e){
-  e.preventDefault();
-  var btn=document.getElementById('cf_btn');var msg=document.getElementById('formMsg');
-  btn.disabled=true;btn.textContent='Sending...';
-  var res=await _sb.from('contact_submissions').insert([{
-    full_name:document.getElementById('cf_name').value,
-    email:document.getElementById('cf_email').value,
-    phone:document.getElementById('cf_phone').value||null,
-    trip_interest:document.getElementById('cf_trip').value||null,
-    num_travelers:parseInt(document.getElementById('cf_num').value)||null,
-    message:document.getElementById('cf_message').value
-  }]);
-  if(res.error){msg.className='msg error';msg.textContent='Error: '+res.error.message;btn.disabled=false;btn.textContent='Send Message →';}
-  else{msg.className='msg success';msg.textContent='✅ Message sent! We will get back to you within 24 hours.';e.target.reset();btn.textContent='Sent ✓';}
-});
-</script>
+    <section>
+        <div class="contact-container">
+            <!-- Contact Info -->
+            <div class="contact-info-section">
+                <h2>Contact Information</h2>
+                
+                <div class="contact-method">
+                    <h3>📧 Email</h3>
+                    <p>For booking inquiries, trip questions, or general information:</p>
+                    <!-- ✅ FIX: Clean email link -->
+                    <p><a href="/cdn-cgi/l/email-protection#4f2c20213b2e2c3b0f3b272a3d2a2e23392e2c2e3b2620213c612c2022"><span class="__cf_email__" data-cfemail="583b37362c393b2c182c303d2a3d39342e393b392c3137362b763b3735">[email&#160;protected]</span></a></p>
+                </div>
+
+                <div class="contact-method">
+                    <h3>📱 Phone</h3>
+                    <p>Speak with a travel specialist:</p>
+                    <p><a href="tel:4049230017">404-923-0017</a></p>
+                    <p style="margin-top: 0.5rem; font-size: 0.95rem; color: var(--text-light);">Monday - Friday: 9:00 AM - 6:00 PM EST<br>Saturday: 10:00 AM - 4:00 PM EST</p>
+                </div>
+
+                <div class="contact-method">
+                    <h3>💬 Message Us</h3>
+                    <p>Have a quick question? Drop us a message right here:</p>
+                    <p><a href="#contact-form">Send a Message →</a></p>
+                </div>
+
+                <div class="hours-section">
+                    <h3>Business Hours</h3>
+                    <p>Monday - Friday: 9:00 AM - 6:00 PM EST</p>
+                    <p>Saturday: 10:00 AM - 4:00 PM EST</p>
+                    <p>Sunday: Closed</p>
+                    <p class="note">Trip coordinators available 24/7 for travelers on active trips</p>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="contact-form-section" id="contact-form">
+                <h2>Send Us a Message</h2>
+                <!-- ✅ FIX: Wired to Formspree endpoint -->
+                <form class="contact-form" action="https://formspree.io/f/xgonqlyk" method="POST">
+                    <div class="form-group">
+                        <label for="name">Full Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address *</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="trip">Interested Trip</label>
+                        <!-- ✅ FIX: Option values match query params from trip pages (?trip=keithsweat, ?trip=maryjblige, etc.) -->
+                        <select id="trip" name="trip">
+                            <option value="">Select a trip (optional)</option>
+                            <option value="napa">Napa Valley Juneteenth - California</option>
+                            <option value="essence">Essence Festival - New Orleans</option>
+                            <option value="maryjblige">Mary J Blige Residency Finale - Las Vegas</option>
+                            <option value="keithsweat">Keith Sweat R&B Lovers Tour - Atlanta</option>
+                            <option value="custom">Custom Trip / Group Inquiry</option>
+                            <option value="general">General Question</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="travelers">Number of Travelers</label>
+                        <input type="number" id="travelers" name="travelers" min="1" placeholder="How many people?">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="message">Message *</label>
+                        <textarea id="message" name="message" required placeholder="Tell us about your travel plans, questions, or special requests..."></textarea>
+                    </div>
+
+                    <!-- Hidden field to capture which page they came from -->
+                    <input type="hidden" id="source" name="source" value="">
+
+                    <button type="submit" class="submit-button">Send Message →</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- ✅ NEW: Newsletter Signup Section -->
+    <section class="newsletter-section">
+        <h2>Stay In The Loop</h2>
+        <p>Get 15% off your first booking, early access to new trips, and exclusive deals. No spam, ever.</p>
+        <form class="newsletter-form" action="https://formspree.io/f/xzdjlraj" method="POST">
+            <input type="email" name="email" placeholder="Your email address" required>
+            <input type="hidden" name="source" value="contact-page-newsletter">
+            <button type="submit">Join the Fam →</button>
+        </form>
+        <p class="newsletter-note">🔒 Unsubscribe anytime. Your info is never shared.</p>
+    </section>
+
+    <!-- Footer -->
+    <!-- ✅ FIX: Complete footer with Blog, clean email, all links -->
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;">
+                <p>Creating unforgettable group travel experiences for over 20 years.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="trips.html">Upcoming Trips</a>
+                <a href="about.html">About Us</a>
+                <a href="how-it-works.html">How It Works</a>
+                <a href="real-stories.html">Real Stories</a>
+                <a href="blog.html">Blog</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <a href="/cdn-cgi/l/email-protection#b5d6dadbc1d4d6c1f5c1ddd0c7d0d4d9c3d4d6d4c1dcdadbc69bd6dad8"><span class="__cf_email__" data-cfemail="4a2925243e2b293e0a3e222f382f2b263c2b292b3e2325243964292527">[email&#160;protected]</span></a>
+                <a href="tel:4049230017">404-923-0017</a>
+                <a href="contact.html">Send a Message</a>
+            </div>
+        </div>
+            <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="display:inline-block; margin:0 10px; color:#aaa; font-size:22px; transition:color 0.2s;" title="Instagram">📷</a><a href="https://www.facebook.com/therealvacations.trv" target="_blank" style="display:inline-block; margin:0 10px; color:#aaa; font-size:22px; transition:color 0.2s;" title="Facebook">📘</a></div>
+    <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
+    </footer>
+
+    <!-- ✅ FIX: Auto-select trip dropdown from URL query parameter -->
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // Reads ?trip=keithsweat (or ?trip=maryjblige, ?trip=napa, etc.) from the URL
+    // and auto-selects that option in the dropdown
+    (function() {
+        var params = new URLSearchParams(window.location.search);
+        var trip = params.get('trip');
+        var pkg = params.get('pkg');
+
+        if (trip) {
+            var select = document.getElementById('trip');
+            if (select) {
+                for (var i = 0; i < select.options.length; i++) {
+                    if (select.options[i].value === trip) {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            if (pkg) {
+                var msg = document.getElementById('message');
+                if (msg && !msg.value) {
+                    var pkgName = pkg === 'vip' ? 'VIP Package
+<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
 </body>
 </html>
