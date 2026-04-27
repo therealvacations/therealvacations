@@ -6,7 +6,7 @@ export async function middleware(req: NextRequest) {
     const token = req.cookies.get('sb-lqdflvnkiskzmvvknmmh-auth-token')
     if (!token) {
       return NextResponse.redirect(
-        new URL('/login?next=/admin', req.url)
+        new URL('/login.html?next=/admin', req.url)
       )
     }
   }
