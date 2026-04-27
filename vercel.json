@@ -1,5 +1,6 @@
 {
   "buildCommand": "node inject-script.js",
+  "outputDirectory": ".",
   "cleanUrls": true,
   "headers": [
     {
