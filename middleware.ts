@@ -1,21 +1,16 @@
-import { createMiddlewareClient } 
-  from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-export async function middleware(req) {
-  const res = NextResponse.next()
-  const supabase = createMiddlewareClient({ req, res })
-  const { data: { session } } = 
-    await supabase.auth.getSession()
-
+export async function middleware(req: NextRequest) {
   if (req.nextUrl.pathname.startsWith('/admin')) {
-    if (!session) {
+    const token = req.cookies.get('sb-lqdflvnkiskzmvvknmmh-auth-token')
+    if (!token) {
       return NextResponse.redirect(
         new URL('/login?next=/admin', req.url)
       )
     }
   }
-  return res
+  return NextResponse.next()
 }
 
 export const config = {
