@@ -1,7 +1,7 @@
 // pages/about.tsx
 'use client';
 import { useEffect, useState } from 'react';
-import { about } from '@/lib/queries-updated';
+import { about } from '@/lib/queries';
 
 export default function About() {
   const [content, setContent] = useState<any>(null);
