@@ -1,8 +1,7 @@
-export default function AdminLayout({ children }) {
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html><body>
-      <nav>Admin Nav</nav>
+    <div className="min-h-screen bg-gray-100">
       {children}
-    </body></html>
-  )
+    </div>
+  );
 }
