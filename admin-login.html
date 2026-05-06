@@ -108,18 +108,21 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
     <script>
-        // Window environment object that will be injected by Vercel
-        window.__ENV__ = window.__ENV__ || {};
+        // Configuration - These will be injected by your build process
+        const CONFIG = {
+            SUPABASE_URL: 'https://lqdflvnkiskzmvvknmmh.supabase.co',
+            SUPABASE_KEY: ''  // This will be replaced during build
+        };
 
         async function doAdminLogin() {
-            // Get credentials from environment variables
-            const supabaseUrl = window.__ENV__.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-            const supabaseKey = window.__ENV__.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+            // Get Supabase credentials from config
+            const supabaseUrl = CONFIG.SUPABASE_URL;
+            const supabaseKey = CONFIG.SUPABASE_KEY;
 
             if (!supabaseUrl || !supabaseKey) {
-                console.error('Supabase credentials not configured');
+                console.error('Supabase credentials not configured', { supabaseUrl, supabaseKey });
                 document.getElementById('msg').className = 'msg error';
-                document.getElementById('msg').textContent = '⚠️ Configuration error. Please contact support.';
+                document.getElementById('msg').textContent = '⚠️ Configuration error. Credentials not set. Please contact support.';
                 return;
             }
 
