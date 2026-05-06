@@ -1,7 +1,6 @@
-'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from './auth';
+import { auth } from '@/lib/auth';
 
 export function withAuth(Component: any) {
   return function ProtectedRoute(props: any) {
