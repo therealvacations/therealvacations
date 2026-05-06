@@ -1,10 +1,18 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
 <script>
 async function doAdminLogin() {
-  var _sb = window.supabase.createClient(
-    'https://lqdflvnkiskzmvvknmmh.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
-  );
+  // Get credentials from environment variables instead of hardcoding
+  const supabaseUrl = window.__ENV__?.VITE_SUPABASE_URL;
+  const supabaseKey = window.__ENV__?.VITE_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.error('Supabase credentials not configured');
+    document.getElementById('msg').className = 'msg error';
+    document.getElementById('msg').textContent = 'Configuration error. Please contact support.';
+    return;
+  }
+
+  var _sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   var email = document.getElementById('email').value.trim();
   var password = document.getElementById('password').value.trim();
