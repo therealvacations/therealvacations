@@ -1,7 +1,5 @@
-// pages/admin/login.tsx
-'use client';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { auth } from '@/lib/auth';
 
 export default function AdminLogin() {
@@ -17,13 +15,12 @@ export default function AdminLogin() {
     setError('');
 
     const { data, error: authError } = await auth.signIn(email, password);
-    
+
     if (authError) {
       setError(authError.message);
       setLoading(false);
       return;
     }
-
     if (data.session) {
       router.push('/admin/dashboard');
     }
@@ -37,7 +34,6 @@ export default function AdminLogin() {
         </div>
         <form onSubmit={handleLogin} className="space-y-6">
           {error && <div className="bg-red-100 border border-red-400 text-red-700 p-3 rounded">{error}</div>}
-          
           <div>
             <label className="block text-sm font-medium">Email</label>
             <input
@@ -48,7 +44,6 @@ export default function AdminLogin() {
               required
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium">Password</label>
             <input
@@ -59,7 +54,6 @@ export default function AdminLogin() {
               required
             />
           </div>
-
           <button
             type="submit"
             disabled={loading}
@@ -71,34 +65,4 @@ export default function AdminLogin() {
       </div>
     </div>
   );
-}
-
-// lib/withAuth.tsx - Protected route wrapper
-'use client';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { auth } from './auth';
-
-export function withAuth(Component: any) {
-  return function ProtectedRoute(props: any) {
-    const [user, setUser] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-
-    useEffect(() => {
-      auth.getUser().then(({ data: { user } }) => {
-        if (!user) {
-          router.push('/admin/login');
-        } else {
-          setUser(user);
-          setLoading(false);
-        }
-      });
-    }, [router]);
-
-    if (loading) return <div className="p-6">Loading...</div>;
-    if (!user) return null;
-
-    return <Component {...props} user={user} />;
-  };
 }
