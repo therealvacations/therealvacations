@@ -1,68 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Login | The Real Vacations</title>
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#0f0620;min-height:100vh;display:flex;flex-direction:column}a{text-decoration:none;color:inherit}
-nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(192,132,252,0.15)}nav img{height:52px}
-.page{flex:1;display:flex;align-items:center;justify-content:center;padding:40px 24px;position:relative;overflow:hidden}
-.page::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(124,58,237,0.25) 0%,transparent 70%);top:-100px;left:-100px;pointer-events:none}
-.card{background:#1a0533;border-radius:24px;padding:48px 40px;max-width:460px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.5);border:1px solid rgba(192,132,252,0.2);position:relative;z-index:1}
-.card-tag{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:#c084fc;font-weight:700;margin-bottom:16px;display:block}
-.card h2{font-size:28px;font-weight:800;color:#fff;margin-bottom:8px}
-.card .sub{font-size:14px;color:#9d77c8;margin-bottom:32px;line-height:1.6}
-.form-group{margin-bottom:20px}
-.form-group label{display:block;font-size:13px;font-weight:600;color:#e9d5ff;margin-bottom:7px}
-.form-group input{width:100%;padding:14px 16px;border:2px solid #3b0764;border-radius:12px;font-size:15px;color:#fff;background:rgba(255,255,255,0.06);outline:none;font-family:inherit;transition:border 0.2s}
-.form-group input::placeholder{color:#6b5b80}
-.form-group input:focus{border-color:#c084fc;background:rgba(255,255,255,0.1)}
-.login-btn{width:100%;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;padding:16px;border-radius:12px;font-weight:700;font-size:16px;border:none;cursor:pointer;font-family:inherit;transition:all 0.2s;letter-spacing:0.3px}
-.login-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,58,237,0.4)}
-.login-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none}
-.msg{padding:14px;border-radius:12px;margin-bottom:20px;font-size:14px;display:none}
-.msg.success{display:block;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.3);color:#86efac}
-.msg.error{display:block;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.3);color:#fca5a5}
-.lock-icon{font-size:48px;margin-bottom:16px;display:block}
-.back-link{display:block;text-align:center;margin-top:24px;color:#6b5b80;font-size:13px}
-.back-link a{color:#c084fc;font-weight:600}
-footer{background:#0f0620;color:#555;text-align:center;padding:20px;font-size:12px;border-top:1px solid rgba(255,255,255,0.05)}footer a{color:#c084fc}
-@media(max-width:480px){.card{padding:32px 24px}nav{padding:12px 20px}}
-</style>
-</head>
-<body>
-<nav><a href="/"><img src="logo.jpeg" alt="The Real Vacations"></a></nav>
-<div class="page">
-<div class="card">
-<span class="lock-icon">🔐</span>
-<span class="card-tag">Admin Access</span>
-<h2>Admin Login</h2>
-<p class="sub">This area is restricted to authorized administrators only. Log in to manage your site, trips, bookings, and content.</p>
-<div id="msg" class="msg"></div>
-<div class="form-group">
-<label for="email">Admin Email</label>
-<input type="email" id="email" placeholder="admin@therealvacations.com" autocomplete="email">
-</div>
-<div class="form-group">
-<label for="password">Password</label>
-<input type="password" id="password" placeholder="Your admin password" autocomplete="current-password">
-</div>
-<button class="login-btn" id="loginBtn" onclick="doAdminLogin()">Sign In to Admin Dashboard →</button>
-<div class="back-link"><a href="/">← Back to website</a></div>
-</div>
-</div>
-<footer>© 2026 The Real Vacations · <a href="mailto:info@therealvacations.com">info@therealvacations.com</a></footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
 <script>
-var _sb = window.supabase.createClient(
-  'https://lqdflvnkiskzmvvknmmh.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
-);
-
 async function doAdminLogin() {
+  var _sb = window.supabase.createClient(
+    'https://lqdflvnkiskzmvvknmmh.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
+  );
+
   var email = document.getElementById('email').value.trim();
   var password = document.getElementById('password').value.trim();
   var msg = document.getElementById('msg');
@@ -74,15 +17,12 @@ async function doAdminLogin() {
   btn.disabled = true; btn.textContent = 'Verifying...';
 
   try {
-    // Sign in
     var authRes = await _sb.auth.signInWithPassword({ email: email, password: password });
     if (authRes.error) throw new Error(authRes.error.message);
 
-    // Check if user is in admin_users table
     var adminRes = await _sb.from('admin_users').select('id, role').eq('id', authRes.data.user.id).maybeSingle();
 
     if (!adminRes.data) {
-      // Not an admin — sign them out and block
       await _sb.auth.signOut();
       msg.className = 'msg error';
       msg.textContent = '⛔ Access denied. This account does not have admin privileges.';
@@ -90,9 +30,8 @@ async function doAdminLogin() {
       return;
     }
 
-    // Admin confirmed — redirect to dashboard
     msg.className = 'msg success';
-    msg.textContent = '✅ Welcome, admin! Redirecting to dashboard...';
+    msg.textContent = '✅ Welcome, admin! Redirecting...';
     setTimeout(function() { window.location.href = '/admin'; }, 800);
 
   } catch(error) {
@@ -102,8 +41,5 @@ async function doAdminLogin() {
   }
 }
 
-// Allow Enter key
 document.addEventListener('keydown', function(e) { if (e.key === 'Enter') doAdminLogin(); });
 </script>
-</body>
-</html>
