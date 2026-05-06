@@ -1,53 +1,181 @@
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
-<script>
-async function doAdminLogin() {
-  // Get credentials from environment variables instead of hardcoding
-  const supabaseUrl = window.__ENV__?.VITE_SUPABASE_URL;
-  const supabaseKey = window.__ENV__?.VITE_SUPABASE_ANON_KEY;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-top: 0;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 5px rgba(102, 126, 234, 0.5);
+        }
+        #loginBtn {
+            width: 100%;
+            padding: 12px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #loginBtn:hover:not(:disabled) {
+            background: #764ba2;
+        }
+        #loginBtn:disabled {
+            background: #999;
+            cursor: not-allowed;
+        }
+        #msg {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 5px;
+            text-align: center;
+            display: none;
+        }
+        #msg.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+        #msg.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h1>🔐 Admin Login</h1>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" placeholder="admin@example.com">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" placeholder="Enter your password">
+        </div>
+        <button id="loginBtn">Sign In to Admin Dashboard →</button>
+        <div id="msg"></div>
+    </div>
 
-  if (!supabaseUrl || !supabaseKey) {
-    console.error('Supabase credentials not configured');
-    document.getElementById('msg').className = 'msg error';
-    document.getElementById('msg').textContent = 'Configuration error. Please contact support.';
-    return;
-  }
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
+    <script>
+        // Window environment object that will be injected by Vercel
+        window.__ENV__ = window.__ENV__ || {};
 
-  var _sb = window.supabase.createClient(supabaseUrl, supabaseKey);
+        async function doAdminLogin() {
+            // Get credentials from environment variables
+            const supabaseUrl = window.__ENV__.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+            const supabaseKey = window.__ENV__.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
-  var email = document.getElementById('email').value.trim();
-  var password = document.getElementById('password').value.trim();
-  var msg = document.getElementById('msg');
-  var btn = document.getElementById('loginBtn');
+            if (!supabaseUrl || !supabaseKey) {
+                console.error('Supabase credentials not configured');
+                document.getElementById('msg').className = 'msg error';
+                document.getElementById('msg').textContent = '⚠️ Configuration error. Please contact support.';
+                return;
+            }
 
-  if (!email || !email.includes('@')) { msg.className='msg error'; msg.textContent='Please enter a valid email.'; return; }
-  if (!password) { msg.className='msg error'; msg.textContent='Please enter your password.'; return; }
+            var _sb = window.supabase.createClient(supabaseUrl, supabaseKey);
 
-  btn.disabled = true; btn.textContent = 'Verifying...';
+            var email = document.getElementById('email').value.trim();
+            var password = document.getElementById('password').value.trim();
+            var msg = document.getElementById('msg');
+            var btn = document.getElementById('loginBtn');
 
-  try {
-    var authRes = await _sb.auth.signInWithPassword({ email: email, password: password });
-    if (authRes.error) throw new Error(authRes.error.message);
+            if (!email || !email.includes('@')) {
+                msg.className = 'msg error';
+                msg.textContent = '❌ Please enter a valid email.';
+                return;
+            }
+            if (!password) {
+                msg.className = 'msg error';
+                msg.textContent = '❌ Please enter your password.';
+                return;
+            }
 
-    var adminRes = await _sb.from('admin_users').select('id, role').eq('id', authRes.data.user.id).maybeSingle();
+            btn.disabled = true;
+            btn.textContent = 'Verifying...';
 
-    if (!adminRes.data) {
-      await _sb.auth.signOut();
-      msg.className = 'msg error';
-      msg.textContent = '⛔ Access denied. This account does not have admin privileges.';
-      btn.disabled = false; btn.textContent = 'Sign In to Admin Dashboard →';
-      return;
-    }
+            try {
+                var authRes = await _sb.auth.signInWithPassword({ email: email, password: password });
+                if (authRes.error) throw new Error(authRes.error.message);
 
-    msg.className = 'msg success';
-    msg.textContent = '✅ Welcome, admin! Redirecting...';
-    setTimeout(function() { window.location.href = '/admin'; }, 800);
+                var adminRes = await _sb.from('admin_users').select('id, role').eq('id', authRes.data.user.id).maybeSingle();
 
-  } catch(error) {
-    msg.className = 'msg error';
-    msg.textContent = 'Login failed: ' + error.message;
-    btn.disabled = false; btn.textContent = 'Sign In to Admin Dashboard →';
-  }
-}
+                if (!adminRes.data) {
+                    await _sb.auth.signOut();
+                    msg.className = 'msg error';
+                    msg.textContent = '⛔ Access denied. This account does not have admin privileges.';
+                    btn.disabled = false;
+                    btn.textContent = 'Sign In to Admin Dashboard →';
+                    return;
+                }
 
-document.addEventListener('keydown', function(e) { if (e.key === 'Enter') doAdminLogin(); });
-</script>
+                msg.className = 'msg success';
+                msg.textContent = '✅ Welcome, admin! Redirecting...';
+                setTimeout(function() { window.location.href = '/admin'; }, 800);
+
+            } catch(error) {
+                msg.className = 'msg error';
+                msg.textContent = '❌ Login failed: ' + error.message;
+                btn.disabled = false;
+                btn.textContent = 'Sign In to Admin Dashboard →';
+            }
+        }
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') doAdminLogin();
+        });
+
+        document.getElementById('loginBtn').addEventListener('click', doAdminLogin);
+    </script>
+</body>
+</html>
