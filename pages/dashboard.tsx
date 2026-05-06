@@ -24,7 +24,7 @@ function AdminDashboard({ user }: { user: any }) {
 
   const handleLogout = async () => {
     await auth.signOut();
-    router.push('/admin/login');
+    router.push('/admin-login');
   };
 
   const handleDeleteCustomer = async (customerId: string) => {
