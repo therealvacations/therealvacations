@@ -1,6 +1,5 @@
-'use client';
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { withAuth } from '@/lib/withAuth';
 import { auth } from '@/lib/auth';
 import supabase from '@/lib/supabase-integration';
@@ -34,7 +33,6 @@ function AdminDashboard({ user }: { user: any }) {
 
   const handleDeleteCustomer = async (customerId: string) => {
     if (!confirm('Delete this customer?')) return;
-    
     try {
       await supabase.from('users').delete().eq('user_id', customerId);
       setCustomers(customers.filter((c) => c.user_id !== customerId));
@@ -46,7 +44,6 @@ function AdminDashboard({ user }: { user: any }) {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
       <div className="bg-white shadow">
         <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
@@ -62,13 +59,10 @@ function AdminDashboard({ user }: { user: any }) {
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="max-w-6xl mx-auto p-6">
-        {/* Customers Table */}
         <div className="bg-white rounded-lg shadow">
           <div className="p-6">
             <h2 className="text-xl font-bold mb-4">Customer Accounts ({customers.length})</h2>
-            
             {loading ? (
               <p className="text-gray-600">Loading...</p>
             ) : customers.length === 0 ? (
@@ -89,14 +83,10 @@ function AdminDashboard({ user }: { user: any }) {
                     {customers.map((customer) => (
                       <tr key={customer.user_id} className="hover:bg-gray-50">
                         <td className="px-6 py-4">{customer.first_name} {customer.last_name}</td>
-                        <td className="px-6 py-4">
-                          {customer.user_id}
-                        </td>
+                        <td className="px-6 py-4">{customer.user_id}</td>
                         <td className="px-6 py-4">{customer.phone || '-'}</td>
-                        <td className="px-6 py-4 text-sm">
-                          {new Date(customer.created_at).toLocaleDateString()}
-                        </td>
-                        <td className="px-6 py-4 space-x-2">
+                        <td className="px-6 py-4 text-sm">{new Date(customer.created_at).toLocaleDateString()}</td>
+                        <td className="px-6 py-4">
                           <button
                             onClick={() => handleDeleteCustomer(customer.user_id)}
                             className="text-red-600 hover:underline text-sm"
