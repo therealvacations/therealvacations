@@ -1,1 +1,1 @@
-export { default } from '../js/supabase-client'
+export { default } from './auth';
