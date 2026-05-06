@@ -93,7 +93,7 @@ async function doAdminLogin() {
     // Admin confirmed — redirect to dashboard
     msg.className = 'msg success';
     msg.textContent = '✅ Welcome, admin! Redirecting to dashboard...';
-    setTimeout(function() { window.location.href = '/dashboard'; }, 800);
+    setTimeout(function() { window.location.href = '/admin'; }, 800);
 
   } catch(error) {
     msg.className = 'msg error';
