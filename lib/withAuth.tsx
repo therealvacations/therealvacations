@@ -14,12 +14,12 @@ export function withAuth(Component: any) {
         try {
           const { data } = await auth.getUser();
           if (!data?.user) {
-            router.push('/admin.html');
+            router.push('/admin-login');
           } else {
             setUser(data.user);
           }
         } catch (error) {
-          router.push('/admin.html');
+          router.push('/admin-login');
         } finally {
           setLoading(false);
         }
