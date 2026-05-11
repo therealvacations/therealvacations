@@ -1,16 +1,7 @@
 {
-  "buildCommand": "node inject-script.js",
-  "outputDirectory": ".",
-  "cleanUrls": true,
-  "headers": [
-    {
-      "source": "/(.*).html",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        }
-      ]
-    }
+  "buildCommand": "node inject-script.js && next build",
+  "framework": "nextjs",
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin" }
   ]
 }
