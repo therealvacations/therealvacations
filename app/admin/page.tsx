@@ -1,5 +1,5 @@
 'use client';
-import { withAuth } from '@/lib/withAuth';
+import { withAuth } from '../../lib/withAuth';
 
 function AdminPage({ user }: { user: any }) {
   return (
