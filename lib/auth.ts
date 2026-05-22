@@ -5,21 +5,25 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export const auth = {
-  signUp: (email: string, password: string) =>
-    supabase.auth.signUp({ email, password }),
+export async function getSession() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session;
+}
 
+export async function signIn(email: string, password: string) {
+  return supabase.auth.signInWithPassword({ email, password });
+}
+
+export async function signOut() {
+  return supabase.auth.signOut();
+}
+
+export const auth = {
+  getUser: () => supabase.auth.getUser(),
+  getSession: () => supabase.auth.getSession(),
   signIn: (email: string, password: string) =>
     supabase.auth.signInWithPassword({ email, password }),
-
   signOut: () => supabase.auth.signOut(),
-
-  getSession: () => supabase.auth.getSession(),
-
-  getUser: () => supabase.auth.getUser(),
-
-  resetPassword: (email: string) =>
-    supabase.auth.resetPasswordForEmail(email),
 };
 
 export default supabase;
