@@ -1,9 +1,9 @@
 'use client';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { withAuth } from '@/lib/withAuth';
-import { auth } from '@/lib/auth';
-import supabase from '@/lib/supabase-integration';
+import { withAuth } from '../lib/withAuth';
+import { auth } from '../lib/auth';
+import supabase from '../lib/supabase-integration';
 
 function AdminDashboard({ user }: { user: any }) {
   const [customers, setCustomers] = useState<any[]>([]);
