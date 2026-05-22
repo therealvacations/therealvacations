@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { resources } from '@/lib/queries';
+import { resources } from '../lib/queries';
 
 export default function Resources() {
   const [items, setItems] = useState<any[]>([]);
@@ -13,15 +13,14 @@ export default function Resources() {
   }, []);
 
   if (loading) return <div className="p-6">Loading...</div>;
-
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-4xl font-bold mb-6">Resources</h1>
       <div className="grid gap-6">
-        {items.map((item) => (
+        {items.map((item: any) => (
           <div key={item.id} className="border rounded-lg p-6">
-            <h2 className="text-2xl font-bold mb-2">{item.title}</h2>
-            <p className="text-gray-700">{item.description}</p>
+            <h2 className="text-xl font-bold mb-2">{item.title}</h2>
+            <p className="text-gray-600">{item.description}</p>
           </div>
         ))}
       </div>
