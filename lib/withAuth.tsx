@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { auth } from '@/lib/auth';
+import { auth } from './auth';
 
 export function withAuth(Component: any) {
   return function ProtectedRoute(props: any) {
@@ -23,7 +23,6 @@ export function withAuth(Component: any) {
           setLoading(false);
         }
       };
-
       checkAuth();
     }, [router]);
 
