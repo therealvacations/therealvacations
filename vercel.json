@@ -1,8 +1,4 @@
 {
-  "buildCommand": "node inject-script.js && next build",
-  "framework": "nextjs",
-  "rewrites": [
-    { "source": "/admin", "destination": "/admin" },
-    { "source": "/", "destination": "/index.html" }
-  ]
+  "cleanUrls": true,
+  "trailingSlash": false
 }
