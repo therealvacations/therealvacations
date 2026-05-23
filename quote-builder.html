@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Travel Quote Builder | The Real Vacations</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --purple:#3b0764;--purple-mid:#6d28d9;--purple-light:#c4b5fd;
+    --purple-fade:#f5f3ff;--white:#ffffff;--gray50:#f9fafb;
+    --gray100:#f3f4f6;--gray200:#e5e7eb;--gray400:#9ca3af;
+    --gray600:#4b5563;--gray900:#111827;--green:#065f46;
+  }
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--gray50);color:var(--gray900)}
+
+  /* NAV */
+  nav{background:var(--purple);padding:0 24px;display:flex;align-items:center;height:60px;gap:16px;position:sticky;top:0;z-index:100}
+  nav .logo{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto}
+  nav .logo img{height:36px;width:36px;border-radius:8px;object-fit:cover}
+  nav .logo span{color:#fff;font-weight:700;font-size:15px}
+  nav .logo small{color:var(--purple-light);font-size:11px;display:block}
+  nav .nav-links{display:flex;gap:4px}
+  nav .nav-links a{color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;padding:6px 10px;border-radius:6px;transition:background 0.15s}
+  nav .nav-links a:hover{background:rgba(255,255,255,0.1);color:#fff}
+
+  /* LAYOUT */
+  .container{max-width:900px;margin:0 auto;padding:28px 20px 60px}
+  h1{font-size:22px;font-weight:700;margin-bottom:24px;color:var(--gray900)}
+
+  /* CARDS */
+  .card{background:var(--white);border:1.5px solid var(--gray200);border-radius:14px;padding:20px 22px;margin-bottom:16px}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--gray600);margin-bottom:14px}
+
+  /* FORM FIELDS */
+  .field-group{display:flex;flex-wrap:wrap;gap:12px}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1 1 100%}
+  .field.half{flex:1 1 calc(50% - 6px);min-width:180px}
+  .field.third{flex:1 1 calc(33% - 8px);min-width:140px}
+  label{font-size:11px;font-weight:700;color:var(--gray600);text-transform:uppercase;letter-spacing:0.06em}
+  input,select,textarea{
+    width:100%;padding:9px 12px;border:1.5px solid var(--gray200);border-radius:8px;
+    font-size:14px;color:var(--gray900);background:var(--white);outline:none;
+    font-family:inherit;transition:border-color 0.15s
+  }
+  input:focus,select:focus,textarea:focus{border-color:var(--purple-mid)}
+  textarea{resize:vertical}
+
+  /* MARKUP SLIDER */
+  .markup-bar{background:var(--purple);border-radius:14px;padding:18px 24px;margin-bottom:16px;display:flex;gap:20px;align-items:center}
+  .markup-bar label{color:rgba(255,255,255,0.65);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:8px}
+  .markup-bar input[type=range]{width:100%;accent-color:var(--purple-light);cursor:pointer;height:4px}
+  .markup-pct{color:#fff;font-size:34px;font-weight:800;text-align:right;min-width:70px}
+  .markup-sub{color:rgba(255,255,255,0.5);font-size:11px;text-align:right}
+
+  /* SUMMARY */
+  .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+  .summary-card{background:var(--white);border:1.5px solid var(--gray200);border-radius:10px;padding:14px 16px}
+  .summary-card .lbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--gray400);margin-bottom:4px}
+  .summary-card .val{font-size:20px;font-weight:800}
+  .summary-card.profit .lbl{color:var(--green)}
+  .summary-card.profit .val{color:var(--green)}
+  .summary-card.total .val{color:var(--purple);font-size:24px}
+
+  /* ITEM SECTIONS */
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}
+  .section-header h3{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--gray600)}
+  .add-btn{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer}
+  .item-card{border:1.5px solid var(--gray200);border-radius:10px;padding:16px;margin-bottom:10px;position:relative;background:var(--white)}
+  .remove-btn{position:absolute;top:10px;right:12px;background:none;border:none;color:var(--gray400);cursor:pointer;font-size:18px;line-height:1}
+  .item-calc{text-align:right;font-size:12px;color:var(--gray600);margin-top:8px;font-weight:500}
+
+  /* BUTTONS */
+  .btn-primary{background:var(--purple);color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit}
+  .btn-secondary{background:var(--white);color:var(--gray900);border:1.5px solid var(--gray200);border-radius:10px;padding:12px 20px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn-row{display:flex;gap:10px;margin-top:24px}
+  .btn-row .btn-primary{flex:1;text-align:center}
+
+  /* PRINT OVERLAY */
+  #print-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;overflow:auto;padding:24px 16px}
+  #print-overlay.show{display:flex;align-items:flex-start;justify-content:center}
+  #print-doc{background:#fff;max-width:760px;width:100%;border-radius:16px;overflow:hidden;font-family:'Georgia',serif}
+  .print-controls{background:var(--purple);padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+  .print-controls span{color:#fff;font-weight:700}
+  .print-controls div{display:flex;gap:8px}
+  .print-controls button{background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:13px;cursor:pointer}
+  .print-controls .print-btn{background:var(--purple-mid)}
+  #quote-body{padding:36px 44px}
+
+  /* QUOTE DOC */
+  .q-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:2px solid var(--purple)}
+  .q-brand{font-size:20px;font-weight:700;color:var(--purple);margin-bottom:2px}
+  .q-tagline{font-size:11px;letter-spacing:0.1em;color:var(--gray400)}
+  .q-contact{font-size:11px;color:var(--gray600);margin-top:4px}
+  .q-meta{text-align:right;font-size:11px;color:var(--gray600)}
+  .q-client-box{background:var(--purple-fade);border-radius:10px;padding:16px 20px;margin-bottom:24px}
+  .q-client-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:var(--gray400);margin-bottom:4px}
+  .q-client-name{font-size:22px;font-weight:700;color:var(--purple)}
+  .q-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--purple);margin-bottom:12px}
+  .q-line{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--gray100);padding-bottom:10px;margin-bottom:10px}
+  .q-line-name{font-weight:700;font-size:14px;margin-bottom:2px}
+  .q-line-detail{font-size:12px;color:var(--gray600)}
+  .q-line-price{text-align:right;font-weight:700;font-size:14px;white-space:nowrap;min-width:90px}
+  .q-total-box{background:var(--purple);border-radius:10px;padding:18px 22px;color:#fff;display:flex;justify-content:space-between;align-items:center;margin:20px 0}
+  .q-total-label{font-size:13px;opacity:0.7;margin-bottom:4px}
+  .q-total-amount{font-size:28px;font-weight:800}
+  .q-book-link{text-align:center;margin:12px 0;font-size:13px}
+  .q-book-link a{color:var(--purple-mid);font-weight:600}
+  .q-footer{border-top:1px solid var(--gray200);padding-top:14px;font-size:11px;color:var(--gray400);text-align:center;margin-top:16px}
+
+  @media(max-width:640px){
+    .field.half,.field.third{flex:1 1 100%}
+    .summary{grid-template-columns:1fr}
+    nav .nav-links{display:none}
+  }
+  @media print{
+    body>*{display:none}
+    #print-overlay{display:block!important;position:static;background:none;padding:0}
+    .print-controls{display:none}
+    #print-doc{border-radius:0;box-shadow:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="logo">
+    <img src="/logo.jpeg" alt="The Real Vacations logo">
+    <div><span>The Real Vacations</span><small>Born from Family · Built for Community</small></div>
+  </a>
+  <div class="nav-links">
+    <a href="/">Home</a>
+    <a href="/trips">Trips</a>
+    <a href="/real-stories">Real Stories</a>
+    <a href="/about">About</a>
+    <a href="/how-it-works">How It Works</a>
+    <a href="/resources">Resources</a>
+    <a href="/blog">Blog</a>
+    <a href="/contact">Contact</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h1>Travel Quote Builder</h1>
+
+  <!-- Quote Info -->
+  <div class="card">
+    <div class="section-title">Quote information</div>
+    <div class="field-group">
+      <div class="field half"><label>Agent / Specialist</label><input type="text" id="q-agent" placeholder="Your name" value="Kevia Cates"></div>
+      <div class="field half"><label>Client Name</label><input type="text" id="q-client" placeholder="Client full name"></div>
+      <div class="field half"><label>Client Email</label><input type="email" id="q-email" placeholder="client@email.com"></div>
+      <div class="field half"><label>Destination</label><input type="text" id="q-dest" placeholder="e.g. Cartagena, Colombia"></div>
+      <div class="field"><label>Payment / Booking Link</label><input type="text" id="q-link" placeholder="https://book.stripe.com/..."></div>
+      <div class="field"><label>Quote Notes</label><input type="text" id="q-notes" placeholder="Payment terms, validity period, special conditions..."></div>
+    </div>
+  </div>
+
+  <!-- Markup -->
+  <div class="markup-bar">
+    <div style="flex:1">
+      <label>Profit markup — your quote stays competitive below retail</label>
+      <input type="range" id="markup-slider" min="0" max="30" step="0.5" value="17" oninput="updateMarkup(this.value)">
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,0.35);margin-top:4px">
+        <span>0%</span><span>15%</span><span>30%</span>
+      </div>
+    </div>
+    <div><div class="markup-pct" id="markup-display">17%</div><div class="markup-sub">markup</div></div>
+  </div>
+
+  <!-- Summary -->
+  <div class="summary">
+    <div class="summary-card"><div class="lbl">Your cost</div><div class="val" id="s-base">$0.00</div></div>
+    <div class="summary-card profit"><div class="lbl">Your profit</div><div class="val" id="s-profit">$0.00</div></div>
+    <div class="summary-card total"><div class="lbl">Client total</div><div class="val" id="s-total">$0.00</div></div>
+  </div>
+
+  <!-- Flights -->
+  <div class="section-header">
+    <h3>✈ Flights</h3>
+    <button class="add-btn" onclick="addFlight()">+ Add flight</button>
+  </div>
+  <div id="flights-container"></div>
+
+  <!-- Hotels -->
+  <div class="section-header">
+    <h3>🏨 Accommodations</h3>
+    <button class="add-btn" onclick="addHotel()">+ Add hotel / villa</button>
+  </div>
+  <div id="hotels-container"></div>
+
+  <!-- Extras -->
+  <div class="section-header">
+    <h3>🎟 Additional Services</h3>
+    <button class="add-btn" onclick="addExtra()">+ Add service</button>
+  </div>
+  <div id="extras-container"></div>
+
+  <div class="btn-row">
+    <button class="btn-secondary" onclick="clearAll()">Clear all</button>
+    <button class="btn-primary" onclick="showPreview()">Preview & Send Quote →</button>
+  </div>
+</div>
+
+<!-- Print / Send Overlay -->
+<div id="print-overlay">
+  <div id="print-doc">
+    <div class="print-controls">
+      <span>Quote Preview</span>
+      <div>
+        <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+        <button onclick="copyQuote()">📋 Copy text</button>
+        <button onclick="emailQuote()">📧 Email</button>
+        <button onclick="closePreview()">✕ Close</button>
+      </div>
+    </div>
+    <div id="quote-body"></div>
+  </div>
+</div>
+
+<script>
+let markup = 17;
+let flights = [];
+let hotels = [];
+let extras = [];
+let idCounter = 0;
+
+function uid(){return 'item-'+(++idCounter)}
+function fmt(n){return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
+
+// ── MARKUP ──────────────────────────────────────────
+function updateMarkup(v){
+  markup = parseFloat(v);
+  document.getElementById('markup-display').textContent = markup.toFixed(1)+'%';
+  recalc();
+}
+
+// ── RECALC ──────────────────────────────────────────
+function recalc(){
+  let base=0;
+  flights.forEach(f=>{
+    const p=(parseFloat(f.price)||0)*(parseInt(f.pax)||1);
+    base+=p;
+    const el=document.getElementById('calc-'+f.id);
+    if(el) el.textContent='Client: '+fmt((parseFloat(f.price)||0)*(1+markup/100))+'/person · '+fmt(p*(1+markup/100))+' total';
+  });
+  hotels.forEach(h=>{
+    const p=(parseFloat(h.price)||0)*(parseInt(h.nights)||1);
+    base+=p;
+    const el=document.getElementById('calc-'+h.id);
+    if(el) el.textContent='Client: '+fmt((parseFloat(h.price)||0)*(1+markup/100))+'/night · '+fmt(p*(1+markup/100))+' total';
+  });
+  extras.forEach(e=>{
+    const p=(parseFloat(e.price)||0)*(parseInt(e.qty)||1);
+    base+=p;
+    const el=document.getElementById('calc-'+e.id);
+    if(el) el.textContent='Client: '+fmt(p*(1+markup/100))+' total';
+  });
+  const client=base*(1+markup/100);
+  document.getElementById('s-base').textContent=fmt(base);
+  document.getElementById('s-profit').textContent=fmt(client-base);
+  document.getElementById('s-total').textContent=fmt(client);
+}
+
+function getVal(id){return (document.getElementById(id)||{}).value||''}
+function setVal(obj,key,id){obj[key]=(document.getElementById(id)||{}).value||''; recalc();}
+
+// ── FLIGHTS ──────────────────────────────────────────
+function addFlight(data){
+  const id=uid();
+  const f={id,from:'',to:'',depart:'',ret:'',pax:1,cabin:'Economy',airline:'',price:''};
+  if(data) Object.assign(f,data);
+  flights.push(f);
+  const div=document.createElement('div');
+  div.className='item-card'; div.id='card-'+id;
+  div.innerHTML=`
+    <button class="remove-btn" onclick="removeItem('${id}','flight')">×</button>
+    <div class="field-group">
+      <div class="field third"><label>From</label><input type="text" id="${id}-from" placeholder="ATL" oninput="setVal(flights.find(x=>x.id=='${id}'),'from','${id}-from')"></div>
+      <div class="field third"><label>To</label><input type="text" id="${id}-to" placeholder="CTG" oninput="setVal(flights.find(x=>x.id=='${id}'),'to','${id}-to')"></div>
+      <div class="field third"><label>Airline</label><input type="text" id="${id}-airline" placeholder="Avianca..." oninput="setVal(flights.find(x=>x.id=='${id}'),'airline','${id}-airline')"></div>
+      <div class="field third"><label>Depart date</label><input type="date" id="${id}-depart" oninput="setVal(flights.find(x=>x.id=='${id}'),'depart','${id}-depart')"></div>
+      <div class="field third"><label>Return date</label><input type="date" id="${id}-ret" oninput="setVal(flights.find(x=>x.id=='${id}'),'ret','${id}-ret')"></div>
+      <div class="field third"><label>Passengers</label><input type="number" id="${id}-pax" value="1" min="1" oninput="flights.find(x=>x.id=='${id}').pax=this.value;recalc()"></div>
+      <div class="field half"><label>Cabin class</label>
+        <select id="${id}-cabin" onchange="setVal(flights.find(x=>x.id=='${id}'),'cabin','${id}-cabin')">
+          <option>Economy</option><option>Premium Economy</option><option>Business</option><option>First Class</option>
+        </select>
+      </div>
+      <div class="field half"><label>Base price / person ($)</label><input type="number" id="${id}-price" placeholder="0.00" oninput="flights.find(x=>x.id=='${id}').price=this.value;recalc()"></div>
+      <div class="field"><label>Notes</label><input type="text" id="${id}-notes" placeholder="Layover, baggage, special requests..." oninput="setVal(flights.find(x=>x.id=='${id}'),'notes','${id}-notes')"></div>
+    </div>
+    <div class="item-calc" id="calc-${id}">Client: $0.00/person · $0.00 total</div>`;
+  document.getElementById('flights-container').appendChild(div);
+  if(data){
+    ['from','to','airline','depart','ret','cabin','price','notes'].forEach(k=>{
+      const el=document.getElementById(`${id}-${k}`);
+      if(el&&data[k]) el.value=data[k];
+    });
+    const paxEl=document.getElementById(`${id}-pax`);
+    if(paxEl&&data.pax) paxEl.value=data.pax;
+  }
+  recalc();
+}
+
+// ── HOTELS ──────────────────────────────────────────
+function addHotel(data){
+  const id=uid();
+  const h={id,name:'',location:'',checkIn:'',checkOut:'',nights:1,room:'',beds:'',guests:2,price:'',notes:''};
+  if(data) Object.assign(h,data);
+  hotels.push(h);
+  const div=document.createElement('div');
+  div.className='item-card'; div.id='card-'+id;
+  div.innerHTML=`
+    <button class="remove-btn" onclick="removeItem('${id}','hotel')">×</button>
+    <div class="field-group">
+      <div class="field half"><label>Property name</label><input type="text" id="${id}-name" placeholder="Villa or hotel name..." oninput="setVal(hotels.find(x=>x.id=='${id}'),'name','${id}-name')"></div>
+      <div class="field half"><label>Location</label><input type="text" id="${id}-location" placeholder="Bocagrande, Cartagena" oninput="setVal(hotels.find(x=>x.id=='${id}'),'location','${id}-location')"></div>
+      <div class="field third"><label>Check-in</label><input type="date" id="${id}-checkIn" oninput="setVal(hotels.find(x=>x.id=='${id}'),'checkIn','${id}-checkIn')"></div>
+      <div class="field third"><label>Check-out</label><input type="date" id="${id}-checkOut" oninput="setVal(hotels.find(x=>x.id=='${id}'),'checkOut','${id}-checkOut')"></div>
+      <div class="field third"><label>Nights</label><input type="number" id="${id}-nights" value="1" min="1" oninput="hotels.find(x=>x.id=='${id}').nights=this.value;recalc()"></div>
+      <div class="field third"><label>Room type</label><input type="text" id="${id}-room" placeholder="3BR/3BA Villa..." oninput="setVal(hotels.find(x=>x.id=='${id}'),'room','${id}-room')"></div>
+      <div class="field third"><label>Bed type</label><input type="text" id="${id}-beds" placeholder="3 King beds" oninput="setVal(hotels.find(x=>x.id=='${id}'),'beds','${id}-beds')"></div>
+      <div class="field third"><label>Guests</label><input type="number" id="${id}-guests" value="2" min="1" oninput="hotels.find(x=>x.id=='${id}').guests=this.value;recalc()"></div>
+      <div class="field half"><label>Base price / night ($)</label><input type="number" id="${id}-price" placeholder="0.00" oninput="hotels.find(x=>x.id=='${id}').price=this.value;recalc()"></div>
+      <div class="field half"><label>Notes</label><input type="text" id="${id}-notes" placeholder="Beachfront, pool, breakfast..." oninput="setVal(hotels.find(x=>x.id=='${id}'),'notes','${id}-notes')"></div>
+    </div>
+    <div class="item-calc" id="calc-${id}">Client: $0.00/night · $0.00 total</div>`;
+  document.getElementById('hotels-container').appendChild(div);
+  if(data){
+    ['name','location','checkIn','checkOut','room','beds','price','notes'].forEach(k=>{
+      const el=document.getElementById(`${id}-${k}`);
+      if(el&&data[k]) el.value=data[k];
+    });
+    ['nights','guests'].forEach(k=>{
+      const el=document.getElementById(`${id}-${k}`);
+      if(el&&data[k]) el.value=data[k];
+    });
+  }
+  recalc();
+}
+
+// ── EXTRAS ──────────────────────────────────────────
+function addExtra(){
+  const id=uid();
+  extras.push({id,desc:'',qty:1,price:''});
+  const div=document.createElement('div');
+  div.className='item-card'; div.id='card-'+id;
+  div.innerHTML=`
+    <button class="remove-btn" onclick="removeItem('${id}','extra')">×</button>
+    <div class="field-group">
+      <div class="field half"><label>Description</label><input type="text" id="${id}-desc" placeholder="Airport transfer, tour, car rental..." oninput="setVal(extras.find(x=>x.id=='${id}'),'desc','${id}-desc')"></div>
+      <div class="field third"><label>Quantity</label><input type="number" id="${id}-qty" value="1" min="1" oninput="extras.find(x=>x.id=='${id}').qty=this.value;recalc()"></div>
+      <div class="field third"><label>Base price ($)</label><input type="number" id="${id}-price" placeholder="0.00" oninput="extras.find(x=>x.id=='${id}').price=this.value;recalc()"></div>
+    </div>
+    <div class="item-calc" id="calc-${id}">Client: $0.00 total</div>`;
+  document.getElementById('extras-container').appendChild(div);
+  recalc();
+}
+
+function removeItem(id,type){
+  if(type==='flight') flights=flights.filter(x=>x.id!==id);
+  else if(type==='hotel') hotels=hotels.filter(x=>x.id!==id);
+  else extras=extras.filter(x=>x.id!==id);
+  const el=document.getElementById('card-'+id);
+  if(el) el.remove();
+  recalc();
+}
+
+function clearAll(){
+  if(confirm('Clear all items?')){
+    flights=[];hotels=[];extras=[];
+    ['flights-container','hotels-container','extras-container'].forEach(id=>{document.getElementById(id).innerHTML='';});
+    recalc();
+  }
+}
+
+// ── PREVIEW ──────────────────────────────────────────
+function showPreview(){
+  const agent=getVal('q-agent');
+  const client=getVal('q-client')||'Valued Client';
+  const dest=getVal('q-dest');
+  const link=getVal('q-link');
+  const notes=getVal('q-notes');
+  const now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  let base=0;
+  flights.forEach(f=>base+=(parseFloat(f.price)||0)*(parseInt(f.pax)||1));
+  hotels.forEach(h=>base+=(parseFloat(h.price)||0)*(parseInt(h.nights)||1));
+  extras.forEach(e=>base+=(parseFloat(e.price)||0)*(parseInt(e.qty)||1));
+  const clientTotal=base*(1+markup/100);
+
+  let flightLines='';
+  flights.forEach(f=>{
+    if(!f.from&&!f.to) return;
+    const clientPPax=fmt((parseFloat(f.price)||0)*(1+markup/100));
+    const total=fmt((parseFloat(f.price)||0)*(parseInt(f.pax)||1)*(1+markup/100));
+    flightLines+=`<div class="q-line">
+      <div><div class="q-line-name">${f.from||'?'} → ${f.to||'?'}${f.ret?' (Round Trip)':''}</div>
+      <div class="q-line-detail">${f.depart||'TBD'}${f.ret?' – '+f.ret:''} · ${f.pax} passenger${f.pax>1?'s':''} · ${f.cabin}${f.airline?' · '+f.airline:''}${f.notes?'<br><em>'+f.notes+'</em>':''}</div></div>
+      <div class="q-line-price">${clientPPax}/pp<br><small style="font-weight:400;color:#6b7280">${total} total</small></div></div>`;
+  });
+
+  let hotelLines='';
+  hotels.forEach(h=>{
+    if(!h.name) return;
+    const total=fmt((parseFloat(h.price)||0)*(parseInt(h.nights)||1)*(1+markup/100));
+    hotelLines+=`<div class="q-line">
+      <div><div class="q-line-name">${h.name}${h.location?', '+h.location:''}</div>
+      <div class="q-line-detail">${h.checkIn||'TBD'} → ${h.checkOut||'TBD'} · ${h.nights} night${h.nights>1?'s':''} · ${h.room||''}${h.beds?' · '+h.beds:''}${h.notes?'<br><em>'+h.notes+'</em>':''}</div></div>
+      <div class="q-line-price">${total}</div></div>`;
+  });
+
+  let extraLines='';
+  extras.forEach(e=>{
+    if(!e.desc) return;
+    const total=fmt((parseFloat(e.price)||0)*(parseInt(e.qty)||1)*(1+markup/100));
+    extraLines+=`<div class="q-line"><div class="q-line-name">${e.desc}</div><div class="q-line-price">${total}</div></div>`;
+  });
+
+  document.getElementById('quote-body').innerHTML=`
+    <div class="q-header">
+      <div>
+        <div class="q-brand">The Real Vacations</div>
+        <div class="q-tagline">BORN FROM FAMILY · BUILT FOR COMMUNITY</div>
+        <div class="q-contact">contact@therealvacations.com · 404-923-0017</div>
+      </div>
+      <div class="q-meta">
+        <strong>Travel Quote</strong><br>
+        Prepared: ${now}<br>
+        Agent: ${agent||'—'}
+      </div>
+    </div>
+    <div class="q-client-box">
+      <div class="q-client-label">Prepared For</div>
+      <div class="q-client-name">${client}</div>
+      ${dest?'<div style="font-size:13px;color:#4b5563;margin-top:2px">Destination: '+dest+'</div>':''}
+    </div>
+    ${flightLines?`<div style="margin-bottom:24px"><div class="q-section-title">✈ Flights</div>${flightLines}</div>`:''}
+    ${hotelLines?`<div style="margin-bottom:24px"><div class="q-section-title">🏨 Accommodations</div>${hotelLines}</div>`:''}
+    ${extraLines?`<div style="margin-bottom:24px"><div class="q-section-title">🎟 Additional Services</div>${extraLines}</div>`:''}
+    <div class="q-total-box">
+      <div><div class="q-total-label">Total Package Investment</div><div class="q-total-amount">${fmt(clientTotal)}</div></div>
+      ${notes?'<div style="font-size:12px;opacity:0.8;max-width:280px;text-align:right">'+notes+'</div>':''}
+    </div>
+    ${link?`<div class="q-book-link">Ready to book? <a href="${link}" target="_blank">Click here to secure your spot →</a></div>`:''}
+    <div class="q-footer">This quote is valid for 48 hours. Prices subject to availability at time of booking. Travel insurance strongly recommended.<br>therealvacations.com · 404-923-0017</div>`;
+
+  document.getElementById('print-overlay').classList.add('show');
+}
+
+function closePreview(){document.getElementById('print-overlay').classList.remove('show');}
+
+function quoteText(){
+  const client=getVal('q-client')||'Valued Client';
+  const agent=getVal('q-agent');
+  const dest=getVal('q-dest');
+  const link=getVal('q-link');
+  const now=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  let base=0;
+  flights.forEach(f=>base+=(parseFloat(f.price)||0)*(parseInt(f.pax)||1));
+  hotels.forEach(h=>base+=(parseFloat(h.price)||0)*(parseInt(h.nights)||1));
+  extras.forEach(e=>base+=(parseFloat(e.price)||0)*(parseInt(e.qty)||1));
+  const total=fmt(base*(1+markup/100));
+  let t=`TRAVEL QUOTE — THE REAL VACATIONS\nPrepared for: ${client}\nDate: ${now}\nAgent: ${agent}\n`;
+  if(dest) t+=`Destination: ${dest}\n`;
+  t+='\n';
+  if(flights.length){
+    t+='✈ FLIGHTS\n';
+    flights.forEach(f=>{if(f.from||f.to) t+=`  ${f.from||'?'} → ${f.to||'?'} | ${f.depart||'TBD'}${f.ret?' – '+f.ret:''} | ${f.pax} pax | ${f.cabin}${f.airline?' | '+f.airline:''} | ${fmt((parseFloat(f.price)||0)*(1+markup/100))}/person\n`;});
+  }
+  if(hotels.length){
+    t+='\n🏨 ACCOMMODATIONS\n';
+    hotels.forEach(h=>{if(h.name) t+=`  ${h.name}${h.location?', '+h.location:''} | ${h.checkIn||'TBD'} – ${h.checkOut||'TBD'} | ${h.nights} nights${h.room?' | '+h.room:''}${h.beds?' | '+h.beds:''} | ${fmt((parseFloat(h.price)||0)*(parseInt(h.nights)||1)*(1+markup/100))} total\n`;});
+  }
+  if(extras.some(e=>e.desc)){
+    t+='\n🎟 ADDITIONAL SERVICES\n';
+    extras.filter(e=>e.desc).forEach(e=>{t+=`  ${e.desc} × ${e.qty} | ${fmt((parseFloat(e.price)||0)*(parseInt(e.qty)||1)*(1+markup/100))}\n`;});
+  }
+  t+=`\n━━━━━━━━━━━━━━━━━━\nTOTAL: ${total}\n━━━━━━━━━━━━━━━━━━\n`;
+  if(link) t+=`\nBook here: ${link}\n`;
+  t+='\ntherealvacations.com · 404-923-0017';
+  return t;
+}
+
+function copyQuote(){navigator.clipboard?.writeText(quoteText()).then(()=>alert('Quote copied to clipboard!'));}
+
+function emailQuote(){
+  const client=getVal('q-client')||'there';
+  const dest=getVal('q-dest')||'your destination';
+  const email=getVal('q-email');
+  const sub=encodeURIComponent(`Your Travel Quote — Trip to ${dest}`);
+  const body=encodeURIComponent(`Hi ${client},\n\nHere is your personalized travel quote:\n\n${quoteText()}\n\nReady to book? Reply to this email or use the booking link above!\n\nKevia Cates\nThe Real Vacations\n404-923-0017\ntherealvacations.com`);
+  window.location.href=`mailto:${email}?subject=${sub}&body=${body}`;
+}
+
+// Init with one of each
+addFlight();
+addHotel();
+addExtra();
+</script>
+</body>
+</html>
