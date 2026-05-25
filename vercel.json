@@ -7,6 +7,10 @@
     { "source": "/deals", "destination": "/deals.html" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/admin", "destination": "/admin-login.html" }
+    { "source": "/admin", "destination": "/admin-login.html" },
+    { "source": "/real-stories", "destination": "/real-stories.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works.html" },
+    { "source": "/resources", "destination": "/resources.html" },
+    { "source": "/update-payment-method", "destination": "/update-payment-method.html" }
   ]
 }
