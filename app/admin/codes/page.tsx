@@ -1,24 +1,22 @@
+export const dynamic = 'force-dynamic'
+
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
-
 export default async function CodesPage() {
   const supabase = createServerComponentClient({ cookies })
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) redirect('/login?next=/admin/codes')
-
   const { data: profile } = await supabase
     .from('profiles')
     .select('is_admin')
     .eq('id', session.user.id)
     .single()
   if (!profile?.is_admin) redirect('/')
-
   const { data: codes } = await supabase
     .from('discount_codes')
     .select('*')
     .order('created_at', { ascending: false })
-
   return (
     <div style={{padding:'40px',fontFamily:'DM Sans,sans-serif',background:'#0f0620',minHeight:'100vh',color:'#fff'}}>
       <a href="/admin" style={{color:'#a78bfa',textDecoration:'none',marginBottom:'24px',display:'block'}}>← Back to Dashboard</a>
