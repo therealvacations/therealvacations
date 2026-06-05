@@ -417,7 +417,7 @@ function showPreview(){
     extraLines+=`<div class="q-line"><div class="q-line-name">${e.desc}</div><div class="q-line-price">${total}</div></div>`;
   });
 
-  document.getElementById('quote-body').innerHTML=`
+  document.getElementById('quote-body').innerHTML=sanitize(`
     <div class="q-header">
       <div>
         <div class="q-brand">The Real Vacations</div>
@@ -481,7 +481,11 @@ function quoteText(){
   t+='\ntherealvacations.com · 404-923-0017';
   return t;
 }
-
+function sanitize(html){
+  const d=document.createElement('div');
+  d.textContent=html;
+  return d.innerHTML;
+}
 function copyQuote(){navigator.clipboard?.writeText(quoteText()).then(()=>alert('Quote copied to clipboard!'));}
 
 function emailQuote(){
