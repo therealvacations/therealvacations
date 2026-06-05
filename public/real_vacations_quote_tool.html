@@ -43,20 +43,16 @@ function fmt(n){
 }
 
 function sanitize(str=''){
-  return String(str)
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;')
-    .replace(/"/g,'&quot;');
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
 }
 
 function calcQuote(h, markup){
   const base = Number(h.base || 0);
   const exp = Number(h.expedia || 0);
-
   const marked = base * (1 + markup / 100);
-
   if(exp <= 0) return Math.max(0, marked);
-
   return Math.max(0, Math.min(marked, exp - 1));
 }
 
@@ -86,7 +82,6 @@ function addHotel(){
     photo:'',
     notes:''
   });
-
   update();
 }
 
@@ -95,22 +90,18 @@ function removeHotel(id){
     alert('At least one hotel is required.');
     return;
   }
-
   hotels = hotels.filter(h => h.id !== id);
   update();
 }
 
 function updateHotel(id, field, value){
   const hotel = hotels.find(h => h.id === id);
-
   if(!hotel) return;
-
   if(['base','expedia','nights'].includes(field)){
     hotel[field] = Number(value) || 0;
   } else {
     hotel[field] = value;
   }
-
   update();
 }
 
@@ -118,14 +109,11 @@ function updateHotel(id, field, value){
    HOTEL EDITOR
 ────────────────────────────────────────── */
 function renderHotels(){
-
   const container = document.getElementById('hotelsContainer');
   const markup = Number(document.getElementById('markupSlider').value || 0);
-
   container.innerHTML = '';
 
   hotels.forEach((h, index) => {
-
     const quote = calcQuote(h, markup);
     const profit = quote - h.base;
     const saved = Math.max(0, h.expedia - quote);
@@ -169,7 +157,6 @@ function renderHotels(){
             oninput="updateHotel(${h.id},'location',this.value)"
           >
         </div>
-
         <div class="field">
           <label>Nights</label>
           <input
@@ -190,7 +177,6 @@ function renderHotels(){
             oninput="updateHotel(${h.id},'base',this.value)"
           >
         </div>
-
         <div class="field">
           <label>Expedia Price</label>
           <input
@@ -206,12 +192,10 @@ function renderHotels(){
           <div class="calc-lbl">Quote</div>
           <div class="calc-val">${fmt(quote)}</div>
         </div>
-
         <div class="calc-item">
           <div class="calc-lbl">Client Saves</div>
           <div class="calc-val green">${fmt(saved)}</div>
         </div>
-
         <div class="calc-item">
           <div class="calc-lbl">Profit</div>
           <div class="calc-val blue">${fmt(profit)}</div>
@@ -227,17 +211,13 @@ function renderHotels(){
    DOCUMENT RENDER
 ────────────────────────────────────────── */
 function renderDoc(){
-
-  const markup = Number(
-    document.getElementById('markupSlider').value || 0
-  );
+  const markup = Number(document.getElementById('markupSlider').value || 0);
 
   let totalQuote = 0;
   let totalExpedia = 0;
   let totalProfit = 0;
 
   const output = hotels.map((h, i) => {
-
     const quote = calcQuote(h, markup);
     const saved = Math.max(0, h.expedia - quote);
     const profit = quote - h.base;
@@ -248,7 +228,6 @@ function renderDoc(){
 
     return `
       <div class="doc-hotel">
-
         ${h.photo ? `
           <img
             class="doc-hotel-img show"
@@ -256,84 +235,49 @@ function renderDoc(){
             onerror="this.style.display='none'"
           >
         ` : ''}
-
         <div class="doc-hotel-content">
-
-          <div class="doc-hotel-badge">
-            Hotel ${i + 1}
-          </div>
-
-          <div class="doc-hotel-name">
-            ${sanitize(h.name)}
-          </div>
-
-          <div class="doc-hotel-sub">
-            ${sanitize(h.location)}
-          </div>
-
+          <div class="doc-hotel-badge">Hotel ${i + 1}</div>
+          <div class="doc-hotel-name">${sanitize(h.name)}</div>
+          <div class="doc-hotel-sub">${sanitize(h.location)}</div>
           <div class="doc-price-row">
             <span class="doc-price-lbl">Expedia Rate</span>
-            <span class="doc-price-val cross">
-              ${fmt(h.expedia)}
-            </span>
+            <span class="doc-price-val cross">${fmt(h.expedia)}</span>
           </div>
-
           <div class="doc-price-row">
             <span class="doc-price-lbl">Your Quote</span>
-            <span class="doc-price-val quote-price">
-              ${fmt(quote)}
-            </span>
+            <span class="doc-price-val quote-price">${fmt(quote)}</span>
           </div>
-
           <div class="doc-price-row">
             <span class="doc-price-lbl">Savings</span>
-            <span class="doc-price-val saved">
-              ${fmt(saved)}
-            </span>
+            <span class="doc-price-val saved">${fmt(saved)}</span>
           </div>
-
         </div>
       </div>
     `;
   }).join('');
 
   document.getElementById('docHotels').innerHTML = output;
-
-  document.getElementById('sumTotal').textContent =
-    fmt(totalQuote);
-
-  document.getElementById('sumSaved').textContent =
-    fmt(totalExpedia - totalQuote);
-
-  document.getElementById('sumProfit').textContent =
-    fmt(totalProfit);
+  document.getElementById('sumTotal').textContent = fmt(totalQuote);
+  document.getElementById('sumSaved').textContent = fmt(totalExpedia - totalQuote);
+  document.getElementById('sumProfit').textContent = fmt(totalProfit);
 }
 
 /* ──────────────────────────────────────────
    COPY
 ────────────────────────────────────────── */
 function flash(){
-
   const el = document.getElementById('copiedMsg');
-
   el.classList.add('show');
-
-  setTimeout(() => {
-    el.classList.remove('show');
-  }, 2000);
+  setTimeout(() => { el.classList.remove('show'); }, 2000);
 }
 
 async function copyEmail(){
-
   try{
     await navigator.clipboard.writeText(
       document.getElementById('text-quote').value
     );
-
     flash();
-
   } catch(err){
-
     alert('Clipboard copy failed.');
   }
 }
@@ -342,46 +286,30 @@ async function copyEmail(){
    SAVE / LOAD
 ────────────────────────────────────────── */
 function saveQuote(){
-
-  localStorage.setItem(
-    'trv-quote',
-    JSON.stringify({
-      hotels,
-      nextId,
-      markup:
-        document.getElementById('markupSlider').value
-    })
-  );
-
+  localStorage.setItem('trv-quote', JSON.stringify({
+    hotels,
+    nextId,
+    markup: document.getElementById('markupSlider').value
+  }));
   setSaved(true);
 }
 
 function loadQuote(){
-
   const raw = localStorage.getItem('trv-quote');
-
   if(!raw){
     alert('No saved quote found.');
     return;
   }
-
   try{
-
     const data = JSON.parse(raw);
-
     hotels = data.hotels || hotels;
     nextId = data.nextId || nextId;
-
     if(data.markup !== undefined){
-      document.getElementById('markupSlider').value =
-        data.markup;
+      document.getElementById('markupSlider').value = data.markup;
     }
-
     update();
     setSaved(true);
-
   } catch(err){
-
     alert('Save file corrupted.');
   }
 }
@@ -390,22 +318,16 @@ function loadQuote(){
    SAVE STATUS
 ────────────────────────────────────────── */
 function setSaved(saved){
-
-  document.getElementById('save-dot').className =
-    'save-dot' + (saved ? ' saved' : '');
-
-  document.getElementById('save-label').textContent =
-    saved ? 'Saved' : 'Unsaved';
+  document.getElementById('save-dot').className = 'save-dot' + (saved ? ' saved' : '');
+  document.getElementById('save-label').textContent = saved ? 'Saved' : 'Unsaved';
 }
 
 /* ──────────────────────────────────────────
    MAIN UPDATE
 ────────────────────────────────────────── */
 function update(){
-
   renderHotels();
   renderDoc();
-
   setSaved(false);
 }
 
