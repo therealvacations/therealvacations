@@ -183,8 +183,9 @@ window.handleLogin = async function() {
   try {
     await supabaseLogin(email, password);
    const params = new URLSearchParams(window.location.search);
-   const next = params.get('next') || '/my-trips';
-   const safePath = next.startsWith('/') && !next.startsWith('//') ? next : '/my-trips';
+   const next = params.get('next');
+   const allowedRedirects = new Set(['/my-trips', '/dashboard', '/profile']);
+   const safePath = allowedRedirects.has(next) ? next : '/my-trips';
 window.location.href = safePath;
   } catch (error) {
     alert('Login failed: ' + error.message);
