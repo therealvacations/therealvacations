@@ -121,87 +121,79 @@ function renderHotels(){
     const card = document.createElement('div');
     card.className = 'hotel-editor';
 
-    card.innerHTML = `
-      <div class="hotel-editor-head">
-        <span class="hotel-num">Hotel ${index + 1}</span>
-        <button class="btn-remove" onclick="removeHotel(${h.id})">
-          ✕ Remove
-        </button>
-      </div>
+    const head = document.createElement('div');
+    head.className = 'hotel-editor-head';
+    head.innerHTML = `<span class="hotel-num">Hotel ${index + 1}</span>`;
 
-      ${h.photo ? `
-        <img
-          class="photo-preview show"
-          src="${sanitize(h.photo)}"
-          onerror="this.style.display='none'"
-        >
-      ` : ''}
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'btn-remove';
+    removeBtn.textContent = '✕ Remove';
+    removeBtn.onclick = () => removeHotel(h.id);
+    head.appendChild(removeBtn);
+    card.appendChild(head);
 
-      <div class="field-grid full" style="margin-bottom:8px;">
-        <div class="field">
-          <label>Hotel Name</label>
-          <input
-            type="text"
-            value="${sanitize(h.name)}"
-            oninput="updateHotel(${h.id},'name',this.value)"
-          >
-        </div>
-      </div>
+    if(h.photo){
+      const img = document.createElement('img');
+      img.className = 'photo-preview show';
+      img.src = sanitize(h.photo);
+      img.onerror = function(){ this.style.display='none'; };
+      card.appendChild(img);
+    }
 
-      <div class="field-grid" style="margin-bottom:8px;">
-        <div class="field">
-          <label>Location</label>
-          <input
-            type="text"
-            value="${sanitize(h.location)}"
-            oninput="updateHotel(${h.id},'location',this.value)"
-          >
-        </div>
-        <div class="field">
-          <label>Nights</label>
-          <input
-            type="number"
-            min="1"
-            value="${h.nights}"
-            oninput="updateHotel(${h.id},'nights',this.value)"
-          >
-        </div>
-      </div>
+    const nameGrid = document.createElement('div');
+    nameGrid.className = 'field-grid full';
+    nameGrid.style.marginBottom = '8px';
+    nameGrid.innerHTML = `
+      <div class="field">
+        <label>Hotel Name</label>
+        <input type="text" value="${sanitize(h.name)}" oninput="updateHotel(${h.id},'name',this.value)">
+      </div>`;
+    card.appendChild(nameGrid);
 
-      <div class="field-grid" style="margin-bottom:8px;">
-        <div class="field">
-          <label>Base Price</label>
-          <input
-            type="number"
-            value="${h.base}"
-            oninput="updateHotel(${h.id},'base',this.value)"
-          >
-        </div>
-        <div class="field">
-          <label>Expedia Price</label>
-          <input
-            type="number"
-            value="${h.expedia}"
-            oninput="updateHotel(${h.id},'expedia',this.value)"
-          >
-        </div>
+    const locationGrid = document.createElement('div');
+    locationGrid.className = 'field-grid';
+    locationGrid.style.marginBottom = '8px';
+    locationGrid.innerHTML = `
+      <div class="field">
+        <label>Location</label>
+        <input type="text" value="${sanitize(h.location)}" oninput="updateHotel(${h.id},'location',this.value)">
       </div>
+      <div class="field">
+        <label>Nights</label>
+        <input type="number" min="1" value="${h.nights}" oninput="updateHotel(${h.id},'nights',this.value)">
+      </div>`;
+    card.appendChild(locationGrid);
 
-      <div class="hotel-calc">
-        <div class="calc-item">
-          <div class="calc-lbl">Quote</div>
-          <div class="calc-val">${fmt(quote)}</div>
-        </div>
-        <div class="calc-item">
-          <div class="calc-lbl">Client Saves</div>
-          <div class="calc-val green">${fmt(saved)}</div>
-        </div>
-        <div class="calc-item">
-          <div class="calc-lbl">Profit</div>
-          <div class="calc-val blue">${fmt(profit)}</div>
-        </div>
+    const priceGrid = document.createElement('div');
+    priceGrid.className = 'field-grid';
+    priceGrid.style.marginBottom = '8px';
+    priceGrid.innerHTML = `
+      <div class="field">
+        <label>Base Price</label>
+        <input type="number" value="${h.base}" oninput="updateHotel(${h.id},'base',this.value)">
       </div>
-    `;
+      <div class="field">
+        <label>Expedia Price</label>
+        <input type="number" value="${h.expedia}" oninput="updateHotel(${h.id},'expedia',this.value)">
+      </div>`;
+    card.appendChild(priceGrid);
+
+    const calc = document.createElement('div');
+    calc.className = 'hotel-calc';
+    calc.innerHTML = `
+      <div class="calc-item">
+        <div class="calc-lbl">Quote</div>
+        <div class="calc-val">${fmt(quote)}</div>
+      </div>
+      <div class="calc-item">
+        <div class="calc-lbl">Client Saves</div>
+        <div class="calc-val green">${fmt(saved)}</div>
+      </div>
+      <div class="calc-item">
+        <div class="calc-lbl">Profit</div>
+        <div class="calc-val blue">${fmt(profit)}</div>
+      </div>`;
+    card.appendChild(calc);
 
     container.appendChild(card);
   });
@@ -228,13 +220,7 @@ function renderDoc(){
 
     return `
       <div class="doc-hotel">
-        ${h.photo ? `
-          <img
-            class="doc-hotel-img show"
-            src="${sanitize(h.photo)}"
-            onerror="this.style.display='none'"
-          >
-        ` : ''}
+        ${h.photo ? `<img class="doc-hotel-img show" src="${sanitize(h.photo)}" onerror="this.style.display='none'">` : ''}
         <div class="doc-hotel-content">
           <div class="doc-hotel-badge">Hotel ${i + 1}</div>
           <div class="doc-hotel-name">${sanitize(h.name)}</div>
@@ -252,8 +238,7 @@ function renderDoc(){
             <span class="doc-price-val saved">${fmt(saved)}</span>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 
   document.getElementById('docHotels').innerHTML = output;
