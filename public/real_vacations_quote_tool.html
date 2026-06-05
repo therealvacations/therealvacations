@@ -143,11 +143,19 @@ function renderHotels(){
     const nameGrid = document.createElement('div');
     nameGrid.className = 'field-grid full';
     nameGrid.style.marginBottom = '8px';
-    nameGrid.innerHTML = `
-      <div class="field">
-        <label>Hotel Name</label>
-        <input type="text" value="${sanitize(h.name)}" oninput="updateHotel(${h.id},'name',this.value)">
-      </div>`;
+    const nameField = document.createElement('div');
+    nameField.className = 'field';
+    const nameLabel = document.createElement('label');
+    nameLabel.textContent = 'Hotel Name';
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = h.name || '';
+    nameInput.addEventListener('input', function(){
+      updateHotel(h.id,'name',this.value);
+    });
+    nameField.appendChild(nameLabel);
+    nameField.appendChild(nameInput);
+    nameGrid.appendChild(nameField);
     card.appendChild(nameGrid);
 
     const locationGrid = document.createElement('div');
