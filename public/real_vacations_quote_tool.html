@@ -153,15 +153,32 @@ function renderHotels(){
     const locationGrid = document.createElement('div');
     locationGrid.className = 'field-grid';
     locationGrid.style.marginBottom = '8px';
-    locationGrid.innerHTML = `
-      <div class="field">
-        <label>Location</label>
-        <input type="text" value="${sanitize(h.location)}" oninput="updateHotel(${h.id},'location',this.value)">
-      </div>
-      <div class="field">
-        <label>Nights</label>
-        <input type="number" min="1" value="${h.nights}" oninput="updateHotel(${h.id},'nights',this.value)">
-      </div>`;
+
+    const locationField = document.createElement('div');
+    locationField.className = 'field';
+    const locationLabel = document.createElement('label');
+    locationLabel.textContent = 'Location';
+    const locationInput = document.createElement('input');
+    locationInput.type = 'text';
+    locationInput.value = h.location || '';
+    locationInput.oninput = function(){ updateHotel(h.id, 'location', this.value); };
+    locationField.appendChild(locationLabel);
+    locationField.appendChild(locationInput);
+
+    const nightsField = document.createElement('div');
+    nightsField.className = 'field';
+    const nightsLabel = document.createElement('label');
+    nightsLabel.textContent = 'Nights';
+    const nightsInput = document.createElement('input');
+    nightsInput.type = 'number';
+    nightsInput.min = '1';
+    nightsInput.value = h.nights;
+    nightsInput.oninput = function(){ updateHotel(h.id, 'nights', this.value); };
+    nightsField.appendChild(nightsLabel);
+    nightsField.appendChild(nightsInput);
+
+    locationGrid.appendChild(locationField);
+    locationGrid.appendChild(nightsField);
     card.appendChild(locationGrid);
 
     const priceGrid = document.createElement('div');
