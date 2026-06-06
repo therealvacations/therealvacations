@@ -192,15 +192,31 @@ function renderHotels(){
     const priceGrid = document.createElement('div');
     priceGrid.className = 'field-grid';
     priceGrid.style.marginBottom = '8px';
-    priceGrid.innerHTML = `
-      <div class="field">
-        <label>Base Price</label>
-        <input type="number" value="${h.base}" oninput="updateHotel(${h.id},'base',this.value)">
-      </div>
-      <div class="field">
-        <label>Expedia Price</label>
-        <input type="number" value="${h.expedia}" oninput="updateHotel(${h.id},'expedia',this.value)">
-      </div>`;
+
+    const baseField = document.createElement('div');
+    baseField.className = 'field';
+    const baseLabel = document.createElement('label');
+    baseLabel.textContent = 'Base Price';
+    const baseInput = document.createElement('input');
+    baseInput.type = 'number';
+    baseInput.value = String(Number(h.base) || 0);
+    baseInput.setAttribute('oninput', `updateHotel(${h.id},'base',this.value)`);
+    baseField.appendChild(baseLabel);
+    baseField.appendChild(baseInput);
+
+    const expediaField = document.createElement('div');
+    expediaField.className = 'field';
+    const expediaLabel = document.createElement('label');
+    expediaLabel.textContent = 'Expedia Price';
+    const expediaInput = document.createElement('input');
+    expediaInput.type = 'number';
+    expediaInput.value = String(Number(h.expedia) || 0);
+    expediaInput.setAttribute('oninput', `updateHotel(${h.id},'expedia',this.value)`);
+    expediaField.appendChild(expediaLabel);
+    expediaField.appendChild(expediaInput);
+
+    priceGrid.appendChild(baseField);
+    priceGrid.appendChild(expediaField);
     card.appendChild(priceGrid);
 
     const calc = document.createElement('div');
