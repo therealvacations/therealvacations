@@ -23,7 +23,7 @@ export default function MyTrips() {
       // Get user's bookings with trip details
       const { data: bookingData } = await supabase
         .from('bookings')
-        .select('*, trips(name, dates_start, dates_end, destination, image_url)')
+        .select('*, trips(title, dates_start, dates_end, location, cover_image_url)')
         .eq('user_id', data.user.id)
         .order('created_at', { ascending: false });
 
@@ -91,24 +91,33 @@ export default function MyTrips() {
           ) : (
             <div className="space-y-4">
               {bookings.map((b) => (
-                <div key={b.booking_id} className="border rounded-xl p-4 flex justify-between items-center">
-                  <div>
-                    <p className="font-bold text-gray-800">{b.trips?.name || 'Trip'}</p>
-                    <p className="text-sm text-gray-500">{b.trips?.destination}</p>
-                    <p className="text-sm text-gray-500">
-                      {b.trips?.dates_start} → {b.trips?.dates_end}
-                    </p>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full mt-1 inline-block ${
-                      b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
-                      b.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
-                      {b.status}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-bold text-purple-700">${b.total_amount}</p>
-                    <p className="text-xs text-gray-400">Total</p>
+                <div key={b.booking_id} className="border rounded-xl p-4">
+                  {b.trips?.cover_image_url && (
+                    <img src={b.trips.cover_image_url} alt={b.trips.title} className="w-full h-40 object-cover rounded-lg mb-3" />
+                  )}
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-bold text-gray-800">{b.trips?.title || 'Trip'}</p>
+                      <p className="text-sm text-gray-500">{b.trips?.location}</p>
+                      <p className="text-sm text-gray-500">
+                        {b.trips?.dates_start} → {b.trips?.dates_end}
+                      </p>
+                      <span className={`text-xs font-semibold px-2 py-1 rounded-full mt-1 inline-block ${
+                        b.status === 'confirmed' ? 'bg-green-100 text-green-700' :
+                        b.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-600'
+                      }`}>
+                        {b.status}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-purple-700">${b.total_amount}</p>
+                      <p className="text-xs text-gray-400">Total</p>
+                      <p className="font-semibold text-gray-700 mt-1">${b.amount_paid}</p>
+                      <p className="text-xs text-gray-400">Paid</p>
+                      <p className="font-semibold text-red-500 mt-1">${b.balance_due}</p>
+                      <p className="text-xs text-gray-400">Balance Due</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -122,13 +131,16 @@ export default function MyTrips() {
             <h2 className="text-xl font-bold mb-4 text-gray-800">Payment Schedule</h2>
             <div className="space-y-3">
               {payments.map((p) => (
-                <div key={p.id} className="flex justify-between items-center border-b pb-3">
+                <div key={p.schedule_id} className="flex justify-between items-center border-b pb-3">
                   <div>
-                    <p className="font-medium text-gray-700">{p.description || 'Payment'}</p>
+                    <p className="font-medium text-gray-700">Payment {p.payment_number}</p>
                     <p className="text-sm text-gray-400">Due: {new Date(p.due_date).toLocaleDateString()}</p>
+                    {p.auto_charge_date && (
+                      <p className="text-sm text-gray-400">Auto-charge: {new Date(p.auto_charge_date).toLocaleDateString()}</p>
+                    )}
                   </div>
                   <div className="text-right">
-                    <p className="font-bold">${p.amount}</p>
+                    <p className="font-bold">${p.amount_due}</p>
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       p.status === 'paid' ? 'bg-green-100 text-green-700' :
                       p.status === 'overdue' ? 'bg-red-100 text-red-700' :
