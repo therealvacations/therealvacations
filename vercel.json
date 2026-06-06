@@ -2,15 +2,16 @@
   "rewrites": [
     { "source": "/login", "destination": "/login.html" },
     { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/my-trips", "destination": "/pages/my-trips" },
+    { "source": "/trips", "destination": "/pages/trips" },
+    { "source": "/deals", "destination": "/pages/deals" },
+    { "source": "/about", "destination": "/pages/about" },
+    { "source": "/blog", "destination": "/pages/blog" },
+    { "source": "/real-stories", "destination": "/pages/real-stories" },
+    { "source": "/how-it-works", "destination": "/pages/how-it-works" },
+    { "source": "/resources", "destination": "/pages/resources" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/trips", "destination": "/trips.html" },
-    { "source": "/deals", "destination": "/deals.html" },
-    { "source": "/about", "destination": "/about.html" },
-    { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/admin", "destination": "/admin-login.html" },
-    { "source": "/real-stories", "destination": "/real-stories.html" },
-    { "source": "/how-it-works", "destination": "/how-it-works.html" },
-    { "source": "/resources", "destination": "/resources.html" },
+    { "source": "/admin", "destination": "/app/admin" },
     { "source": "/update-payment-method", "destination": "/update-payment-method.html" }
   ]
 }
