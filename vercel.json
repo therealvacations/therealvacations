@@ -1,9 +1,9 @@
 {
   "rewrites": [
     { "source": "/trips", "destination": "/trips.html" },
+    { "source": "/contact", "destination": "/contact.html" },
     { "source": "/about", "destination": "/about.html" },
     { "source": "/blog", "destination": "/blog.html" },
-    { "source": "/contact", "destination": "/contact.html" },
     { "source": "/real-stories", "destination": "/real-stories.html" },
     { "source": "/how-it-works", "destination": "/how-it-works.html" },
     { "source": "/resources", "destination": "/resources.html" },
@@ -14,6 +14,7 @@
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
     { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
     { "source": "/forgot-password", "destination": "/forgot-password.html" },
-    { "source": "/update-payment-method", "destination": "/update-payment-method.html" }
+    { "source": "/update-payment-method", "destination": "/update-payment-method.html" },
+    { "source": "/custom-trip-form", "destination": "/custom-trip-form.html" }
   ]
 }
