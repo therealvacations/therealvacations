@@ -1,21 +1,26 @@
 {
   "buildCommand": "node build-nav.js",
   "rewrites": [
+    { "source": "/trips", "destination": "/trips.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/real-stories", "destination": "/real-stories.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works.html" },
+    { "source": "/resources", "destination": "/resources.html" },
+    { "source": "/deals", "destination": "/deals.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
+    { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
+    { "source": "/forgot-password", "destination": "/forgot-password.html" },
+    { "source": "/update-payment-method", "destination": "/update-payment-method.html" },
+    { "source": "/custom-trip-form", "destination": "/custom-trip-form.html" },
+
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
-    },
-    {
-      "source": "/app/(.*)",
-      "destination": "/app/$1"
-    },
-    {
-      "source": "/_next/(.*)",
-      "destination": "/_next/$1"
-    },
-    {
-      "source": "/((?!api|app|_next|.*\\..*).*)",
-      "destination": "/$1.html"
+      "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
+      "destination": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html"
     }
   ]
 }
