@@ -17,7 +17,9 @@
     { "source": "/forgot-password", "destination": "/forgot-password.html" },
     { "source": "/update-payment-method", "destination": "/update-payment-method.html" },
     { "source": "/custom-trip-form", "destination": "/custom-trip-form.html" },
-
+    { "source": "/napa-juneteenth-june-18-21-2026", "destination": "/napa-juneteenth-june-18-21-2026.html" },
+    { "source": "/essence-festival-new-orleans-july-3-5-2026", "destination": "/essence-festival-new-orleans-july-3-5-2026.html" },
+    { "source": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026", "destination": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026.html" },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
       "destination": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html"
