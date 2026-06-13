@@ -33,7 +33,8 @@
         .hero h1 { font-size: 3rem; margin-bottom: 1rem; font-weight: 700; }
         .hero p { font-size: 1.3rem; opacity: 0.95; }
         section { padding: 80px 5%; max-width: 1200px; margin: 0 auto; }
-        .section-alt { background: var(--light-purple); }
+        .section-alt { background: var(--light-purple); max-width: 100%; }
+        .section-alt > * { max-width: 1200px; margin-left: auto; margin-right: auto; }
         .section-title { font-size: 2.5rem; margin-bottom: 3rem; color: var(--dark-purple); text-align: center; }
         .steps-container { max-width: 900px; margin: 0 auto; }
         .step { background: var(--white); padding: 2.5rem 2.5rem 2.5rem 120px; margin-bottom: 2rem; border-radius: 20px; box-shadow: var(--shadow-soft); position: relative; transition: all 0.3s; }
@@ -69,19 +70,18 @@
         .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
         @media (max-width: 768px) { .nav-links { display: none; } .hero h1 { font-size: 2rem; } .step { padding: 100px 2rem 2rem; } .step-number { left: 50%; top: 30px; transform: translateX(-50%); } }
     </style>
-  <meta property="og:type" content="website"/>
-  <meta property="og:title" content="How It Works | The Real Vacations"/>
-  <meta property="og:description" content="Learn how to book your all-inclusive group trip with The Real Vacations. Easy booking process, flexible payment plans, we handle everything."/>
-  <meta property="og:url" content="https://www.therealvacations.com/how-it-works"/>
-  <meta property="og:image" content="https://www.therealvacations.com/trv_collage_820x1000.png"/>
-  <meta property="og:site_name" content="The Real Vacations"/>
-  <meta name="twitter:card" content="summary_large_image"/>
-  <meta name="twitter:title" content="How It Works | The Real Vacations"/>
-  <meta name="twitter:description" content="Learn how to book your all-inclusive group trip with The Real Vacations. Easy booking process, flexible payment plans, we handle everything."/>
-  <link rel="canonical" href="https://www.therealvacations.com/how-it-works"/>
+    <meta property="og:type" content="website"/>
+    <meta property="og:title" content="How It Works | The Real Vacations"/>
+    <meta property="og:description" content="Learn how to book your all-inclusive group trip with The Real Vacations. Easy booking process, flexible payment plans, we handle everything."/>
+    <meta property="og:url" content="https://www.therealvacations.com/how-it-works"/>
+    <meta property="og:image" content="https://www.therealvacations.com/trv_collage_820x1000.png"/>
+    <meta property="og:site_name" content="The Real Vacations"/>
+    <meta name="twitter:card" content="summary_large_image"/>
+    <meta name="twitter:title" content="How It Works | The Real Vacations"/>
+    <meta name="twitter:description" content="Learn how to book your all-inclusive group trip with The Real Vacations. Easy booking process, flexible payment plans, we handle everything."/>
+    <link rel="canonical" href="https://www.therealvacations.com/how-it-works"/>
 </head>
 <body>
-    <!-- ✅ FIX: Blog added to nav -->
     <nav>
         <a href="/"><img src="logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
         <div class="nav-links">
@@ -116,14 +116,16 @@
         </div>
     </section>
 
-    <section class="section-alt">
-        <h2 class="section-title">Flexible Payment Options</h2>
-        <div class="payment-grid">
-            <div class="payment-card"><div class="payment-icon">💳</div><h3>Deposit Booking</h3><p>Secure your spot with a deposit (typically $200-$600 depending on the trip) and pay the balance over time with our flexible monthly payment plans.</p></div>
-            <div class="payment-card"><div class="payment-icon">📅</div><h3>Monthly Installments</h3><p>Break your trip cost into manageable monthly payments. Choose a schedule that works for you, with final payment due before departure.</p></div>
-            <div class="payment-card"><div class="payment-icon">✅</div><h3>Pay in Full</h3><p>Prefer to handle everything at once? Pay in full at booking and you're all set. No more payments to worry about—just pack and go.</p></div>
-        </div>
-    </section>
+    <div class="section-alt">
+        <section>
+            <h2 class="section-title">Flexible Payment Options</h2>
+            <div class="payment-grid">
+                <div class="payment-card"><div class="payment-icon">💳</div><h3>Deposit Booking</h3><p>Secure your spot with a deposit (typically $200-$600 depending on the trip) and pay the balance over time with our flexible monthly payment plans.</p></div>
+                <div class="payment-card"><div class="payment-icon">📅</div><h3>Monthly Installments</h3><p>Break your trip cost into manageable monthly payments. Choose a schedule that works for you, with final payment due before departure.</p></div>
+                <div class="payment-card"><div class="payment-icon">✅</div><h3>Pay in Full</h3><p>Prefer to handle everything at once? Pay in full at booking and you're all set. No more payments to worry about—just pack and go.</p></div>
+            </div>
+        </section>
+    </div>
 
     <section id="faq">
         <h2 class="section-title">Frequently Asked Questions</h2>
@@ -142,46 +144,47 @@
     <section class="cta-section">
         <h2>Ready to Book Your Trip?</h2>
         <p>Let's get you on the road to your next adventure.</p>
-        <a href="/contact" class="cta-button">Contact Us Now →</a>
+        <a href="/trips" class="cta-button">Browse Trips →</a>
     </section>
 
-    <!-- ✅ FIX: Clean footer with Blog -->
     <footer>
         <div class="footer-grid">
-            <div class="footer-col"><img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;"><p>Creating unforgettable group travel experiences for over 20 years.</p></div>
-            <div class="footer-col"><h4>Quick Links</h4><a href="/trips">Upcoming Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/about">About Us</a><a href="/how-it-works">How It Works</a><a href="/real-stories">Real Stories</a><a href="/blog">Blog</a></div>
-            <div class="footer-col"><h4>Contact Us</h4><a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a><a href="tel:4049230017">404-923-0017</a><a href="/contact">Send a Message</a></div>
+            <div class="footer-col">
+                <img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;">
+                <p>Creating unforgettable group travel experiences for over 20 years.</p>
+                <div style="margin-top:16px; display:flex; gap:16px;">
+                    <a href="https://www.instagram.com/therealvacations/" target="_blank" rel="noopener">📸 Instagram</a>
+                    <a href="https://www.facebook.com/therealvacations.trv" target="_blank" rel="noopener">👥 Facebook</a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="/trips">Upcoming Trips</a>
+                <a href="https://flights.therealvacations.com">Flights</a>
+                <a href="/about">About Us</a>
+                <a href="/how-it-works">How It Works</a>
+                <a href="/real-stories">Real Stories</a>
+                <a href="/blog">Blog</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>
+                <a href="tel:4049230017">404-923-0017</a>
+                <a href="/contact">Send a Message</a>
+                <a href="/privacy-policy">Privacy Policy</a>
+                <a href="/terms-of-service">Terms of Service</a>
+            </div>
         </div>
-            <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" targ
-<footer>
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <img src="/logo.jpeg" alt="The Real Vacations logo" style="height:44px;margin-bottom:14px" loading="lazy"/>
-      <p style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.7;max-width:220px">Creating unforgettable group travel experiences for over 20 years.</p>
-      <div style="margin-top:16px;display:flex;gap:16px">
-        <a href="https://www.instagram.com/therealvacations/" target="_blank" rel="noopener" aria-label="The Real Vacations on Instagram">📸 Instagram</a>
-        <a href="https://www.facebook.com/therealvacations.trv" target="_blank" rel="noopener" aria-label="The Real Vacations on Facebook">👥 Facebook</a>
-      </div>
-    </div>
-    <div class="footer-col">
-      <h4>Quick Links</h4>
-      <a href="/trips">Upcoming Trips</a>
-      <a href="https://flights.therealvacations.com">Flights</a>
-      <a href="/about">About Us</a>
-      <a href="/how-it-works">How It Works</a>
-      <a href="/real-stories">Real Stories</a>
-      <a href="/blog">Blog</a>
-    </div>
-    <div class="footer-col">
-      <h4>Contact Us</h4>
-      <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>
-      <a href="tel:4049230017">404-923-0017</a>
-      <a href="/contact">Send a Message</a>
-      <a href="/privacy-policy">Privacy Policy</a>
-      <a href="/terms-of-service">Terms of Service</a>
-    </div>
-  </div>
-  <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
-</footer>
+        <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.faq-question').forEach(q => {
+            q.addEventListener('click', () => {
+                const item = q.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+    </script>
 </body>
 </html>
