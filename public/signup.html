@@ -69,6 +69,7 @@
     <a href="/" class="hide-mobile">Home</a>
     <a href="/trips" class="hide-mobile">Trips</a>
     <a href="/deals" class="hide-mobile">Deals</a>
+    <a href="/contact" class="hide-mobile">Contact</a>
     <a href="/login" class="nav-login">Log In</a>
   </div>
 </nav>
@@ -154,8 +155,9 @@
         <select id="trip-interest">
           <option value="">Select a trip...</option>
           <option value="essence">🎵 Essence Festival — July 3–5, New Orleans</option>
-          <option value="maryj">🎤 Mary J. Blige Residency Finale — July 18, Las Vegas</option>
+          <option value="maryj">🎤 Mary J. Blige — Oct 22–24, Las Vegas</option>
           <option value="keith">🎷 Keith Sweat R&B Lovers Tour — Aug 29, Atlanta</option>
+          <option value="napa">🍷 Napa Juneteenth — June 18–21, Napa Valley</option>
           <option value="all">I'm interested in all of them!</option>
           <option value="future">Notify me about future trips</option>
         </select>
@@ -166,7 +168,7 @@
       </div>
       <div class="checkbox-group">
         <input type="checkbox" id="terms" required>
-        <label for="terms">I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>.</label>
+        <label for="terms">I agree to the <a href="/terms-of-service">Terms of Service</a> and <a href="/privacy-policy">Privacy Policy</a>.</label>
       </div>
       <button class="signup-btn" onclick="handleSignup()">🎉 Create My Free Account →</button>
       <div class="login-row">Already a member? <a href="/login">Sign in</a></div>
@@ -175,9 +177,9 @@
   </div>
 </div>
 <footer>
-  © 2026 The Real Vacations · <a href="/cdn-cgi/l/email-protection#5c3f3332283d3f281c2834392e393d302a3d3f3d283533322f723f3331"><span class="__cf_email__" data-cfemail="89eae6e7fde8eafdc9fde1ecfbece8e5ffe8eae8fde0e6e7faa7eae6e4">[email&#160;protected]</span></a> · <a href="tel:4049230017">404-923-0017</a>
+  © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a>
 </footer>
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module">
+<script type="module">
 import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin } from './js/auth.js';
 
 window.handleSignup = async function() {
@@ -200,7 +202,7 @@ window.handleSignup = async function() {
 
   try {
     await supabaseSignup({ email, password, firstName, lastName, phone });
-    window.location.href = '/my-trips';
+    window.location.replace('/my-trips');
   } catch (error) {
     alert('Signup failed: ' + error.message);
     btn.textContent = '🎉 Create My Free Account →';
@@ -208,7 +210,6 @@ window.handleSignup = async function() {
   }
 }
 
-// Wire up Google/Facebook OAuth
 var socialBtns = document.querySelectorAll('.social-btn');
 if (socialBtns[0]) {
   socialBtns[0].addEventListener('click', async function() {
