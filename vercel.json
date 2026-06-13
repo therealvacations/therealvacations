@@ -16,6 +16,11 @@
     { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
     { "source": "/forgot-password", "destination": "/forgot-password.html" },
     { "source": "/update-payment-method", "destination": "/update-payment-method.html" },
-    { "source": "/custom-trip-form", "destination": "/custom-trip-form.html" }
+    { "source": "/custom-trip-form", "destination": "/custom-trip-form.html" },
+
+    {
+      "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
+      "destination": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html"
+    }
   ]
 }
