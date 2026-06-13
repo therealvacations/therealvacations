@@ -170,10 +170,9 @@
       <div style="max-width: 800px; margin: 0 auto;">
         <h2 style="font-size: 1.8rem; color: #fff; margin-bottom: 8px; font-family: 'Playfair Display', serif;">🍷 See What Awaits You</h2>
         <p style="color: #c084fc; font-size: 15px; margin-bottom: 24px;">A taste of the Napa Valley experience</p>
-        <video controls playsinline preload="metadata" poster="" style="width: 100%; max-width: 800px; border-radius: 16px; box-shadow: 0 8px 30px rgba(107, 45, 139, 0.4);">
-          <source src="napa_valley_tour.mp4" type="video/mp4">
-          Your browser does not support the video tag.
-        </video>
+        <div style="position: relative; width: 100%; max-width: 800px; padding-bottom: 56.25%; margin: 0 auto; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 30px rgba(107, 45, 139, 0.4);">
+          <iframe style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" src="https://www.youtube.com/embed/utjZ5yfcXjg" title="Napa Valley Tour" allowfullscreen="" loading="lazy"></iframe>
+        </div>
       </div>
     </section>
 
@@ -396,6 +395,13 @@
             e.preventDefault();
             if (isSpinning) return;
             isSpinning = true;
-            var randomDegrees = 1440 + Math.flo
+            var randomDegrees = 1440 + Math.floor(Math.random() * 360);
+            wheel.style.transform = 'rotate(' + randomDegrees + 'deg)';
+            setTimeout(function() {
+                isSpinning = false;
+                alert('Congratulations! Check your email for your special discount code!');
+            }, 4000);
+        });
+    </script>
 </body>
 </html>
