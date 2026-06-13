@@ -1,0 +1,27 @@
+{
+  "buildCommand": "node build-nav.js",
+  "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/trips", "destination": "/trips.html" },
+    { "source": "/contact", "destination": "/contact.html" },
+    { "source": "/about", "destination": "/about.html" },
+    { "source": "/blog", "destination": "/blog.html" },
+    { "source": "/real-stories", "destination": "/real-stories.html" },
+    { "source": "/how-it-works", "destination": "/how-it-works.html" },
+    { "source": "/resources", "destination": "/resources.html" },
+    { "source": "/deals", "destination": "/deals.html" },
+    { "source": "/login", "destination": "/login.html" },
+    { "source": "/signup", "destination": "/signup.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
+    { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
+    { "source": "/forgot-password", "destination": "/forgot-password.html" },
+    { "source": "/update-payment-method", "destination": "/update-payment-method.html" },
+    { "source": "/custom-trip-form", "destination": "/custom-trip-form.html" },
+    { "source": "/flights", "destination": "/flights.html" },
+    { "source": "/napa-juneteenth-june-18-21-2026", "destination": "/napa-juneteenth-june-18-21-2026.html" },
+    { "source": "/essence-festival-new-orleans-july-3-5-2026", "destination": "/essence-festival-new-orleans-july-3-5-2026.html" },
+    { "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026", "destination": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html" },
+    { "source": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026", "destination": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026.html" }
+  ]
+}
