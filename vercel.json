@@ -1,4 +1,5 @@
 {
+  "buildCommand": "node build-nav.js",
   "rewrites": [
     { "source": "/trips", "destination": "/trips.html" },
     { "source": "/contact", "destination": "/contact.html" },
