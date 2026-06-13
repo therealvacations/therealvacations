@@ -93,10 +93,25 @@
 
     weedleElements.forEach(element => {
       if (!TPWL_EXTRA) return;
-      const destination = element.getAttribute('data-destination');
+      const destination = (element.getAttribute('data-destination') || '').toUpperCase();
+      const allowedDestinations = new Set(['ORD', 'LAX', 'LAS', 'NYC', 'MIA', 'DEN']);
+      if (!/^[A-Z]{3}$/.test(destination) || !allowedDestinations.has(destination)) return;
       const scriptElement = document.createElement('script');
       scriptElement.async = 1;
-      scriptElement.src = `https://[:widget_domain:]/content?currency=${String(TPWL_EXTRA.currency).toLowerCase()}&trs=${TPWL_EXTRA.trs}&shmarker=${TPWL_EXTRA.marker}&destination=${destination}&target_host=${TPWL_EXTRA.domain}&locale=${TPWL_EXTRA.locale}&limit=6&powered_by=false&primary=%23${TPWL_EXTRA.link_color}&promo_id=4044&campaign_id=100`;
+      const params = new URLSearchParams({
+        currency: String(TPWL_EXTRA.currency).toLowerCase(),
+        trs: String(TPWL_EXTRA.trs),
+        shmarker: String(TPWL_EXTRA.marker),
+        destination,
+        target_host: String(TPWL_EXTRA.domain),
+        locale: String(TPWL_EXTRA.locale),
+        limit: '6',
+        powered_by: 'false',
+        primary: `#${String(TPWL_EXTRA.link_color)}`,
+        promo_id: '4044',
+        campaign_id: '100'
+      });
+      scriptElement.src = `https://[:widget_domain:]/content?${params.toString()}`;
       element.appendChild(scriptElement);
     });
   })();
