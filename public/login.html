@@ -184,7 +184,13 @@ window.handleLogin = async function() {
     await supabaseLogin(email, password);
     const params = new URLSearchParams(window.location.search)
     const nextParam = params.get('next');
-    const safeNext = (typeof nextParam === 'string' && nextParam.startsWith('/') && !nextParam.startsWith('//'))
+    const allowedRedirects = new Set([
+      '/my-trips',
+      '/dashboard',
+      '/profile',
+      '/settings'
+    ]);
+    const safeNext = (typeof nextParam === 'string' && allowedRedirects.has(nextParam))
       ? nextParam
       : '/my-trips';
     window.location.href = safeNext;
