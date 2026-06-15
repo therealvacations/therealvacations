@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '../lib/auth';
-import supabase from '../lib/supabase-integration';
 
 export default function AdminLogin() {
   const [email, setEmail] = useState('');
@@ -16,73 +15,152 @@ export default function AdminLogin() {
     setLoading(true);
     setError('');
 
-    const { data, error: signInError } = await auth.signIn(email, password);
-
-    if (signInError) {
-      setError('Invalid email or password.');
+    if (!email || !email.includes('@')) {
+      setError('Please enter a valid email address.');
+      setLoading(false);
+      return;
+    }
+    if (!password) {
+      setError('Please enter your password.');
       setLoading(false);
       return;
     }
 
-    // Check if user is an admin
-    const { data: adminData } = await supabase
-      .from('admin_users')
-      .select('*')
-      .eq('id', data.user?.id)
-      .single();
+    try {
+      const { data, error: signInError } = await auth.signIn(email, password);
+      
+      if (signInError) {
+        setError('Invalid email or password.');
+        setLoading(false);
+        return;
+      }
 
-    if (!adminData) {
-      await auth.signOut();
-      setError('You do not have admin access.');
+      // Check if user is admin
+      const { data: profile } = await auth.getProfile();
+      if (profile?.is_admin) {
+        router.push('/admin');
+      } else {
+        setError('You do not have admin access.');
+        setLoading(false);
+      }
+    } catch (err: any) {
+      setError('Login failed. Please try again.');
       setLoading(false);
-      return;
     }
-
-    router.push('/dashboard');
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-purple-800">Admin Login</h1>
-          <p className="text-gray-500 mt-2">The Real Vacations</p>
+    <div style={{ fontFamily: "'DM Sans', 'Segoe UI', Arial, sans-serif", background: '#0f0620', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Nav */}
+      <nav style={{ background: '#1a0533', padding: '14px 40px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(192,132,252,0.15)' }}>
+        <a href="/" style={{ textDecoration: 'none' }}>
+          <img src="/logo.jpeg" alt="The Real Vacations" style={{ height: '52px' }} />
+        </a>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+          <a href="/login" style={{ color: '#c084fc', fontSize: '14px', textDecoration: 'none' }}>← Back to Member Login</a>
         </div>
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
-              type="email"
-              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="admin@therealvacations.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
+      </nav>
+
+      {/* Main Page */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px', position: 'relative', overflow: 'hidden' }}>
+        {/* Background gradients */}
+        <div style={{ position: 'absolute', width: '600px', height: '600px', background: 'radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%)', top: '-100px', left: '-100px', pointerEvents: 'none' }}></div>
+        <div style={{ position: 'absolute', width: '400px', height: '400px', background: 'radial-gradient(circle, rgba(192,132,252,0.15) 0%, transparent 70%)', bottom: '-50px', right: '-50px', pointerEvents: 'none' }}></div>
+
+        {/* Login Container */}
+        <div style={{ background: '#1a0533', borderRadius: '28px', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.5)', border: '1px solid rgba(192,132,252,0.2)', position: 'relative', zIndex: 1, padding: '60px 50px', maxWidth: '500px', width: '100%' }}>
+          
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', color: '#c084fc', fontWeight: '700', marginBottom: '16px' }}>🔐 Admin Access</div>
+            <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#fff', marginBottom: '12px' }}>Admin Portal</h2>
+            <p style={{ fontSize: '14px', color: '#c4a8e6' }}>Manage bookings, customers, and service requests</p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input
-              type="password"
-              className="w-full border rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              placeholder="••••••••"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              required
-            />
+
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column' }}>
+            {error && (
+              <div style={{ background: '#fee2e2', color: '#991b1b', padding: '12px', borderRadius: '8px', marginBottom: '20px', fontSize: '14px' }}>
+                ❌ {error}
+              </div>
+            )}
+
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#fff', marginBottom: '8px' }}>Admin Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="admin@therealvacations.com"
+                autoComplete="email"
+                style={{
+                  width: '100%',
+                  padding: '13px 16px',
+                  border: '2px solid rgba(192,132,252,0.3)',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  color: '#fff',
+                  background: 'rgba(0,0,0,0.3)',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#fff', marginBottom: '8px' }}>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                autoComplete="current-password"
+                style={{
+                  width: '100%',
+                  padding: '13px 16px',
+                  border: '2px solid rgba(192,132,252,0.3)',
+                  borderRadius: '12px',
+                  fontSize: '15px',
+                  color: '#fff',
+                  background: 'rgba(0,0,0,0.3)',
+                  transition: 'all 0.2s',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                }}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{
+                width: '100%',
+                background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                color: '#fff',
+                padding: '14px',
+                borderRadius: '12px',
+                fontWeight: '700',
+                fontSize: '15px',
+                border: 'none',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s',
+                fontFamily: 'inherit',
+                opacity: loading ? 0.7 : 1,
+              }}
+            >
+              {loading ? '🔄 Authenticating...' : '🔓 Access Admin Dashboard'}
+            </button>
+          </form>
+
+          <div style={{ marginTop: '24px', padding: '16px', background: 'rgba(192,132,252,0.1)', borderRadius: '12px', borderLeft: '4px solid #7c3aed', fontSize: '12px', color: '#c4a8e6' }}>
+            <strong style={{ color: '#fff' }}>🔒 Security Note:</strong> Only authorized administrators can access this portal. All login attempts are logged.
           </div>
-          {error && (
-            <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg">{error}</div>
-          )}
-          <button
-            type="submit"
-            disabled={loading}
-            className="bg-purple-700 text-white py-3 rounded-lg font-bold hover:bg-purple-800 disabled:opacity-50 mt-2"
-          >
-            {loading ? 'Logging in...' : 'Login to Dashboard'}
-          </button>
-        </form>
+        </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{ background: '#0f0620', color: '#555', textAlign: 'center', padding: '20px', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+        © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com" style={{ color: '#c084fc', textDecoration: 'none' }}>contact@therealvacations.com</a> · <a href="tel:4049230017" style={{ color: '#c084fc', textDecoration: 'none' }}>404-923-0017</a>
+      </footer>
     </div>
   );
 }
