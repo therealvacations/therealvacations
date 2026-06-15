@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>On-Tour Travel Management | The Real Vacations</title>
+    <link rel="icon" type="image/jpeg" href="/favicon.jpeg">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }
+        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
+        nav a img { height: 52px; }
+        .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
+        .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; text-decoration: none; }
+        .nav-links a:hover { color: #c084fc; }
+        .content { max-width: 900px; margin: 2rem auto; padding: 0 5%; }
+        .hero { background: linear-gradient(135deg, #1a0533, #3b1066); color: #fff; padding: 3rem 2rem; border-radius: 16px; text-align: center; margin-bottom: 3rem; }
+        .hero h1 { font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; }
+        .hero .tagline { font-size: 1.1rem; opacity: 0.9; margin-bottom: 1.5rem; }
+        .hero .description { font-size: 1rem; opacity: 0.85; max-width: 700px; margin: 0 auto; line-height: 1.8; }
+        .form-section { background: white; border-radius: 16px; padding: 3rem 2rem; box-shadow: 0 4px 16px rgba(0,0,0,0.08); margin-bottom: 2rem; }
+        .form-section h2 { color: #1a0533; font-size: 1.8rem; font-weight: 800; margin-bottom: 1rem; border-bottom: 3px solid #7c3aed; padding-bottom: 1rem; }
+        .form-section p { color: #666; font-size: 1rem; line-height: 1.8; margin-bottom: 2rem; }
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; color: #1a0533; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.95rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 2px solid #e5e5e5; border-radius: 8px; font-size: 1rem; font-family: inherit; transition: border-color 0.2s; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #7c3aed; }
+        .form-group textarea { min-height: 120px; resize: vertical; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+        .checkbox-group { display: flex; flex-direction: column; gap: 0.75rem; }
+        .checkbox-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: normal; margin: 0; }
+        .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; }
+        .submit-btn { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); color: white; padding: 1rem 2rem; border: none; border-radius: 50px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: all 0.3s; width: 100%; max-width: 400px; display: block; margin: 2rem auto 0; }
+        .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3); }
+        .help-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; border-radius: 16px; text-align: center; margin: 3rem 0; }
+        .help-section h3 { font-size: 1.5rem; margin-bottom: 1rem; }
+        .help-section p { opacity: 0.95; margin-bottom: 1.5rem; }
+        .help-btn { background: white; color: #667eea; padding: 1rem 1.5rem; text-decoration: none; border-radius: 50px; font-weight: 700; display: inline-block; transition: all 0.3s; }
+        .help-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        footer { background: #0f0620; color: #ccc; padding: 3rem 2rem 1.5rem; margin-top: 3rem; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 2rem; max-width: 1100px; margin: 0 auto 2rem; }
+        .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 1rem; text-transform: uppercase; }
+        .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; text-decoration: none; }
+        .footer-col a:hover { color: #c084fc; }
+        .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 1.5rem; text-align: center; font-size: 12px; color: #666; }
+        @media (max-width: 768px) { .nav-links { display: none; } .hero h1 { font-size: 1.8rem; } }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="/"><img src="/logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/trips">Trips</a>
+            <a href="https://flights.therealvacations.com">Flights</a>
+            <a href="/resources">Resources</a>
+            <a href="/contact">Contact</a>
+        </div>
+    </nav>
+
+    <div class="content">
+        <div class="hero">
+            <div class="icon" style="font-size: 3rem; margin-bottom: 1rem;">🎤</div>
+            <h1>On-Tour Travel Management</h1>
+            <p class="tagline">Complete Travel Coordination for Touring Artists & Entertainers</p>
+            <p class="description">Your schedule is demanding. Your travel shouldn't be. We handle flights, hotels, ground transportation, meals, and logistics — so you can focus on what matters: the performance. Whether you're a solo artist, a band, or an entire touring production, we've got every detail covered.</p>
+        </div>
+
+        <div class="form-section">
+            <h2>🎯 Tour Information & Preferences</h2>
+            <p>Tell us about your touring schedule and travel needs. This information helps us create a customized travel coordination package that keeps your team moving seamlessly from city to city.</p>
+            
+            <form id="tourForm" onsubmit="handleSubmit(event)">
+                <input type="hidden" name="serviceType" value="on-tour-travel-management">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Artist/Group Name *</label>
+                        <input type="text" name="artistName" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contact Email *</label>
+                        <input type="email" name="email" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Primary Contact Phone *</label>
+                        <input type="tel" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Tour Start Date *</label>
+                        <input type="text" name="tourStartDate" placeholder="e.g., June 2026" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Touring Group Size (including crew) *</label>
+                    <input type="number" name="groupSize" min="1" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Tour Scope</label>
+                    <select name="tourScope">
+                        <option value="">-- Select --</option>
+                        <option value="single-city">Single City Performance</option>
+                        <option value="regional">Regional Tour (2-5 cities)</option>
+                        <option value="national">National Tour (5+ cities)</option>
+                        <option value="international">International Tour</option>
+                        <option value="ongoing">Ongoing/Long-Term Residency</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Services You Need (Check all that apply)</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="services" value="Flights"> Flight research, booking & coordination</label>
+                        <label><input type="checkbox" name="services" value="Hotels"> Hotel & accommodation sourcing</label>
+                        <label><input type="checkbox" name="services" value="Ground Transport"> Ground transportation (car services, transfers, charter buses)</label>
+                        <label><input type="checkbox" name="services" value="Dining"> Restaurant reservations & catering coordination</label>
+                        <label><input type="checkbox" name="services" value="VIP Services"> VIP meet-and-greet coordination</label>
+                        <label><input type="checkbox" name="services" value="Equipment"> Equipment & instrument shipping logistics</label>
+                        <label><input type="checkbox" name="services" value="Itineraries"> Custom daily itineraries & briefing documents</label>
+                        <label><input type="checkbox" name="services" value="Emergency Support"> 24/7 day-of emergency support & problem resolution</label>
+                        <label><input type="checkbox" name="services" value="Expense Management"> Expense tracking & financial reporting</label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Travel Preferences & Special Requirements</label>
+                    <textarea name="specialRequirements" placeholder="Preferred airlines? Dietary restrictions? Accessibility needs? VIP requirements? Anything we should know?"></textarea>
+                </div>
+
+                <button type="submit" class="submit-btn">Submit Tour Coordination Request →</button>
+            </form>
+        </div>
+
+        <div class="help-section">
+            <h3>Ready to Simplify Tour Logistics?</h3>
+            <p>A tour coordination specialist will review your request and contact you within 48 hours to discuss your touring schedule, customize a service package, and provide transparent pricing.</p>
+            <a href="mailto:contact@therealvacations.com" class="help-btn">📧 Contact Us Now</a>
+            <p style="margin-top: 1rem; font-size: 0.95rem;">Or call <a href="tel:4049230017" style="color: #fff; font-weight: bold;">404-923-0017</a></p>
+        </div>
+
+        <div style="text-align: center; padding: 2rem; background: #f9f9f9; border-radius: 16px; margin: 2rem 0;">
+            <h3 style="color: #1a0533; margin-bottom: 1rem;">📋 What Happens Next</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-top: 1.5rem;">
+                <div>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">1️⃣</div>
+                    <p style="color: #666;"><strong>You Submit</strong> — Tell us about your tour needs</p>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">2️⃣</div>
+                    <p style="color: #666;"><strong>We Review</strong> — Our team analyzes your schedule</p>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">3️⃣</div>
+                    <p style="color: #666;"><strong>We Connect</strong> — Discuss your touring needs in detail</p>
+                </div>
+                <div>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">4️⃣</div>
+                    <p style="color: #666;"><strong>We Coordinate</strong> — Custom tour travel solution</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-col">
+                <img src="/logo.jpeg" alt="The Real Vacations" style="height:40px; margin-bottom:10px;">
+                <p>Complete travel coordination for unforgettable experiences — whether it's a group vacation or touring production.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <a href="/trips">Upcoming Trips</a>
+                <a href="https://flights.therealvacations.com">Flights</a>
+                <a href="/resources">Resources</a>
+                <a href="/contact">Contact</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact Us</h4>
+                <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>
+                <a href="tel:4049230017">404-923-0017</a>
+                <a href="https://www.instagram.com/therealvacations/">Instagram</a>
+            </div>
+        </div>
+        <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
+    </footer>
+
+    <script>
+        async function handleSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData);
+            data.services = formData.getAll('services');
+            
+            try {
+                const response = await fetch('/api/submit-service-request', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    alert('✅ Your tour coordination request has been submitted! A specialist will contact you within 48 hours.');
+                    event.target.reset();
+                } else {
+                    alert('❌ There was an error submitting your request. Please try again or contact us directly at 404-923-0017.');
+                }
+            } catch (error) {
+                alert('❌ Error submitting form. Please contact us directly at 404-923-0017.');
+            }
+        }
+    </script>
+</body>
+</html>
