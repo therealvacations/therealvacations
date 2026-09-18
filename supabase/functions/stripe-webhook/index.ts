@@ -57,7 +57,7 @@ Deno.serve(async (request) => {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
       const session = event.data.object as Stripe.Checkout.Session
       const paymentId = session.metadata?.payment_id
-      if (!paymentId) throw new Error('Checkout Session is missing payment metadata')
+      if (!paymentId) return jsonResponse({ received: true, legacy: true })
       if (session.payment_status !== 'paid') return jsonResponse({ received: true })
 
       const { error } = await admin.rpc('complete_stripe_booking_payment', {
@@ -76,7 +76,7 @@ Deno.serve(async (request) => {
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object as Stripe.Checkout.Session
       const paymentId = session.metadata?.payment_id
-      if (!paymentId) throw new Error('Checkout Session is missing payment metadata')
+      if (!paymentId) return jsonResponse({ received: true, legacy: true })
       const { error } = await admin.rpc('sync_stripe_booking_payment_status', {
         p_event_id: event.id,
         p_event_type: event.type,
