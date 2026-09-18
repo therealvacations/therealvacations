@@ -48,24 +48,29 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
     <div id="tripsContainer"><p>Loading your trips...</p></div>
 </div>
 <script type="module">
-import { supabase } from './js/supabase-client.js';
-import { handleLogout } from './js/auth.js';
+import { supabase } from '/js/supabase-client.js';
+import { handleLogout } from '/js/auth.js';
 window.logout = async function() { await handleLogout(); }
 
 const { data: { user } } = await supabase.auth.getUser();
-if (!user) { window.location.href = '/login'; }
+if (!user) { window.location.replace('/login?next=/my-trips'); }
 
-// Check if admin — redirect to admin dashboard
-const { data: adminCheck } = await supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle();
-if (adminCheck) { window.location.href = '/dashboard'; }
+if (user) {
+  // Check if admin — redirect to admin dashboard
+  const { data: adminCheck } = await supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle();
+  if (adminCheck) { window.location.replace('/dashboard'); }
 
-const { data: profile } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
-if (profile) document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + profile.first_name + '!';
+  const { data: profile, error: profileError } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
+  if (profileError) console.error('Unable to load traveler profile:', profileError.message);
+  if (profile) document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + profile.first_name + '!';
 
-const { data: bookings } = await supabase.from('bookings').select('*, trips(*), payment_schedule(*), payment_history(*)').eq('user_id', user.id).order('created_at', { ascending: false });
-const container = document.getElementById('tripsContainer');
+  const { data: bookings, error: bookingsError } = await supabase.from('bookings').select('*, trips(*), payment_schedule(*), payment_history(*)').eq('user_id', user.id).order('created_at', { ascending: false });
+  const container = document.getElementById('tripsContainer');
 
-if (!bookings || bookings.length === 0) {
+if (bookingsError) {
+    console.error('Unable to load trips:', bookingsError.message);
+    container.innerHTML = '<div class="no-trips"><h2>We could not load your trips</h2><p>Please refresh the page. If this continues, contact The Real Vacations for help.</p></div>';
+} else if (!bookings || bookings.length === 0) {
     container.innerHTML = '<div class="no-trips"><h2>No trips booked yet</h2><p>Browse our curated group experiences and book your next adventure.</p><a href="/trips" class="btn">Explore Trips →</a></div>';
 } else {
     let html = '';
@@ -90,6 +95,7 @@ if (!bookings || bookings.length === 0) {
             '<a href="/update-payment-method" class="update-card-link">Update payment method →</a></div>';
     }
     container.innerHTML = html;
+}
 }
 </script>
 </body>
