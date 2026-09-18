@@ -116,7 +116,7 @@ begin
           target_rooms = excluded.target_rooms
     returning group_id into linked_group_id;
 
-    insert into public.travel_group_members (
+    insert into public.travel_group_members as membership (
       group_id, user_id, invited_email, role, status, joined_at
     )
     select
@@ -129,7 +129,7 @@ begin
     from auth.users au
     where au.id = new.user_id
     on conflict (group_id, user_id) where user_id is not null do update
-      set role = 'leader', status = 'joined', joined_at = coalesce(public.travel_group_members.joined_at, now());
+      set role = 'leader', status = 'joined', joined_at = coalesce(membership.joined_at, now());
   end if;
 
   return new;
