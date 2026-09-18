@@ -13,6 +13,8 @@
     { "source": "/signup", "destination": "/signup.html" },
     { "source": "/my-trips", "destination": "/my-trips.html" },
     { "source": "/join-group", "destination": "/join-group.html" },
+    { "source": "/book-trip", "destination": "/book-trip.html" },
+    { "source": "/payment-result", "destination": "/payment-result.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
     { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
