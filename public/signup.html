@@ -181,7 +181,14 @@
   © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a>
 </footer>
 <script type="module">
-import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin } from './js/auth.js';
+import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin, safePortalPath } from './js/auth.js';
+
+const requestedNext = safePortalPath(new URLSearchParams(window.location.search).get('next'));
+if (requestedNext !== '/my-trips') {
+  document.querySelectorAll('a[href="/login"]').forEach(link => {
+    link.href = '/login?next=' + encodeURIComponent(requestedNext);
+  });
+}
 
 window.handleSignup = async function() {
   var firstName = document.getElementById('firstName').value.trim();
@@ -203,9 +210,9 @@ window.handleSignup = async function() {
   btn.disabled = true;
 
   try {
-    const signup = await supabaseSignup({ email, password, firstName, lastName, phone, tripInterest });
+    const signup = await supabaseSignup({ email, password, firstName, lastName, phone, tripInterest, nextPath: requestedNext });
     if (signup.session) {
-      window.location.replace('/my-trips');
+      window.location.replace(requestedNext);
       return;
     }
 
@@ -225,12 +232,12 @@ window.handleSignup = async function() {
 var socialBtns = document.querySelectorAll('.social-btn');
 if (socialBtns[0]) {
   socialBtns[0].addEventListener('click', async function() {
-    try { await handleFacebookLogin(); } catch(e) { alert('Facebook signup error: ' + e.message); }
+    try { await handleFacebookLogin(requestedNext); } catch(e) { alert('Facebook signup error: ' + e.message); }
   });
 }
 if (socialBtns[1]) {
   socialBtns[1].addEventListener('click', async function() {
-    try { await handleGoogleLogin(); } catch(e) { alert('Google signup error: ' + e.message); }
+    try { await handleGoogleLogin(requestedNext); } catch(e) { alert('Google signup error: ' + e.message); }
   });
 }
 </script>
