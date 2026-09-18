@@ -14,6 +14,12 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 .container{max-width:900px;margin:0 auto;padding:40px 24px}
 .welcome{margin-bottom:32px}.welcome h1{font-size:28px;color:#1a0533;margin-bottom:4px}.welcome p{color:#666;font-size:15px}
 .trip-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin-bottom:24px}
+.portal-section{margin-bottom:36px}.portal-section>h2{font-size:20px;color:#1a0533;margin-bottom:14px}
+.request-card{background:#fff;border-left:5px solid #7c3aed;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px}
+.request-meta{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.request-pill{background:#f3e8ff;color:#6b21a8;border-radius:50px;padding:5px 11px;font-size:12px;font-weight:700}
+.quote-card{margin-top:16px;padding:18px;border:1px solid #e9d5ff;border-radius:12px;background:#faf5ff}.quote-option{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:10px}
+.quote-option button{margin-top:10px;background:#22c55e;color:#fff;border:0;border-radius:50px;padding:8px 16px;font-weight:700;cursor:pointer}.quote-option button:disabled{opacity:.55;cursor:not-allowed}
+.group-card{background:#fff;border-left:5px solid #22c55e;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px}.group-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}.group-stat{background:#f0fdf4;border-radius:10px;padding:12px}.group-stat strong{display:block;color:#166534;font-size:18px}.member-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #eee;align-items:center}.member-row:last-child{border-bottom:0}.member-row small{display:block;color:#777}.invite-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:16px}.invite-form input,.invite-result input{width:100%;border:1px solid #d1d5db;border-radius:9px;padding:10px;font:inherit}.invite-form button,.invite-result button{background:#7c3aed;color:#fff;border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer}.invite-result{display:flex;gap:8px;margin-top:10px}.invite-result[hidden]{display:none}.group-message{font-size:13px;margin-top:8px;color:#6b21a8}
 .trip-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
 .trip-header h2{font-size:22px;color:#1a0533}.trip-header .status{padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700}
 .status-pending{background:#fef3c7;color:#92400e}.status-confirmed{background:#d1fae5;color:#065f46}.status-overdue{background:#fee2e2;color:#991b1b}
@@ -30,8 +36,8 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 .btn{display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:14px;text-decoration:none}
 .btn:hover{background:#6d28d9}
 .section-title{font-size:16px;font-weight:700;color:#1a0533;margin:20px 0 12px}
-.update-card-link{display:inline-block;margin-top:16px;color:#7c3aed;font-weight:600;font-size:13px;text-decoration:none}
-@media(max-width:768px){nav{padding:12px 16px}.container{padding:20px 16px}.countdown-nums{gap:10px}.cd-box .n{font-size:24px}}
+.pay-button{border:0;border-radius:50px;background:#7c3aed;color:#fff;padding:9px 16px;font:700 13px inherit;cursor:pointer}.pay-button:disabled{opacity:.55;cursor:not-allowed}.payment-message{font-size:13px;color:#6b21a8;margin-top:12px}
+@media(max-width:768px){nav{padding:12px 16px}.container{padding:20px 16px}.countdown-nums{gap:10px}.cd-box .n{font-size:24px}.invite-form{grid-template-columns:1fr}.invite-result{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -45,27 +51,148 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 </nav>
 <div class="container">
     <div class="welcome"><h1 id="welcomeMsg">Welcome back!</h1><p>Your trips, payments, and travel details — all in one place.</p></div>
-    <div id="tripsContainer"><p>Loading your trips...</p></div>
+    <section class="portal-section"><h2>My Travel Requests & Quotes</h2><div id="requestsContainer"><p>Loading your requests...</p></div></section>
+    <section class="portal-section" id="travel-groups"><h2>My Travel Groups</h2><div id="groupsContainer"><p>Loading your groups...</p></div></section>
+    <section class="portal-section"><h2>My Confirmed Trips</h2><div id="tripsContainer"><p>Loading your trips...</p></div></section>
 </div>
 <script type="module">
-import { supabase } from './js/supabase-client.js';
-import { handleLogout } from './js/auth.js';
+import { supabase } from '/js/supabase-client.js';
+import { handleLogout } from '/js/auth.js';
 window.logout = async function() { await handleLogout(); }
 
 const { data: { user } } = await supabase.auth.getUser();
-if (!user) { window.location.href = '/login'; }
+if (!user) { window.location.replace('/login?next=/my-trips'); }
 
-// Check if admin — redirect to admin dashboard
-const { data: adminCheck } = await supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle();
-if (adminCheck) { window.location.href = '/dashboard'; }
+if (user) {
+  // Check if admin — redirect to admin dashboard
+  const { data: adminCheck } = await supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle();
+  if (adminCheck) { window.location.replace('/dashboard'); }
 
-const { data: profile } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
-if (profile) document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + profile.first_name + '!';
+  const { data: profile, error: profileError } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
+  if (profileError) console.error('Unable to load traveler profile:', profileError.message);
+  if (profile) document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + profile.first_name + '!';
 
-const { data: bookings } = await supabase.from('bookings').select('*, trips(*), payment_schedule(*), payment_history(*)').eq('user_id', user.id).order('created_at', { ascending: false });
-const container = document.getElementById('tripsContainer');
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+  const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(value) || 0) / 100);
 
-if (!bookings || bookings.length === 0) {
+  const { data: groups, error: groupsError } = await supabase
+    .from('travel_groups')
+    .select('*, travel_group_members(*)')
+    .order('created_at', { ascending: false });
+  const groupsContainer = document.getElementById('groupsContainer');
+  if (groupsError) {
+    console.error('Unable to load travel groups:', groupsError.message);
+    groupsContainer.innerHTML = '<div class="group-card"><p>Your group details are not available yet.</p></div>';
+  } else if (!groups || groups.length === 0) {
+    groupsContainer.innerHTML = '<div class="group-card"><p>No travel groups are connected to this account yet.</p></div>';
+  } else {
+    groupsContainer.innerHTML = groups.map(group => {
+      const isLeader = group.leader_user_id === user.id;
+      const members = group.travel_group_members || [];
+      const joined = members.filter(member => member.status === 'joined').length;
+      const currentMember = members.find(member => member.user_id === user.id);
+      const memberRows = members.map(member => {
+        const label = member.display_name || member.invited_email || (member.role === 'leader' ? 'Group Leader' : 'Traveler');
+        const share = member.share_total == null ? 'Share not assigned' : money(member.share_paid) + ' of ' + money(member.share_total) + ' paid';
+        return '<div class="member-row"><div><strong>' + escapeHtml(label) + '</strong><small>' + escapeHtml(member.role) + ' · ' + escapeHtml(member.status) + '</small></div><div><strong>' + escapeHtml(member.share_status.replaceAll('_', ' ')) + '</strong><small>' + escapeHtml(share) + '</small></div></div>';
+      }).join('');
+      const inviteForm = isLeader ? '<form class="invite-form" data-group-id="' + group.group_id + '"><input name="display_name" maxlength="120" placeholder="Traveler name (optional)"><input name="invited_email" type="email" placeholder="Traveler email (optional)"><button type="submit">Create Invite Link</button></form><div class="invite-result" hidden><input readonly aria-label="Private invitation link"><button type="button" class="copy-invite">Copy</button></div><p class="group-message" aria-live="polite"></p>' : '';
+      const ownShare = !isLeader && currentMember ? '<div class="member-row"><div><strong>Your individual share</strong><small>' + escapeHtml(currentMember.share_status.replaceAll('_', ' ')) + '</small></div><div><strong>' + (currentMember.share_total == null ? 'Not assigned' : money(currentMember.share_total)) + '</strong><small>' + money(currentMember.share_paid) + ' paid</small></div></div>' : '';
+      return '<div class="group-card"><div class="trip-header"><div><h3>' + escapeHtml(group.name) + '</h3><p>' + escapeHtml(group.group_type || 'Group travel') + '</p></div><span class="status status-confirmed">' + escapeHtml(group.status) + '</span></div><div class="group-summary"><div class="group-stat"><strong>' + (isLeader ? joined + (group.target_travelers ? ' / ' + group.target_travelers : '') : 'Joined') + '</strong><span>' + (isLeader ? 'Travelers joined' : 'Membership status') + '</span></div><div class="group-stat"><strong>' + (group.target_rooms || '—') + '</strong><span>Planned rooms</span></div><div class="group-stat"><strong>' + (group.separate_payments ? 'Individual' : 'Combined') + '</strong><span>Payment setup</span></div></div>' + (isLeader ? '<div class="section-title">Traveler status & shares</div>' + memberRows : ownShare) + inviteForm + '</div>';
+    }).join('');
+
+    document.querySelectorAll('.invite-form').forEach(form => {
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = form.querySelector('button');
+        const message = form.parentElement.querySelector('.group-message');
+        const result = form.parentElement.querySelector('.invite-result');
+        const values = new FormData(form);
+        button.disabled = true;
+        button.textContent = 'Creating...';
+        message.textContent = '';
+        const { data, error } = await supabase.functions.invoke('group-invite', {
+          body: {
+            group_id: form.dataset.groupId,
+            display_name: values.get('display_name'),
+            invited_email: values.get('invited_email')
+          }
+        });
+        if (error || !data?.join_url) {
+          message.textContent = 'The invitation could not be created. Please try again.';
+          button.disabled = false;
+          button.textContent = 'Create Invite Link';
+          return;
+        }
+        result.querySelector('input').value = data.join_url;
+        result.hidden = false;
+        message.textContent = 'Private link created. It expires in 14 days.';
+        button.disabled = false;
+        button.textContent = 'Create Another Link';
+      });
+    });
+    document.querySelectorAll('.copy-invite').forEach(button => {
+      button.addEventListener('click', async () => {
+        const input = button.parentElement.querySelector('input');
+        await navigator.clipboard.writeText(input.value);
+        button.textContent = 'Copied ✓';
+      });
+    });
+  }
+
+  const { data: requests, error: requestsError } = await supabase
+    .from('travel_requests')
+    .select('*, travel_quotes(*, travel_quote_options(*), travel_quote_responses(*))')
+    .order('submitted_at', { ascending: false });
+
+  const requestsContainer = document.getElementById('requestsContainer');
+  if (requestsError) {
+    console.error('Unable to load travel requests:', requestsError.message);
+    requestsContainer.innerHTML = '<div class="request-card"><p>Your request history is not available yet.</p></div>';
+  } else if (!requests || requests.length === 0) {
+    requestsContainer.innerHTML = '<div class="request-card"><p>No travel requests are connected to this account yet.</p></div>';
+  } else {
+    requestsContainer.innerHTML = requests.map(request => {
+      const quotes = (request.travel_quotes || []).filter(quote => quote.status !== 'draft' && quote.status !== 'withdrawn');
+      const quoteHtml = quotes.map(quote => {
+        const existingResponse = (quote.travel_quote_responses || [])[0];
+        const options = (quote.travel_quote_options || []).sort((a, b) => a.sort_order - b.sort_order);
+        const optionsHtml = options.map(option => '<div class="quote-option"><strong>' + escapeHtml(option.name) + '</strong><p>' + escapeHtml(option.description || '') + '</p><p><strong>' + money(option.total_amount) + '</strong>' + (option.deposit_amount ? ' · Deposit ' + money(option.deposit_amount) : '') + '</p>' + (!existingResponse && ['ready','viewed'].includes(quote.status) ? '<button data-quote-id="' + quote.quote_id + '" data-option-id="' + option.option_id + '" class="approve-quote">Approve This Option</button>' : '') + '</div>').join('');
+        return '<div class="quote-card"><strong>' + escapeHtml(quote.title) + '</strong><p>' + escapeHtml(quote.summary || '') + '</p>' + (existingResponse ? '<p class="request-pill">Response: ' + escapeHtml(existingResponse.decision.replaceAll('_', ' ')) + '</p>' : '') + optionsHtml + '</div>';
+      }).join('');
+      const requestTypes = (request.request_types || []).map(type => '<span class="request-pill">' + escapeHtml(type) + '</span>').join('');
+      return '<div class="request-card"><div class="trip-header"><div><h3>' + escapeHtml(request.destination || 'Travel Request') + '</h3><p>Submitted ' + new Date(request.submitted_at).toLocaleDateString() + '</p></div><span class="status status-pending">' + escapeHtml(request.status.replaceAll('_', ' ')) + '</span></div><div class="request-meta">' + requestTypes + '</div>' + quoteHtml + '</div>';
+    }).join('');
+
+    document.querySelectorAll('.approve-quote').forEach(button => {
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        button.textContent = 'Saving...';
+        const { error } = await supabase.from('travel_quote_responses').upsert({
+          quote_id: button.dataset.quoteId,
+          option_id: button.dataset.optionId,
+          user_id: user.id,
+          decision: 'approved'
+        }, { onConflict: 'quote_id,user_id' });
+        if (error) {
+          console.error('Unable to save quote response:', error.message);
+          button.disabled = false;
+          button.textContent = 'Try Again';
+        } else {
+          button.textContent = 'Approved ✓';
+          document.querySelectorAll('[data-quote-id="' + button.dataset.quoteId + '"]').forEach(item => item.disabled = true);
+        }
+      });
+    });
+  }
+
+  const { data: bookings, error: bookingsError } = await supabase.from('bookings').select('*, trips(*), booking_payments(*)').eq('user_id', user.id).order('created_at', { ascending: false });
+  const container = document.getElementById('tripsContainer');
+
+if (bookingsError) {
+    console.error('Unable to load trips:', bookingsError.message);
+    container.innerHTML = '<div class="no-trips"><h2>We could not load your trips</h2><p>Please refresh the page. If this continues, contact The Real Vacations for help.</p></div>';
+} else if (!bookings || bookings.length === 0) {
     container.innerHTML = '<div class="no-trips"><h2>No trips booked yet</h2><p>Browse our curated group experiences and book your next adventure.</p><a href="/trips" class="btn">Explore Trips →</a></div>';
 } else {
     let html = '';
@@ -75,21 +202,38 @@ if (!bookings || bookings.length === 0) {
         const sc = b.status === 'confirmed' ? 'confirmed' : b.status === 'overdue' ? 'overdue' : 'pending';
         const tripDate = new Date(trip.dates_start); const now = new Date(); const diff = tripDate - now;
         const days = Math.max(0, Math.floor(diff / 86400000)); const hrs = Math.max(0, Math.floor((diff % 86400000) / 3600000));
-        const scheduleHtml = (b.payment_schedule || []).sort((a,b) => a.payment_number - b.payment_number).map(p => {
-            const isDone = p.status === 'completed';
-            return '<div class="schedule-item"><div><span class="date">Payment ' + p.payment_number + '</span><br><span style="font-size:12px;color:#999;">' + p.due_date + '</span></div><div><span class="amount ' + (isDone ? 'done' : '') + '">$' + (p.amount_due / 100).toFixed(2) + (isDone ? ' ✓' : '') + '</span>' + (!isDone ? '<br><span class="pending-lbl">Scheduled</span>' : '') + '</div></div>';
+        const payments = (b.booking_payments || []).sort((a,b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+        const payable = payments.find(p => ['scheduled','failed','cancelled'].includes(p.status));
+        const paymentsHtml = payments.map(p => {
+            const isDone = p.status === 'succeeded';
+            const label = p.kind === 'pay_in_full' ? 'Pay in full' : p.kind === 'deposit' ? 'Deposit' : 'Payment ' + (p.payment_number || '');
+            const action = payable?.payment_id === p.payment_id ? '<button class="pay-button" data-payment-id="' + p.payment_id + '">Pay securely</button>' : '<span class="pending-lbl">' + escapeHtml(p.status.replaceAll('_', ' ')) + '</span>';
+            return '<div class="schedule-item"><div><span class="date">' + escapeHtml(label) + '</span><br><span style="font-size:12px;color:#999;">Due ' + escapeHtml(p.scheduled_for) + '</span></div><div style="text-align:right"><span class="amount ' + (isDone ? 'done' : '') + '">' + money(p.scheduled_amount) + (isDone ? ' ✓' : '') + '</span><br>' + action + '</div></div>';
         }).join('');
-        const historyHtml = (b.payment_history || []).sort((a,b) => new Date(b.payment_date) - new Date(a.payment_date)).map(p => {
-            return '<div class="schedule-item"><div><span style="font-size:13px;">' + new Date(p.payment_date).toLocaleDateString() + '</span></div><div><span class="amount ' + (p.status === 'succeeded' ? 'done' : '') + '">$' + (p.amount / 100).toFixed(2) + (p.status === 'succeeded' ? ' ✓' : ' ✕') + '</span></div></div>';
-        }).join('');
-        html += '<div class="trip-card"><div class="trip-header"><h2>' + trip.title + '</h2><span class="status status-' + sc + '">' + b.status.toUpperCase() + '</span></div>' +
+        html += '<div class="trip-card"><div class="trip-header"><h2>' + escapeHtml(trip.title) + '</h2><span class="status status-' + sc + '">' + escapeHtml(b.status.toUpperCase()) + '</span></div>' +
             (diff > 0 ? '<div class="countdown-strip"><h3>Trip starts in</h3><div class="countdown-nums"><div class="cd-box"><span class="n">' + days + '</span><span class="l">Days</span></div><div class="cd-box"><span class="n">' + hrs + '</span><span class="l">Hours</span></div></div></div>' : '') +
             '<div class="progress-section"><div class="progress-labels"><span>$' + (b.amount_paid / 100).toFixed(2) + ' paid</span><span>$' + (b.total_amount / 100).toFixed(2) + ' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-labels"><span>' + pct + '% complete</span><span>Balance: $' + (b.balance_due / 100).toFixed(2) + '</span></div></div>' +
-            (scheduleHtml ? '<div class="section-title">Payment Schedule</div>' + scheduleHtml : '') +
-            (historyHtml ? '<div class="section-title">Payment History</div>' + historyHtml : '') +
-            '<a href="/update-payment-method" class="update-card-link">Update payment method →</a></div>';
+            (paymentsHtml ? '<div class="section-title">Payments</div>' + paymentsHtml : '') +
+            '<p class="payment-message" aria-live="polite"></p></div>';
     }
     container.innerHTML = html;
+    document.querySelectorAll('.pay-button').forEach(button => {
+      button.addEventListener('click', async () => {
+        const message = button.closest('.trip-card').querySelector('.payment-message');
+        button.disabled = true;
+        button.textContent = 'Opening Stripe…';
+        message.textContent = '';
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{payment_id:button.dataset.paymentId}});
+        if (error || !data?.url) {
+          message.textContent = data?.error || 'Checkout could not be started. Please try again.';
+          button.disabled = false;
+          button.textContent = 'Pay securely';
+          return;
+        }
+        location.assign(data.url);
+      });
+    });
+}
 }
 </script>
 </body>

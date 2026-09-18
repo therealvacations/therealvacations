@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book Your Trip | The Real Vacations</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'DM Sans',sans-serif;background:#f5f5f5;color:#2f2540}nav{background:#1a0533;padding:14px 32px}nav img{height:52px}.wrap{max-width:720px;margin:42px auto;padding:0 20px}.card{background:#fff;border-radius:18px;padding:30px;box-shadow:0 3px 18px rgba(35,12,61,.1)}h1{margin:0 0 8px;color:#1a0533}.intro{color:#68606f;margin-bottom:24px}.packages{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.option{display:block;border:2px solid #e7e1eb;border-radius:13px;padding:18px;cursor:pointer}.option:has(input:checked){border-color:#7c3aed;background:#faf5ff}.option input{margin-right:8px}.price{display:block;font-size:23px;font-weight:800;color:#6d28d9;margin-top:6px}.plans{display:grid;gap:10px;margin:24px 0}.plan{border:1px solid #ddd;border-radius:11px;padding:14px;display:flex;gap:10px;cursor:pointer}.notice{background:#f3e8ff;border-radius:10px;padding:12px;color:#5b217b;font-size:13px}.error{color:#b91c1c;margin-top:12px}.submit{width:100%;border:0;border-radius:50px;background:#7c3aed;color:#fff;font:700 16px inherit;padding:14px;margin-top:18px;cursor:pointer}.submit:disabled{opacity:.55;cursor:not-allowed}.back{display:inline-block;margin-top:18px;color:#6d28d9;text-decoration:none;font-weight:700}
+</style>
+</head>
+<body>
+<nav><a href="/"><img src="/logo.jpeg" alt="The Real Vacations"></a></nav>
+<main class="wrap"><section class="card">
+  <h1>Reserve your trip</h1>
+  <p class="intro" id="tripIntro">Loading current package details…</p>
+  <form id="bookingForm" hidden>
+    <div class="packages" id="packages"></div>
+    <div class="plans">
+      <label class="plan" id="installmentPlan"><input type="radio" name="payment_plan" value="installments" checked><span><strong>Deposit + monthly installments</strong><br><small>Your schedule is created after Stripe confirms the deposit.</small></span></label>
+      <label class="plan"><input type="radio" name="payment_plan" value="pay_in_full"><span><strong>Pay in full</strong><br><small>Pay the complete package price securely in Stripe.</small></span></label>
+    </div>
+    <p class="notice">Prices are loaded from The Real Vacations’ payment database. Card details are entered only on Stripe’s hosted checkout.</p>
+    <button class="submit" type="submit">Continue to secure checkout</button>
+    <p class="error" id="message" aria-live="polite"></p>
+  </form>
+  <a class="back" href="/trips">← Back to trips</a>
+</section></main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const query = new URLSearchParams(location.search);
+const slug = query.get('trip') || '';
+const requestedPackage = /^(general|vip)$/.test(query.get('package') || '') ? query.get('package') : 'general';
+const next = '/book-trip?trip=' + encodeURIComponent(slug) + '&package=' + encodeURIComponent(requestedPackage);
+const { data: { user } } = await supabase.auth.getUser();
+if (!user) location.replace('/login?next=' + encodeURIComponent(next));
+
+const intro = document.getElementById('tripIntro');
+const form = document.getElementById('bookingForm');
+const packageContainer = document.getElementById('packages');
+const message = document.getElementById('message');
+const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(Number(value) / 100);
+const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+
+if (user) {
+  const { data: trip, error } = await supabase.from('trips').select('title,dates_start,trip_packages(*)').eq('slug', slug).eq('status', 'active').maybeSingle();
+  const packages = (trip?.trip_packages || []).filter(item => item.is_active).sort((a,b) => a.sort_order - b.sort_order);
+  if (error || !trip || packages.length === 0) {
+    intro.textContent = 'This trip is not currently available for online booking.';
+  } else {
+    intro.textContent = trip.title + ' · ' + new Date(trip.dates_start + 'T12:00:00').toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'});
+    const finalPaymentDeadline = new Date(trip.dates_start + 'T12:00:00');
+    finalPaymentDeadline.setDate(finalPaymentDeadline.getDate() - 60);
+    const installmentsAvailable = finalPaymentDeadline > new Date();
+    packageContainer.innerHTML = packages.map((item, index) => '<label class="option"><input type="radio" name="package_code" value="' + escapeHtml(item.code) + '" ' + (item.code === requestedPackage || (!packages.some(p => p.code === requestedPackage) && index === 0) ? 'checked' : '') + '><strong>' + escapeHtml(item.name) + '</strong><span class="price">' + money(item.total_amount) + '</span><small>' + (installmentsAvailable ? money(item.deposit_amount) + ' deposit' : 'Pay in full required') + '</small></label>').join('');
+    if (!installmentsAvailable) {
+      const installmentInput = document.querySelector('input[value="installments"]');
+      installmentInput.disabled = true;
+      installmentInput.checked = false;
+      document.querySelector('input[value="pay_in_full"]').checked = true;
+      document.querySelector('#installmentPlan small').textContent = 'Installments close 60 days before departure; pay-in-full is now required.';
+    }
+    form.hidden = false;
+  }
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const button = form.querySelector('button');
+  const values = new FormData(form);
+  button.disabled = true;
+  button.textContent = 'Opening Stripe…';
+  message.textContent = '';
+  const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{trip_slug:slug,package_code:values.get('package_code'),payment_plan:values.get('payment_plan')}});
+  if (error || !data?.url) {
+    message.textContent = data?.error || 'Checkout could not be started. Please try again.';
+    button.disabled = false;
+    button.textContent = 'Continue to secure checkout';
+    return;
+  }
+  location.assign(data.url);
+});
+</script>
+</body>
+</html>

@@ -171,6 +171,7 @@
         <label for="terms">I agree to the <a href="/terms-of-service">Terms of Service</a> and <a href="/privacy-policy">Privacy Policy</a>.</label>
       </div>
       <button class="signup-btn" onclick="handleSignup()">🎉 Create My Free Account →</button>
+      <div id="signup-status" role="status" aria-live="polite" style="display:none;margin-top:16px;padding:14px;border-radius:10px;font-size:14px;line-height:1.5;"></div>
       <div class="login-row">Already a member? <a href="/login">Sign in</a></div>
       <p class="security-note">🔒 Free to join. No credit card required. Your information is never sold.</p>
     </div>
@@ -180,13 +181,21 @@
   © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a> · <a href="tel:4049230017">404-923-0017</a>
 </footer>
 <script type="module">
-import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin } from './js/auth.js';
+import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin, safePortalPath } from './js/auth.js';
+
+const requestedNext = safePortalPath(new URLSearchParams(window.location.search).get('next'));
+if (requestedNext !== '/my-trips') {
+  document.querySelectorAll('a[href="/login"]').forEach(link => {
+    link.href = '/login?next=' + encodeURIComponent(requestedNext);
+  });
+}
 
 window.handleSignup = async function() {
   var firstName = document.getElementById('firstName').value.trim();
   var lastName  = document.getElementById('lastName').value.trim();
   var email     = document.getElementById('email').value.trim();
   var phone     = document.getElementById('phone').value.trim();
+  var tripInterest = document.getElementById('trip-interest').value;
   var password  = document.getElementById('password').value.trim();
   var terms     = document.getElementById('terms').checked;
 
@@ -201,8 +210,18 @@ window.handleSignup = async function() {
   btn.disabled = true;
 
   try {
-    await supabaseSignup({ email, password, firstName, lastName, phone });
-    window.location.replace('/my-trips');
+    const signup = await supabaseSignup({ email, password, firstName, lastName, phone, tripInterest, nextPath: requestedNext });
+    if (signup.session) {
+      window.location.replace(requestedNext);
+      return;
+    }
+
+    var status = document.getElementById('signup-status');
+    status.style.display = 'block';
+    status.style.background = '#ecfdf5';
+    status.style.color = '#065f46';
+    status.textContent = 'Your account was created. Check your email to confirm it, then sign in to My TRV Trips.';
+    btn.textContent = 'Account Created ✓';
   } catch (error) {
     alert('Signup failed: ' + error.message);
     btn.textContent = '🎉 Create My Free Account →';
@@ -213,12 +232,12 @@ window.handleSignup = async function() {
 var socialBtns = document.querySelectorAll('.social-btn');
 if (socialBtns[0]) {
   socialBtns[0].addEventListener('click', async function() {
-    try { await handleFacebookLogin(); } catch(e) { alert('Facebook signup error: ' + e.message); }
+    try { await handleFacebookLogin(requestedNext); } catch(e) { alert('Facebook signup error: ' + e.message); }
   });
 }
 if (socialBtns[1]) {
   socialBtns[1].addEventListener('click', async function() {
-    try { await handleGoogleLogin(); } catch(e) { alert('Google signup error: ' + e.message); }
+    try { await handleGoogleLogin(requestedNext); } catch(e) { alert('Google signup error: ' + e.message); }
   });
 }
 </script>
