@@ -422,7 +422,7 @@ function showPreview(){
       <div>
         <div class="q-brand">The Real Vacations</div>
         <div class="q-tagline">BORN FROM FAMILY · BUILT FOR COMMUNITY</div>
-        <div class="q-contact">contact@therealvacations.com · 404-923-0017</div>
+        <div class="q-contact">kc@therealvacations.com</div>
       </div>
       <div class="q-meta">
         <strong>Travel Quote</strong><br>
@@ -443,7 +443,7 @@ function showPreview(){
       ${notes?'<div style="font-size:12px;opacity:0.8;max-width:280px;text-align:right">'+notes+'</div>':''}
     </div>
     ${link?`<div class="q-book-link">Ready to book? <a href="${link}" target="_blank">Click here to secure your spot →</a></div>`:''}
-    <div class="q-footer">This quote is valid for 48 hours. Prices subject to availability at time of booking. Travel insurance strongly recommended.<br>therealvacations.com · 404-923-0017</div>`);
+    <div class="q-footer">This quote is valid for 48 hours. Prices subject to availability at time of booking. Travel insurance strongly recommended.<br>therealvacations.com · kc@therealvacations.com</div>`);
 
   document.getElementById('print-overlay').classList.add('show');
 }
@@ -478,7 +478,7 @@ function quoteText(){
   }
   t+=`\n━━━━━━━━━━━━━━━━━━\nTOTAL: ${total}\n━━━━━━━━━━━━━━━━━━\n`;
   if(link) t+=`\nBook here: ${link}\n`;
-  t+='\ntherealvacations.com · 404-923-0017';
+  t+='\ntherealvacations.com · kc@therealvacations.com';
   return t;
 }
 function sanitize(html){
@@ -493,7 +493,7 @@ function emailQuote(){
   const dest=getVal('q-dest')||'your destination';
   const email=getVal('q-email');
   const sub=encodeURIComponent(`Your Travel Quote — Trip to ${dest}`);
-  const body=encodeURIComponent(`Hi ${client},\n\nHere is your personalized travel quote:\n\n${quoteText()}\n\nReady to book? Reply to this email or use the booking link above!\n\nKevia Cates\nThe Real Vacations\n404-923-0017\ntherealvacations.com`);
+  const body=encodeURIComponent(`Hi ${client},\n\nHere is your personalized travel quote:\n\n${quoteText()}\n\nReady to book? Reply to this email or use the booking link above!\n\nKevia Cates\nThe Real Vacations\nkc@therealvacations.com\ntherealvacations.com`);
   window.location.href=`mailto:${email}?subject=${sub}&body=${body}`;
 }
 

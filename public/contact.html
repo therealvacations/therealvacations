@@ -101,8 +101,8 @@
 
     <section class="hero">
         <div class="hero-content">
-            <h1>Get In Touch</h1>
-            <p>Ready to book your next adventure? We're here to help!</p>
+            <h1 data-contact-heading>Get In Touch</h1>
+            <p data-contact-intro>Ready to book your next adventure? We're here to help!</p>
         </div>
     </section>
 
@@ -113,12 +113,12 @@
                 <div class="contact-method">
                     <h3>📧 Email</h3>
                     <p>For booking inquiries, trip questions, or general information:</p>
-                    <p><a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a></p>
+                    <p><a data-site-email href="mailto:kc@therealvacations.com">kc@therealvacations.com</a></p>
                 </div>
-                <div class="contact-method">
+                <div class="contact-method" data-site-phone-section hidden>
                     <h3>📱 Phone</h3>
                     <p>Speak with a travel specialist:</p>
-                    <p><a href="tel:4049230017">404-923-0017</a></p>
+                    <p><a data-site-phone href="#"></a></p>
                     <p style="margin-top: 0.5rem; font-size: 0.95rem; color: var(--text-light);">Monday - Friday: 9:00 AM - 6:00 PM EST<br>Saturday: 10:00 AM - 4:00 PM EST</p>
                 </div>
                 <div class="contact-method">
@@ -128,9 +128,7 @@
                 </div>
                 <div class="hours-section">
                     <h3>Business Hours</h3>
-                    <p>Monday - Friday: 9:00 AM - 6:00 PM EST</p>
-                    <p>Saturday: 10:00 AM - 4:00 PM EST</p>
-                    <p>Sunday: Closed</p>
+                    <div data-business-hours><p>Monday - Friday: 9:00 AM - 6:00 PM EST</p><p>Saturday: 10:00 AM - 4:00 PM EST</p><p>Sunday: Closed</p></div>
                     <p class="note">Trip coordinators available 24/7 for travelers on active trips</p>
                 </div>
             </div>
@@ -209,8 +207,8 @@
             </div>
             <div class="footer-col">
                 <h4>Contact Us</h4>
-                <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>
-                <a href="tel:4049230017">404-923-0017</a>
+                <a data-site-email href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>
+                <a data-site-phone data-site-phone-section href="#" hidden></a>
                 <a href="/contact">Send a Message</a>
                 <a href="/privacy-policy">Privacy Policy</a>
                 <a href="/terms-of-service">Terms of Service</a>
@@ -219,6 +217,7 @@
         <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
     </footer>
 
+    <script type="module" src="/js/site-settings.js"></script>
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);

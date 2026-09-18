@@ -67,7 +67,7 @@ export default function Login() {
           {/* Left Side */}
           <div style={{ flex: 1, background: 'linear-gradient(160deg, #3b0764, #1a0533 60%, #0f0620)', padding: '56px 44px', display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', color: '#c084fc', fontWeight: '700', marginBottom: '20px' }}>Member Portal</div>
-            
+
             <h2 style={{ fontSize: 'clamp(24px, 3vw, 34px)', fontWeight: '800', color: '#fff', lineHeight: '1.2', marginBottom: '20px' }}>
               Your next adventure<br />starts <span style={{ color: '#c084fc' }}>right here.</span>
             </h2>
@@ -211,7 +211,7 @@ export default function Login() {
 
       {/* Footer */}
       <footer style={{ background: '#0f0620', color: '#555', textAlign: 'center', padding: '20px', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com" style={{ color: '#c084fc', textDecoration: 'none' }}>contact@therealvacations.com</a> · <a href="tel:4049230017" style={{ color: '#c084fc', textDecoration: 'none' }}>404-923-0017</a>
+        © 2026 The Real Vacations · <a href="mailto:kc@therealvacations.com" style={{ color: '#c084fc', textDecoration: 'none' }}>kc@therealvacations.com</a> ·
       </footer>
     </div>
   );

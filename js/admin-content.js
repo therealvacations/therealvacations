@@ -1,6 +1,6 @@
 import { supabase } from './supabase-client.js'
 
-const state = { user: null, permissions: null, trips: [], resources: [], posts: [], packages: [] }
+const state = { user: null, permissions: null, trips: [], resources: [], posts: [], packages: [], settings: null }
 const $ = (selector) => document.querySelector(selector)
 const $$ = (selector) => [...document.querySelectorAll(selector)]
 const textNode = (tag, className, text) => {
@@ -246,17 +246,49 @@ async function uploadImage(input, targetSelector, folder) {
   showMessage('Image uploaded. Save the record to use it.')
 }
 
+function renderContactSettings() {
+  const settings = state.settings || {}
+  $('#contactEmail').value = settings.contact_email || 'kc@therealvacations.com'
+  $('#contactPhone').value = settings.contact_phone || ''
+  $('#contactHeading').value = settings.contact_heading || 'Get In Touch'
+  $('#contactIntro').value = settings.contact_intro || ''
+  $('#contactHours').value = settings.business_hours || ''
+  $('#contactPreview').replaceChildren(
+    textNode('h3', '', settings.contact_heading || 'Get In Touch'),
+    textNode('p', '', settings.contact_email || 'kc@therealvacations.com'),
+    textNode('p', '', settings.contact_phone || 'Phone hidden')
+  )
+}
+
+async function saveContactSettings(event) {
+  event.preventDefault()
+  const payload = {
+    id: 1,
+    contact_email: $('#contactEmail').value.trim(),
+    contact_phone: $('#contactPhone').value.trim() || null,
+    contact_heading: $('#contactHeading').value.trim(),
+    contact_intro: $('#contactIntro').value.trim(),
+    business_hours: $('#contactHours').value.trim() || null,
+    updated_by: state.user.id,
+    updated_at: new Date().toISOString(),
+  }
+  const { error } = await supabase.from('site_settings').upsert(payload, { onConflict: 'id' })
+  if (error) return showMessage(error.message, 'error')
+  state.settings = payload; renderContactSettings(); showMessage('Contact page updated.')
+}
+
 async function loadAll() {
-  const [tripsResult, packagesResult, resourcesResult, postsResult] = await Promise.all([
+  const [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult] = await Promise.all([
     supabase.from('trips').select('*').order('dates_start', { ascending: false }),
     supabase.from('trip_packages').select('*').order('sort_order'),
     supabase.from('resources').select('*').order('category').order('sort_order'),
     supabase.from('blog_posts').select('*').order('created_at', { ascending: false }),
+    supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
   ])
-  const failed = [tripsResult, packagesResult, resourcesResult, postsResult].find((result) => result.error)
+  const failed = [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
   if (failed) return showMessage(failed.error.message, 'error')
-  state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []
-  renderTrips(); renderResources(); renderPosts()
+  state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
+  renderTrips(); renderResources(); renderPosts(); renderContactSettings()
 }
 
 async function initialize() {
@@ -278,6 +310,7 @@ $$('.admin-tab').forEach((button) => button.addEventListener('click', () => setT
 $('#tripForm').addEventListener('submit', saveTrip); $('#tripReset').addEventListener('click', resetTripForm)
 $('#resourceForm').addEventListener('submit', saveResource); $('#resourceReset').addEventListener('click', resetResourceForm)
 $('#blogForm').addEventListener('submit', savePost); $('#blogReset').addEventListener('click', resetBlogForm)
+$('#contactForm').addEventListener('submit', saveContactSettings)
 $('#tripUpload').addEventListener('change', (event) => uploadImage(event.target, '#tripImage', 'trips'))
 $('#blogUpload').addEventListener('change', (event) => uploadImage(event.target, '#blogImage', 'blog'))
 $('#logoutButton').addEventListener('click', async () => { await supabase.auth.signOut(); location.replace('/admin-login') })

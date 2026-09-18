@@ -70,10 +70,10 @@
         <div class="form-section">
             <h2>🎯 Tour Information & Preferences</h2>
             <p>Tell us about your touring schedule and travel needs. This information helps us create a customized travel coordination package that keeps your team moving seamlessly from city to city.</p>
-            
+
             <form id="tourForm" onsubmit="handleSubmit(event)">
                 <input type="hidden" name="serviceType" value="on-tour-travel-management">
-                
+
                 <div class="form-row">
                     <div class="form-group">
                         <label>Artist/Group Name *</label>
@@ -140,8 +140,7 @@
         <div class="help-section">
             <h3>Ready to Simplify Tour Logistics?</h3>
             <p>A tour coordination specialist will review your request and contact you within 48 hours to discuss your touring schedule, customize a service package, and provide transparent pricing.</p>
-            <a href="mailto:contact@therealvacations.com" class="help-btn">📧 Contact Us Now</a>
-            <p style="margin-top: 1rem; font-size: 0.95rem;">Or call <a href="tel:4049230017" style="color: #fff; font-weight: bold;">404-923-0017</a></p>
+            <a href="mailto:kc@therealvacations.com" class="help-btn">📧 Contact Us Now</a>
         </div>
 
         <div style="text-align: center; padding: 2rem; background: #f9f9f9; border-radius: 16px; margin: 2rem 0;">
@@ -182,8 +181,8 @@
             </div>
             <div class="footer-col">
                 <h4>Contact Us</h4>
-                <a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>
-                <a href="tel:4049230017">404-923-0017</a>
+                <a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>
+
                 <a href="https://www.instagram.com/therealvacations/">Instagram</a>
             </div>
         </div>
@@ -196,22 +195,22 @@
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData);
             data.services = formData.getAll('services');
-            
+
             try {
                 const response = await fetch('/api/submit-service-request', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
                 });
-                
+
                 if (response.ok) {
                     alert('✅ Your tour coordination request has been submitted! A specialist will contact you within 48 hours.');
                     event.target.reset();
                 } else {
-                    alert('❌ There was an error submitting your request. Please try again or contact us directly at 404-923-0017.');
+                    alert('❌ There was an error submitting your request. Please try again or contact us directly at kc@therealvacations.com.');
                 }
             } catch (error) {
-                alert('❌ Error submitting form. Please contact us directly at 404-923-0017.');
+                alert('❌ Error submitting form. Please contact us directly at kc@therealvacations.com.');
             }
         }
     </script>

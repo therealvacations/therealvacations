@@ -154,7 +154,7 @@ function QuotePreview({ quote, markup, flights, hotels, extras, total, clientTot
             <div>
               <div style={{ fontSize: 22, fontWeight: 700, color: BRAND.purple, marginBottom: 2 }}>The Real Vacations</div>
               <div style={{ fontSize: 12, color: BRAND.gray600, letterSpacing: "0.1em" }}>BORN FROM FAMILY · BUILT FOR COMMUNITY</div>
-              <div style={{ fontSize: 12, color: BRAND.gray600, marginTop: 4 }}>contact@therealvacations.com · 404-923-0017</div>
+              <div style={{ fontSize: 12, color: BRAND.gray600, marginTop: 4 }}>kc@therealvacations.com</div>
             </div>
             <div style={{ textAlign: "right" }}>
               <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", color: BRAND.gray400, textTransform: "uppercase", marginBottom: 4 }}>Travel Quote</div>

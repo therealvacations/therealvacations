@@ -71,7 +71,7 @@ HTML_FILES.forEach(file => {
 
   // Fix raw email protection links in footer
   if (content.includes('/cdn-cgi/l/email-protection')) {
-    content = content.replace(/<a[^>]*\/cdn-cgi\/l\/email-protection[^>]*>.*?<\/a>/g, '<a href="mailto:contact@therealvacations.com">contact@therealvacations.com</a>');
+    content = content.replace(/<a[^>]*\/cdn-cgi\/l\/email-protection[^>]*>.*?<\/a>/g, '<a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>');
     modified = true;
   }
 

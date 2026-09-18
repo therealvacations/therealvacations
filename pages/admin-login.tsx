@@ -28,7 +28,7 @@ export default function AdminLogin() {
 
     try {
       const { data, error: signInError } = await auth.signIn(email, password);
-      
+
       if (signInError) {
         setError('Invalid email or password.');
         setLoading(false);
@@ -69,7 +69,7 @@ export default function AdminLogin() {
 
         {/* Login Container */}
         <div style={{ background: '#1a0533', borderRadius: '28px', overflow: 'hidden', boxShadow: '0 30px 80px rgba(0,0,0,0.5)', border: '1px solid rgba(192,132,252,0.2)', position: 'relative', zIndex: 1, padding: '60px 50px', maxWidth: '500px', width: '100%' }}>
-          
+
           <div style={{ textAlign: 'center', marginBottom: '40px' }}>
             <div style={{ fontSize: '11px', letterSpacing: '3px', textTransform: 'uppercase', color: '#c084fc', fontWeight: '700', marginBottom: '16px' }}>🔐 Admin Access</div>
             <h2 style={{ fontSize: '32px', fontWeight: '800', color: '#fff', marginBottom: '12px' }}>Admin Portal</h2>
@@ -159,7 +159,7 @@ export default function AdminLogin() {
 
       {/* Footer */}
       <footer style={{ background: '#0f0620', color: '#555', textAlign: 'center', padding: '20px', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-        © 2026 The Real Vacations · <a href="mailto:contact@therealvacations.com" style={{ color: '#c084fc', textDecoration: 'none' }}>contact@therealvacations.com</a> · <a href="tel:4049230017" style={{ color: '#c084fc', textDecoration: 'none' }}>404-923-0017</a>
+        © 2026 The Real Vacations · <a href="mailto:kc@therealvacations.com" style={{ color: '#c084fc', textDecoration: 'none' }}>kc@therealvacations.com</a> ·
       </footer>
     </div>
   );
