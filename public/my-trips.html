@@ -19,6 +19,7 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 .request-meta{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.request-pill{background:#f3e8ff;color:#6b21a8;border-radius:50px;padding:5px 11px;font-size:12px;font-weight:700}
 .quote-card{margin-top:16px;padding:18px;border:1px solid #e9d5ff;border-radius:12px;background:#faf5ff}.quote-option{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:10px}
 .quote-option button{margin-top:10px;background:#22c55e;color:#fff;border:0;border-radius:50px;padding:8px 16px;font-weight:700;cursor:pointer}.quote-option button:disabled{opacity:.55;cursor:not-allowed}
+.group-card{background:#fff;border-left:5px solid #22c55e;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px}.group-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0}.group-stat{background:#f0fdf4;border-radius:10px;padding:12px}.group-stat strong{display:block;color:#166534;font-size:18px}.member-row{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid #eee;align-items:center}.member-row:last-child{border-bottom:0}.member-row small{display:block;color:#777}.invite-form{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-top:16px}.invite-form input,.invite-result input{width:100%;border:1px solid #d1d5db;border-radius:9px;padding:10px;font:inherit}.invite-form button,.invite-result button{background:#7c3aed;color:#fff;border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer}.invite-result{display:flex;gap:8px;margin-top:10px}.invite-result[hidden]{display:none}.group-message{font-size:13px;margin-top:8px;color:#6b21a8}
 .trip-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
 .trip-header h2{font-size:22px;color:#1a0533}.trip-header .status{padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700}
 .status-pending{background:#fef3c7;color:#92400e}.status-confirmed{background:#d1fae5;color:#065f46}.status-overdue{background:#fee2e2;color:#991b1b}
@@ -36,7 +37,7 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 .btn:hover{background:#6d28d9}
 .section-title{font-size:16px;font-weight:700;color:#1a0533;margin:20px 0 12px}
 .update-card-link{display:inline-block;margin-top:16px;color:#7c3aed;font-weight:600;font-size:13px;text-decoration:none}
-@media(max-width:768px){nav{padding:12px 16px}.container{padding:20px 16px}.countdown-nums{gap:10px}.cd-box .n{font-size:24px}}
+@media(max-width:768px){nav{padding:12px 16px}.container{padding:20px 16px}.countdown-nums{gap:10px}.cd-box .n{font-size:24px}.invite-form{grid-template-columns:1fr}.invite-result{flex-direction:column}}
 </style>
 </head>
 <body>
@@ -51,6 +52,7 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 <div class="container">
     <div class="welcome"><h1 id="welcomeMsg">Welcome back!</h1><p>Your trips, payments, and travel details — all in one place.</p></div>
     <section class="portal-section"><h2>My Travel Requests & Quotes</h2><div id="requestsContainer"><p>Loading your requests...</p></div></section>
+    <section class="portal-section" id="travel-groups"><h2>My Travel Groups</h2><div id="groupsContainer"><p>Loading your groups...</p></div></section>
     <section class="portal-section"><h2>My Confirmed Trips</h2><div id="tripsContainer"><p>Loading your trips...</p></div></section>
 </div>
 <script type="module">
@@ -72,6 +74,71 @@ if (user) {
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
   const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(value) || 0) / 100);
+
+  const { data: groups, error: groupsError } = await supabase
+    .from('travel_groups')
+    .select('*, travel_group_members(*)')
+    .order('created_at', { ascending: false });
+  const groupsContainer = document.getElementById('groupsContainer');
+  if (groupsError) {
+    console.error('Unable to load travel groups:', groupsError.message);
+    groupsContainer.innerHTML = '<div class="group-card"><p>Your group details are not available yet.</p></div>';
+  } else if (!groups || groups.length === 0) {
+    groupsContainer.innerHTML = '<div class="group-card"><p>No travel groups are connected to this account yet.</p></div>';
+  } else {
+    groupsContainer.innerHTML = groups.map(group => {
+      const isLeader = group.leader_user_id === user.id;
+      const members = group.travel_group_members || [];
+      const joined = members.filter(member => member.status === 'joined').length;
+      const currentMember = members.find(member => member.user_id === user.id);
+      const memberRows = members.map(member => {
+        const label = member.display_name || member.invited_email || (member.role === 'leader' ? 'Group Leader' : 'Traveler');
+        const share = member.share_total == null ? 'Share not assigned' : money(member.share_paid) + ' of ' + money(member.share_total) + ' paid';
+        return '<div class="member-row"><div><strong>' + escapeHtml(label) + '</strong><small>' + escapeHtml(member.role) + ' · ' + escapeHtml(member.status) + '</small></div><div><strong>' + escapeHtml(member.share_status.replaceAll('_', ' ')) + '</strong><small>' + escapeHtml(share) + '</small></div></div>';
+      }).join('');
+      const inviteForm = isLeader ? '<form class="invite-form" data-group-id="' + group.group_id + '"><input name="display_name" maxlength="120" placeholder="Traveler name (optional)"><input name="invited_email" type="email" placeholder="Traveler email (optional)"><button type="submit">Create Invite Link</button></form><div class="invite-result" hidden><input readonly aria-label="Private invitation link"><button type="button" class="copy-invite">Copy</button></div><p class="group-message" aria-live="polite"></p>' : '';
+      const ownShare = !isLeader && currentMember ? '<div class="member-row"><div><strong>Your individual share</strong><small>' + escapeHtml(currentMember.share_status.replaceAll('_', ' ')) + '</small></div><div><strong>' + (currentMember.share_total == null ? 'Not assigned' : money(currentMember.share_total)) + '</strong><small>' + money(currentMember.share_paid) + ' paid</small></div></div>' : '';
+      return '<div class="group-card"><div class="trip-header"><div><h3>' + escapeHtml(group.name) + '</h3><p>' + escapeHtml(group.group_type || 'Group travel') + '</p></div><span class="status status-confirmed">' + escapeHtml(group.status) + '</span></div><div class="group-summary"><div class="group-stat"><strong>' + (isLeader ? joined + (group.target_travelers ? ' / ' + group.target_travelers : '') : 'Joined') + '</strong><span>' + (isLeader ? 'Travelers joined' : 'Membership status') + '</span></div><div class="group-stat"><strong>' + (group.target_rooms || '—') + '</strong><span>Planned rooms</span></div><div class="group-stat"><strong>' + (group.separate_payments ? 'Individual' : 'Combined') + '</strong><span>Payment setup</span></div></div>' + (isLeader ? '<div class="section-title">Traveler status & shares</div>' + memberRows : ownShare) + inviteForm + '</div>';
+    }).join('');
+
+    document.querySelectorAll('.invite-form').forEach(form => {
+      form.addEventListener('submit', async event => {
+        event.preventDefault();
+        const button = form.querySelector('button');
+        const message = form.parentElement.querySelector('.group-message');
+        const result = form.parentElement.querySelector('.invite-result');
+        const values = new FormData(form);
+        button.disabled = true;
+        button.textContent = 'Creating...';
+        message.textContent = '';
+        const { data, error } = await supabase.functions.invoke('group-invite', {
+          body: {
+            group_id: form.dataset.groupId,
+            display_name: values.get('display_name'),
+            invited_email: values.get('invited_email')
+          }
+        });
+        if (error || !data?.join_url) {
+          message.textContent = 'The invitation could not be created. Please try again.';
+          button.disabled = false;
+          button.textContent = 'Create Invite Link';
+          return;
+        }
+        result.querySelector('input').value = data.join_url;
+        result.hidden = false;
+        message.textContent = 'Private link created. It expires in 14 days.';
+        button.disabled = false;
+        button.textContent = 'Create Another Link';
+      });
+    });
+    document.querySelectorAll('.copy-invite').forEach(button => {
+      button.addEventListener('click', async () => {
+        const input = button.parentElement.querySelector('input');
+        await navigator.clipboard.writeText(input.value);
+        button.textContent = 'Copied ✓';
+      });
+    });
+  }
 
   const { data: requests, error: requestsError } = await supabase
     .from('travel_requests')
