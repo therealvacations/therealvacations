@@ -55,9 +55,13 @@
     .trip-card-header{background:linear-gradient(135deg,#1a0533,#3b1066);color:#fff;padding:28px 24px 22px}
     .trip-badge{display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;font-size:11px;font-weight:700;padding:3px 12px;margin-bottom:10px;letter-spacing:.5px}
     .trip-card-header h3{font-size:19px;font-weight:800;margin-bottom:6px}
+    .trip-card-header h2{font-size:19px;font-weight:800;margin:0 0 6px}
+    .trip-card-header .meta{font-size:13px;opacity:.85}
     .trip-meta{font-size:13px;opacity:.75}
     .trip-card-body{padding:22px 24px 24px}
     .trip-card-body p{font-size:14px;color:#555;line-height:1.6;margin-bottom:18px}
+    .trip-card-body .price-tag{font-size:14px;font-weight:800;color:#1a0533;margin-bottom:18px}
+    .trip-card-body .trip-link{display:inline-block;background:#7c3aed;color:#fff;padding:10px 20px;border-radius:50px;font-size:13px;font-weight:700}
     .trip-cta{display:block;text-align:center;background:#7c3aed;color:#fff;padding:12px 20px;border-radius:50px;font-size:14px;font-weight:700;margin-bottom:10px;transition:background .2s}
     .trip-cta:hover{background:#6d28d9}
     .trip-details-link{display:block;text-align:center;color:#7c3aed;font-size:13px;font-weight:600;padding:6px}
@@ -119,7 +123,7 @@
 <body>
 
 <div class="alert-bar">
-  ⚡ Essence Festival New Orleans — View trip details <a href="/essence-festival-new-orleans-july-3-5-2026">Learn more →</a>
+  ✨ New group experiences are added throughout the year. <a href="/trips">View current trips →</a>
 </div>
 
 <nav>
@@ -197,65 +201,7 @@
       <div class="section-label">Upcoming Group Experiences</div>
       <h2>Choose Your Next Unforgettable Adventure</h2>
       <p class="section-sub">Curated trips for families, friend groups, and anyone ready to travel together</p>
-      <div class="trips-grid">
-
-        <div class="trip-card">
-          <div class="trip-card-header">
-            <div class="trip-badge">⚡ Opening Very Soon</div>
-            <h3>Essence Festival 2026</h3>
-            <div class="trip-meta">July 3–5, 2026 · New Orleans 🎵</div>
-          </div>
-          <div class="trip-card-body">
-            <p>The world's largest celebration of Black culture and music. Legendary performances and NOLA hospitality at the Caesars Superdome.</p>
-            <a href="/book-trip?trip=essence-festival-new-orleans-july-3-5-2026&amp;package=general" class="trip-cta">🎟️ Check Availability</a>
-            <a href="/essence-festival-new-orleans-july-3-5-2026" class="trip-details-link">View Full Trip Details →</a>
-            <p class="trip-note">⏰ Book now &amp; save $100 automatically</p>
-          </div>
-        </div>
-
-        <div class="trip-card">
-          <div class="trip-card-header">
-            <div class="trip-badge">🎤 NEW — Oct 2026</div>
-            <h3>Mary J. Blige Las Vegas Residency</h3>
-            <div class="trip-meta">October 22–24, 2026 · Las Vegas 🎤</div>
-          </div>
-          <div class="trip-card-body">
-            <p>"My Life, My Story" at Dolby Live at Park MGM. The Queen of Hip-Hop Soul in one of Vegas's most intimate venues — surprise guests, legendary energy.</p>
-            <a href="/book-trip?trip=mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026&amp;package=general" class="trip-cta">🎟️ Book Now — Pay in Full</a>
-            <a href="/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026" class="trip-details-link">View Full Trip Details →</a>
-            <p class="trip-note">⏰ Limited spots · Final payment window is open</p>
-          </div>
-        </div>
-
-        <div class="trip-card">
-          <div class="trip-card-header">
-            <div class="trip-badge">🔥 Limited Availability</div>
-            <h3>Keith Sweat R&amp;B Lovers Tour</h3>
-            <div class="trip-meta">August 29, 2026 · Atlanta 🎷</div>
-          </div>
-          <div class="trip-card-body">
-            <p>Keith Sweat, Joe, Dru Hill, Ginuwine &amp; Kut Klose — all on one stage at State Farm Arena. VIP Meet &amp; Greet available exclusively through us.</p>
-            <a href="/book-trip?trip=keith-sweat-r-and-b-tour-atlanta-august-29-2026&amp;package=general" class="trip-cta">🎟️ Check Availability</a>
-            <a href="/keith-sweat-r-and-b-tour-atlanta-august-29-2026" class="trip-details-link">View Full Trip Details →</a>
-            <p class="trip-note">⏰ Book now &amp; save $100 automatically</p>
-          </div>
-        </div>
-
-        <div class="trip-card">
-          <div class="trip-card-header">
-            <div class="trip-badge">🍷 Wine Country</div>
-            <h3>Napa Valley Juneteenth</h3>
-            <div class="trip-meta">June 18–21, 2026 · Napa, California 🍷</div>
-          </div>
-          <div class="trip-card-body">
-            <p>Vineyard tastings, cave dinners, Juneteenth celebrations, and breathtaking views across California wine country. Culture meets luxury.</p>
-            <a href="/napa-juneteenth-june-18-21-2026" class="trip-cta">🎟️ View Napa Trip Details</a>
-            <a href="/contact" class="trip-details-link">Questions? Contact Us →</a>
-            <p class="trip-note">🍷 Limited spots remaining</p>
-          </div>
-        </div>
-
-      </div>
+      <div class="trips-grid" id="dynamicTrips"><p style="grid-column:1/-1;text-align:center;color:#666">Loading current trips…</p></div>
     </div>
   </section>
 
@@ -442,6 +388,7 @@ function claimCode(){
   .catch(()=>{alert('Something went wrong. Please try again.');});
 }
 </script>
+<script type="module" src="/js/content-public.js"></script>
 
 </body>
 </html>
