@@ -3,14 +3,29 @@ import { supabase } from './supabase-client.js'
 // ==========================================
 // SIGNUP
 // ==========================================
+export function safePortalPath(value) {
+  if (typeof value !== 'string') return '/my-trips'
+  if (new Set(['/my-trips', '/dashboard', '/profile', '/settings']).has(value)) return value
+  try {
+    const parsed = new URL(value, window.location.origin)
+    const code = parsed.searchParams.get('code') || ''
+    if (parsed.origin === window.location.origin && parsed.pathname === '/join-group' && /^[A-Za-z0-9_-]{20,100}$/.test(code)) {
+      return parsed.pathname + '?code=' + encodeURIComponent(code)
+    }
+  } catch {}
+  return '/my-trips'
+}
+
 export async function handleSignup(formData) {
-  const { email, password, firstName, lastName, phone, tripInterest } = formData
+  const { email, password, firstName, lastName, phone, tripInterest, nextPath } = formData
+  const safeNext = safePortalPath(nextPath)
 
   // 1. Create auth user in Supabase Auth
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
+      emailRedirectTo: window.location.origin + safeNext,
       data: {
         first_name: firstName,
         last_name: lastName,
@@ -51,11 +66,11 @@ export async function handleLogin(email, password) {
 // ==========================================
 // GOOGLE LOGIN
 // ==========================================
-export async function handleGoogleLogin() {
+export async function handleGoogleLogin(nextPath = '/my-trips') {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '/my-trips'
+      redirectTo: window.location.origin + safePortalPath(nextPath)
     }
   })
   if (error) throw new Error(error.message)
@@ -65,11 +80,11 @@ export async function handleGoogleLogin() {
 // ==========================================
 // FACEBOOK LOGIN
 // ==========================================
-export async function handleFacebookLogin() {
+export async function handleFacebookLogin(nextPath = '/my-trips') {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'facebook',
     options: {
-      redirectTo: window.location.origin + '/my-trips'
+      redirectTo: window.location.origin + safePortalPath(nextPath)
     }
   })
   if (error) throw new Error(error.message)
