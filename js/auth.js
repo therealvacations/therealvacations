@@ -12,6 +12,11 @@ export function safePortalPath(value) {
     if (parsed.origin === window.location.origin && parsed.pathname === '/join-group' && /^[A-Za-z0-9_-]{20,100}$/.test(code)) {
       return parsed.pathname + '?code=' + encodeURIComponent(code)
     }
+    const trip = parsed.searchParams.get('trip') || ''
+    const packageCode = parsed.searchParams.get('package') || ''
+    if (parsed.origin === window.location.origin && parsed.pathname === '/book-trip' && /^[a-z0-9-]{3,160}$/.test(trip) && /^(general|vip)$/.test(packageCode)) {
+      return parsed.pathname + '?trip=' + encodeURIComponent(trip) + '&package=' + encodeURIComponent(packageCode)
+    }
   } catch {}
   return '/my-trips'
 }
