@@ -86,37 +86,59 @@ async function loadResources() {
   if (!container) return
   showState(container, 'Loading travel resources…')
   const { data, error } = await supabase.from('resources')
-    .select('resource_id,title,description,category,icon,link_url,link_label,sort_order')
-    .eq('is_active', true).order('category').order('sort_order')
+    .select('resource_id,title,description,category,icon,link_url,link_label,sort_order,is_featured')
+    .eq('is_active', true).order('is_featured', { ascending: false }).order('category').order('sort_order')
 
   if (error) return showState(container, 'Resources could not be loaded. Please try again shortly.', 'error')
   if (!data?.length) return showState(container, 'Travel resources are being updated.')
 
-  const names = { hotel: 'Hotels & Stays', service: 'Travel Services', guide: 'Travel Guides', protection: 'Travel Protection', transportation: 'Transportation', experience: 'Experiences' }
-  const grouped = data.reduce((result, item) => {
-    const category = item.category || 'other'
-    ;(result[category] ||= []).push(item)
-    return result
-  }, {})
-
-  container.replaceChildren(...Object.entries(grouped).map(([category, items]) => {
+  const names = { flight: 'Flights', hotel: 'Hotels & Stays', cruise: 'Cruises', activity: 'Activities', service: 'Travel Services', guide: 'Travel Guides', protection: 'Travel Protection', transportation: 'Transportation', experience: 'Experiences' }
+  const makeLink = (item, className) => {
+    const link = node('a', className, item.link_label || 'Learn More →')
+    link.href = safeUrl(item.link_url, '#')
+    if (link.href.startsWith('http') && new URL(link.href).origin !== window.location.origin) {
+      link.target = '_blank'; link.rel = 'noopener sponsored'
+    }
+    return link
+  }
+  const render = (query = '') => {
+    const term = query.trim().toLowerCase()
+    const visible = data.filter((item) => !term || [item.title, item.description, item.category].some((value) => String(value || '').toLowerCase().includes(term)))
+    if (!visible.length) return showState(container, 'No resources match that search.')
+    const featured = visible.filter((item) => item.is_featured)
+    const regular = visible.filter((item) => !item.is_featured)
+    const grouped = regular.reduce((result, item) => {
+      const category = item.category || 'other'
+      ;(result[category] ||= []).push(item)
+      return result
+    }, {})
+    const blocks = []
+    if (featured.length) {
+      const grid = node('section', 'featured-grid')
+      grid.append(...featured.map((item) => {
+        const card = node('article', 'featured-resource')
+        card.append(node('div', 'icon', item.icon || '🧭'), node('h2', '', item.title), node('p', '', item.description || ''), makeLink(item, ''))
+        return card
+      }))
+      blocks.push(grid)
+    }
+    blocks.push(...Object.entries(grouped).map(([category, items]) => {
     const section = node('section', 'resource-section')
     section.append(node('h2', '', names[category] || category.replace(/(^|\s)\S/g, (letter) => letter.toUpperCase())))
     const grid = node('div', 'card-grid')
     grid.append(...items.map((item) => {
       const card = node('article', 'card')
       card.append(node('div', 'icon', item.icon || '🧭'), node('h3', '', item.title), node('p', '', item.description || ''))
-      const link = node('a', 'card-link', item.link_label || 'Learn More →')
-      link.href = safeUrl(item.link_url, '#')
-      if (link.href.startsWith('http') && new URL(link.href).origin !== window.location.origin) {
-        link.target = '_blank'; link.rel = 'noopener'
-      }
-      card.append(link)
+      card.append(makeLink(item, 'card-link'))
       return card
     }))
     section.append(grid)
     return section
-  }))
+    }))
+    container.replaceChildren(...blocks)
+  }
+  render()
+  document.querySelector('#resourceSearch')?.addEventListener('input', (event) => render(event.target.value))
 }
 
 async function loadBlog() {

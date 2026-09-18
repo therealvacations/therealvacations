@@ -163,14 +163,14 @@ async function saveTrip(event) {
 }
 
 function resetResourceForm() {
-  $('#resourceForm').reset(); $('#resourceId').value = ''; $('#resourceActive').checked = true; $('#resourceSort').value = '0'; $('#resourceFormTitle').textContent = 'Add Resource'
+  $('#resourceForm').reset(); $('#resourceId').value = ''; $('#resourceActive').checked = true; $('#resourceFeatured').checked = false; $('#resourceSort').value = '0'; $('#resourceFormTitle').textContent = 'Add Resource'
 }
 
 function renderResources() {
   const list = $('#resourceList')
   list.replaceChildren(...state.resources.map((item) => {
     const card = textNode('article', 'admin-record compact')
-    card.append(textNode('h3', '', `${item.icon || '🧭'} ${item.title}`), textNode('p', '', `${item.category || 'other'} · ${item.is_active ? 'Published' : 'Hidden'}`))
+    card.append(textNode('h3', '', `${item.icon || '🧭'} ${item.title}`), textNode('p', '', `${item.category || 'other'} · ${item.is_active ? 'Published' : 'Hidden'}${item.is_featured ? ' · Featured' : ''}`))
     const actions = textNode('div', 'record-actions')
     const edit = textNode('button', 'secondary-button', 'Edit'); edit.type = 'button'; edit.onclick = () => editResource(item.resource_id)
     const remove = textNode('button', 'danger-button', 'Delete'); remove.type = 'button'; remove.onclick = () => deleteRecord('resources', 'resource_id', item.resource_id, item.title)
@@ -180,13 +180,13 @@ function renderResources() {
 
 function editResource(id) {
   const item = state.resources.find((record) => record.resource_id === id); if (!item) return
-  $('#resourceFormTitle').textContent = 'Edit Resource'; $('#resourceId').value = id; $('#resourceTitle').value = item.title || ''; $('#resourceDescription').value = item.description || ''; $('#resourceCategory').value = item.category || 'guide'; $('#resourceIcon').value = item.icon || ''; $('#resourceUrl').value = item.link_url || ''; $('#resourceLabel').value = item.link_label || ''; $('#resourceSort').value = item.sort_order || 0; $('#resourceActive').checked = Boolean(item.is_active)
+  $('#resourceFormTitle').textContent = 'Edit Resource'; $('#resourceId').value = id; $('#resourceTitle').value = item.title || ''; $('#resourceDescription').value = item.description || ''; $('#resourceCategory').value = item.category || 'guide'; $('#resourceIcon').value = item.icon || ''; $('#resourceUrl').value = item.link_url || ''; $('#resourceLabel').value = item.link_label || ''; $('#resourceSort').value = item.sort_order || 0; $('#resourceFeatured').checked = Boolean(item.is_featured); $('#resourceActive').checked = Boolean(item.is_active)
   $('#resourceForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function saveResource(event) {
   event.preventDefault(); const id = $('#resourceId').value
-  const payload = { title: $('#resourceTitle').value.trim(), description: $('#resourceDescription').value.trim() || null, category: slugify($('#resourceCategory').value) || 'guide', icon: $('#resourceIcon').value.trim() || '🧭', link_url: $('#resourceUrl').value.trim() || null, link_label: $('#resourceLabel').value.trim() || 'Learn More →', sort_order: Number($('#resourceSort').value) || 0, is_active: $('#resourceActive').checked, updated_by: state.user.id }
+  const payload = { title: $('#resourceTitle').value.trim(), description: $('#resourceDescription').value.trim() || null, category: slugify($('#resourceCategory').value) || 'guide', icon: $('#resourceIcon').value.trim() || '🧭', link_url: $('#resourceUrl').value.trim() || null, link_label: $('#resourceLabel').value.trim() || 'Learn More →', sort_order: Number($('#resourceSort').value) || 0, is_featured: $('#resourceFeatured').checked, is_active: $('#resourceActive').checked, updated_by: state.user.id }
   if (!payload.title) return showMessage('Resource title is required.', 'error')
   const query = id ? supabase.from('resources').update(payload).eq('resource_id', id) : supabase.from('resources').insert({ ...payload, created_by: state.user.id })
   const { error } = await query
