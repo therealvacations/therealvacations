@@ -169,5 +169,23 @@ Deno.serve(async (request) => {
     return jsonResponse({ error: 'Unable to store submission' }, 500)
   }
 
+  const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${serviceRoleKey}`,
+      apikey: serviceRoleKey,
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      template_type: 'request_received',
+      tally_submission_id: row.tally_submission_id,
+      event_id: row.tally_event_id || row.tally_submission_id,
+    }),
+  })
+  if (!emailResponse.ok) {
+    console.error('Unable to send request confirmation email', emailResponse.status)
+    return jsonResponse({ error: 'Submission saved but confirmation email failed' }, 502)
+  }
+
   return jsonResponse({ received: true }, 200)
 })
