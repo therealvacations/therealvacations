@@ -12,6 +12,7 @@
     { "source": "/login", "destination": "/login.html" },
     { "source": "/signup", "destination": "/signup.html" },
     { "source": "/my-trips", "destination": "/my-trips.html" },
+    { "source": "/join-group", "destination": "/join-group.html" },
     { "source": "/dashboard", "destination": "/dashboard.html" },
     { "source": "/privacy-policy", "destination": "/privacy-policy.html" },
     { "source": "/terms-of-service", "destination": "/terms-of-service.html" },
