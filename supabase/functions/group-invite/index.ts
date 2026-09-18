@@ -108,20 +108,42 @@ Deno.serve(async (request) => {
     }
   }
 
-  const { error: invitationError } = await admin.from('travel_group_invitations').insert({
+  const { data: invitation, error: invitationError } = await admin.from('travel_group_invitations').insert({
     group_id: groupId,
     invited_by: user.id,
     invited_email: invitedEmail,
     token_hash: tokenHash,
     expires_at: expiresAt,
-  })
-  if (invitationError) {
+  }).select('invitation_id').single()
+  if (invitationError || !invitation) {
     console.error('Unable to store group invitation', invitationError.message)
     return jsonResponse({ error: 'Unable to create invitation' }, 500)
   }
 
+  const joinUrl = `${siteUrl}/join-group?code=${encodeURIComponent(code)}`
+  if (invitedEmail) {
+    const emailResponse = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        template_type: 'group_invitation',
+        invitation_id: invitation.invitation_id,
+        join_url: joinUrl,
+        event_id: invitation.invitation_id,
+      }),
+    })
+    if (!emailResponse.ok) {
+      console.error('Unable to send group invitation email', emailResponse.status)
+      return jsonResponse({ error: 'The invitation was saved but its email could not be sent' }, 502)
+    }
+  }
+
   return jsonResponse({
-    join_url: `${siteUrl}/join-group?code=${encodeURIComponent(code)}`,
+    join_url: joinUrl,
     expires_at: expiresAt,
   })
 })
