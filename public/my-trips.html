@@ -36,7 +36,7 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 .btn{display:inline-block;background:#7c3aed;color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:14px;text-decoration:none}
 .btn:hover{background:#6d28d9}
 .section-title{font-size:16px;font-weight:700;color:#1a0533;margin:20px 0 12px}
-.update-card-link{display:inline-block;margin-top:16px;color:#7c3aed;font-weight:600;font-size:13px;text-decoration:none}
+.pay-button{border:0;border-radius:50px;background:#7c3aed;color:#fff;padding:9px 16px;font:700 13px inherit;cursor:pointer}.pay-button:disabled{opacity:.55;cursor:not-allowed}.payment-message{font-size:13px;color:#6b21a8;margin-top:12px}
 @media(max-width:768px){nav{padding:12px 16px}.container{padding:20px 16px}.countdown-nums{gap:10px}.cd-box .n{font-size:24px}.invite-form{grid-template-columns:1fr}.invite-result{flex-direction:column}}
 </style>
 </head>
@@ -186,7 +186,7 @@ if (user) {
     });
   }
 
-  const { data: bookings, error: bookingsError } = await supabase.from('bookings').select('*, trips(*), payment_schedule(*), payment_history(*)').eq('user_id', user.id).order('created_at', { ascending: false });
+  const { data: bookings, error: bookingsError } = await supabase.from('bookings').select('*, trips(*), booking_payments(*)').eq('user_id', user.id).order('created_at', { ascending: false });
   const container = document.getElementById('tripsContainer');
 
 if (bookingsError) {
@@ -202,21 +202,37 @@ if (bookingsError) {
         const sc = b.status === 'confirmed' ? 'confirmed' : b.status === 'overdue' ? 'overdue' : 'pending';
         const tripDate = new Date(trip.dates_start); const now = new Date(); const diff = tripDate - now;
         const days = Math.max(0, Math.floor(diff / 86400000)); const hrs = Math.max(0, Math.floor((diff % 86400000) / 3600000));
-        const scheduleHtml = (b.payment_schedule || []).sort((a,b) => a.payment_number - b.payment_number).map(p => {
-            const isDone = p.status === 'completed';
-            return '<div class="schedule-item"><div><span class="date">Payment ' + p.payment_number + '</span><br><span style="font-size:12px;color:#999;">' + p.due_date + '</span></div><div><span class="amount ' + (isDone ? 'done' : '') + '">$' + (p.amount_due / 100).toFixed(2) + (isDone ? ' ✓' : '') + '</span>' + (!isDone ? '<br><span class="pending-lbl">Scheduled</span>' : '') + '</div></div>';
-        }).join('');
-        const historyHtml = (b.payment_history || []).sort((a,b) => new Date(b.payment_date) - new Date(a.payment_date)).map(p => {
-            return '<div class="schedule-item"><div><span style="font-size:13px;">' + new Date(p.payment_date).toLocaleDateString() + '</span></div><div><span class="amount ' + (p.status === 'succeeded' ? 'done' : '') + '">$' + (p.amount / 100).toFixed(2) + (p.status === 'succeeded' ? ' ✓' : ' ✕') + '</span></div></div>';
+        const payments = (b.booking_payments || []).sort((a,b) => new Date(a.scheduled_for) - new Date(b.scheduled_for));
+        const payable = payments.find(p => ['scheduled','failed','cancelled'].includes(p.status));
+        const paymentsHtml = payments.map(p => {
+            const isDone = p.status === 'succeeded';
+            const label = p.kind === 'pay_in_full' ? 'Pay in full' : p.kind === 'deposit' ? 'Deposit' : 'Payment ' + (p.payment_number || '');
+            const action = payable?.payment_id === p.payment_id ? '<button class="pay-button" data-payment-id="' + p.payment_id + '">Pay securely</button>' : '<span class="pending-lbl">' + escapeHtml(p.status.replaceAll('_', ' ')) + '</span>';
+            return '<div class="schedule-item"><div><span class="date">' + escapeHtml(label) + '</span><br><span style="font-size:12px;color:#999;">Due ' + escapeHtml(p.scheduled_for) + '</span></div><div style="text-align:right"><span class="amount ' + (isDone ? 'done' : '') + '">' + money(p.scheduled_amount) + (isDone ? ' ✓' : '') + '</span><br>' + action + '</div></div>';
         }).join('');
         html += '<div class="trip-card"><div class="trip-header"><h2>' + escapeHtml(trip.title) + '</h2><span class="status status-' + sc + '">' + escapeHtml(b.status.toUpperCase()) + '</span></div>' +
             (diff > 0 ? '<div class="countdown-strip"><h3>Trip starts in</h3><div class="countdown-nums"><div class="cd-box"><span class="n">' + days + '</span><span class="l">Days</span></div><div class="cd-box"><span class="n">' + hrs + '</span><span class="l">Hours</span></div></div></div>' : '') +
             '<div class="progress-section"><div class="progress-labels"><span>$' + (b.amount_paid / 100).toFixed(2) + ' paid</span><span>$' + (b.total_amount / 100).toFixed(2) + ' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-labels"><span>' + pct + '% complete</span><span>Balance: $' + (b.balance_due / 100).toFixed(2) + '</span></div></div>' +
-            (scheduleHtml ? '<div class="section-title">Payment Schedule</div>' + scheduleHtml : '') +
-            (historyHtml ? '<div class="section-title">Payment History</div>' + historyHtml : '') +
-            '<a href="/update-payment-method" class="update-card-link">Update payment method →</a></div>';
+            (paymentsHtml ? '<div class="section-title">Payments</div>' + paymentsHtml : '') +
+            '<p class="payment-message" aria-live="polite"></p></div>';
     }
     container.innerHTML = html;
+    document.querySelectorAll('.pay-button').forEach(button => {
+      button.addEventListener('click', async () => {
+        const message = button.closest('.trip-card').querySelector('.payment-message');
+        button.disabled = true;
+        button.textContent = 'Opening Stripe…';
+        message.textContent = '';
+        const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{payment_id:button.dataset.paymentId}});
+        if (error || !data?.url) {
+          message.textContent = data?.error || 'Checkout could not be started. Please try again.';
+          button.disabled = false;
+          button.textContent = 'Pay securely';
+          return;
+        }
+        location.assign(data.url);
+      });
+    });
 }
 }
 </script>
