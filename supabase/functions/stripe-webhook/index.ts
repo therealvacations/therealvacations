@@ -23,9 +23,12 @@ Deno.serve(async (request) => {
   if (!signature) return jsonResponse({ error: 'Missing signature' }, 400)
 
   const stripe = new Stripe(stripeSecretKey)
+  const cryptoProvider = Stripe.createSubtleCryptoProvider()
   let event: Stripe.Event
   try {
-    event = await stripe.webhooks.constructEventAsync(await request.text(), signature, webhookSecret)
+    event = await stripe.webhooks.constructEventAsync(
+      await request.text(), signature, webhookSecret, undefined, cryptoProvider,
+    )
   } catch {
     return jsonResponse({ error: 'Invalid signature' }, 400)
   }
@@ -33,6 +36,22 @@ Deno.serve(async (request) => {
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
+  const sendPaymentEmail = async (paymentId: string) => {
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        template_type: 'payment_update',
+        payment_id: paymentId,
+        event_id: event.id,
+      }),
+    })
+    if (!response.ok) throw new Error(`Payment email failed with HTTP ${response.status}`)
+  }
 
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
@@ -53,6 +72,7 @@ Deno.serve(async (request) => {
         p_customer_id: typeof session.customer === 'string' ? session.customer : null,
       })
       if (error) throw error
+      await sendPaymentEmail(paymentId)
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object as Stripe.Checkout.Session
       const paymentId = session.metadata?.payment_id
@@ -67,6 +87,7 @@ Deno.serve(async (request) => {
         p_failure_message: null,
       })
       if (error) throw error
+      if (event.type === 'checkout.session.async_payment_failed') await sendPaymentEmail(paymentId)
     } else if (event.type === 'charge.refunded') {
       const charge = event.data.object as Stripe.Charge
       let paymentId = charge.metadata?.payment_id
@@ -85,6 +106,7 @@ Deno.serve(async (request) => {
           p_failure_message: null,
         })
         if (error) throw error
+        await sendPaymentEmail(paymentId)
       }
     }
   } catch (error) {
