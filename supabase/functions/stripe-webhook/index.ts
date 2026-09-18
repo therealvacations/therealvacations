@@ -52,6 +52,15 @@ Deno.serve(async (request) => {
     })
     if (!response.ok) throw new Error(`Payment email failed with HTTP ${response.status}`)
   }
+  const tryPaymentEmail = async (paymentId: string) => {
+    try {
+      await sendPaymentEmail(paymentId)
+    } catch (error) {
+      // Payment reconciliation must never be rolled back or retried because an
+      // optional notification provider is temporarily unavailable.
+      console.error('Payment notification was not sent', paymentId, error instanceof Error ? error.message : 'Unknown error')
+    }
+  }
 
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
@@ -82,7 +91,7 @@ Deno.serve(async (request) => {
         p_payment_method_id: paymentMethodId,
       })
       if (error) throw error
-      await sendPaymentEmail(paymentId)
+      await tryPaymentEmail(paymentId)
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object as Stripe.Checkout.Session
       const paymentId = session.metadata?.payment_id
@@ -97,7 +106,7 @@ Deno.serve(async (request) => {
         p_failure_message: null,
       })
       if (error) throw error
-      if (event.type === 'checkout.session.async_payment_failed') await sendPaymentEmail(paymentId)
+      if (event.type === 'checkout.session.async_payment_failed') await tryPaymentEmail(paymentId)
     } else if (event.type === 'charge.refunded') {
       const charge = event.data.object as Stripe.Charge
       let paymentId = charge.metadata?.payment_id
@@ -116,7 +125,7 @@ Deno.serve(async (request) => {
           p_failure_message: null,
         })
         if (error) throw error
-        await sendPaymentEmail(paymentId)
+        await tryPaymentEmail(paymentId)
       }
     }
   } catch (error) {
