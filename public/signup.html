@@ -171,6 +171,7 @@
         <label for="terms">I agree to the <a href="/terms-of-service">Terms of Service</a> and <a href="/privacy-policy">Privacy Policy</a>.</label>
       </div>
       <button class="signup-btn" onclick="handleSignup()">🎉 Create My Free Account →</button>
+      <div id="signup-status" role="status" aria-live="polite" style="display:none;margin-top:16px;padding:14px;border-radius:10px;font-size:14px;line-height:1.5;"></div>
       <div class="login-row">Already a member? <a href="/login">Sign in</a></div>
       <p class="security-note">🔒 Free to join. No credit card required. Your information is never sold.</p>
     </div>
@@ -187,6 +188,7 @@ window.handleSignup = async function() {
   var lastName  = document.getElementById('lastName').value.trim();
   var email     = document.getElementById('email').value.trim();
   var phone     = document.getElementById('phone').value.trim();
+  var tripInterest = document.getElementById('trip-interest').value;
   var password  = document.getElementById('password').value.trim();
   var terms     = document.getElementById('terms').checked;
 
@@ -201,8 +203,18 @@ window.handleSignup = async function() {
   btn.disabled = true;
 
   try {
-    await supabaseSignup({ email, password, firstName, lastName, phone });
-    window.location.replace('/my-trips');
+    const signup = await supabaseSignup({ email, password, firstName, lastName, phone, tripInterest });
+    if (signup.session) {
+      window.location.replace('/my-trips');
+      return;
+    }
+
+    var status = document.getElementById('signup-status');
+    status.style.display = 'block';
+    status.style.background = '#ecfdf5';
+    status.style.color = '#065f46';
+    status.textContent = 'Your account was created. Check your email to confirm it, then sign in to My TRV Trips.';
+    btn.textContent = 'Account Created ✓';
   } catch (error) {
     alert('Signup failed: ' + error.message);
     btn.textContent = '🎉 Create My Free Account →';
