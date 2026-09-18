@@ -7,7 +7,7 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:'DM Sans',sans-serif;background:#f5f5f5;color:#2f2540}nav{background:#1a0533;padding:14px 32px}nav img{height:52px}.wrap{max-width:720px;margin:42px auto;padding:0 20px}.card{background:#fff;border-radius:18px;padding:30px;box-shadow:0 3px 18px rgba(35,12,61,.1)}h1{margin:0 0 8px;color:#1a0533}.intro{color:#68606f;margin-bottom:24px}.packages{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.option{display:block;border:2px solid #e7e1eb;border-radius:13px;padding:18px;cursor:pointer}.option:has(input:checked){border-color:#7c3aed;background:#faf5ff}.option input{margin-right:8px}.price{display:block;font-size:23px;font-weight:800;color:#6d28d9;margin-top:6px}.plans{display:grid;gap:10px;margin:24px 0}.plan{border:1px solid #ddd;border-radius:11px;padding:14px;display:flex;gap:10px;cursor:pointer}.notice{background:#f3e8ff;border-radius:10px;padding:12px;color:#5b217b;font-size:13px}.error{color:#b91c1c;margin-top:12px}.submit{width:100%;border:0;border-radius:50px;background:#7c3aed;color:#fff;font:700 16px inherit;padding:14px;margin-top:18px;cursor:pointer}.submit:disabled{opacity:.55;cursor:not-allowed}.back{display:inline-block;margin-top:18px;color:#6d28d9;text-decoration:none;font-weight:700}
+*{box-sizing:border-box}body{margin:0;font-family:'DM Sans',sans-serif;background:#f5f5f5;color:#2f2540}nav{background:#1a0533;padding:14px 32px}nav img{height:52px}.wrap{max-width:720px;margin:42px auto;padding:0 20px}.card{background:#fff;border-radius:18px;padding:30px;box-shadow:0 3px 18px rgba(35,12,61,.1)}h1{margin:0 0 8px;color:#1a0533}.intro{color:#68606f;margin-bottom:24px}.packages{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.option{display:block;border:2px solid #e7e1eb;border-radius:13px;padding:18px;cursor:pointer}.option:has(input:checked){border-color:#7c3aed;background:#faf5ff}.option input{margin-right:8px}.price{display:block;font-size:23px;font-weight:800;color:#6d28d9;margin-top:6px}.plans{display:grid;gap:10px;margin:24px 0}.plan{border:1px solid #ddd;border-radius:11px;padding:14px;display:flex;gap:10px;cursor:pointer}.autopay-consent{display:flex;gap:10px;align-items:flex-start;background:#fff7ed;border:1px solid #fed7aa;border-radius:11px;padding:14px;margin:0 0 16px;font-size:13px;line-height:1.5}.autopay-consent[hidden]{display:none}.schedule-preview{background:#f3e8ff;border-radius:10px;padding:12px;color:#5b217b;font-size:13px;margin-bottom:12px}.notice{background:#f3e8ff;border-radius:10px;padding:12px;color:#5b217b;font-size:13px}.error{color:#b91c1c;margin-top:12px}.submit{width:100%;border:0;border-radius:50px;background:#7c3aed;color:#fff;font:700 16px inherit;padding:14px;margin-top:18px;cursor:pointer}.submit:disabled{opacity:.55;cursor:not-allowed}.back{display:inline-block;margin-top:18px;color:#6d28d9;text-decoration:none;font-weight:700}
 </style>
 </head>
 <body>
@@ -18,9 +18,11 @@
   <form id="bookingForm" hidden>
     <div class="packages" id="packages"></div>
     <div class="plans">
-      <label class="plan" id="installmentPlan"><input type="radio" name="payment_plan" value="installments" checked><span><strong>Deposit + monthly installments</strong><br><small>Your schedule is created after Stripe confirms the deposit.</small></span></label>
+      <label class="plan" id="installmentPlan"><input type="radio" name="payment_plan" value="installments" checked><span><strong>Deposit + automatic monthly installments</strong><br><small>Stripe securely saves this card and charges the displayed monthly schedule automatically.</small></span></label>
       <label class="plan"><input type="radio" name="payment_plan" value="pay_in_full"><span><strong>Pay in full</strong><br><small>Pay the complete package price securely in Stripe.</small></span></label>
     </div>
+    <p class="schedule-preview" id="schedulePreview"></p>
+    <label class="autopay-consent" id="autopayConsent"><input id="autopayAuthorized" type="checkbox"><span>I authorize The Real Vacations and Stripe to charge the card used for my deposit automatically each month according to this schedule. My remaining balance will be <strong>$0 no later than 60 days before departure</strong>.</span></label>
     <p class="notice">Prices are loaded from The Real Vacations’ payment database. Card details are entered only on Stripe’s hosted checkout.</p>
     <button class="submit" type="submit">Continue to secure checkout</button>
     <p class="error" id="message" aria-live="polite"></p>
@@ -31,7 +33,7 @@
 import { supabase } from '/js/supabase-client.js';
 const query = new URLSearchParams(location.search);
 const slug = query.get('trip') || '';
-const requestedPackage = /^(general|vip)$/.test(query.get('package') || '') ? query.get('package') : 'general';
+const requestedPackage = /^[a-z0-9-]{1,50}$/.test(query.get('package') || '') ? query.get('package') : 'general';
 const next = '/book-trip?trip=' + encodeURIComponent(slug) + '&package=' + encodeURIComponent(requestedPackage);
 const { data: { user } } = await supabase.auth.getUser();
 if (!user) location.replace('/login?next=' + encodeURIComponent(next));
@@ -40,6 +42,11 @@ const intro = document.getElementById('tripIntro');
 const form = document.getElementById('bookingForm');
 const packageContainer = document.getElementById('packages');
 const message = document.getElementById('message');
+const schedulePreview = document.getElementById('schedulePreview');
+const consentWrap = document.getElementById('autopayConsent');
+const consent = document.getElementById('autopayAuthorized');
+let availablePackages = [];
+let finalPaymentDeadline = null;
 const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(Number(value) / 100);
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
@@ -50,9 +57,10 @@ if (user) {
     intro.textContent = 'This trip is not currently available for online booking.';
   } else {
     intro.textContent = trip.title + ' · ' + new Date(trip.dates_start + 'T12:00:00').toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'});
-    const finalPaymentDeadline = new Date(trip.dates_start + 'T12:00:00');
+    finalPaymentDeadline = new Date(trip.dates_start + 'T12:00:00');
     finalPaymentDeadline.setDate(finalPaymentDeadline.getDate() - 60);
     const installmentsAvailable = finalPaymentDeadline > new Date();
+    availablePackages = packages;
     packageContainer.innerHTML = packages.map((item, index) => '<label class="option"><input type="radio" name="package_code" value="' + escapeHtml(item.code) + '" ' + (item.code === requestedPackage || (!packages.some(p => p.code === requestedPackage) && index === 0) ? 'checked' : '') + '><strong>' + escapeHtml(item.name) + '</strong><span class="price">' + money(item.total_amount) + '</span><small>' + (installmentsAvailable ? money(item.deposit_amount) + ' deposit' : 'Pay in full required') + '</small></label>').join('');
     if (!installmentsAvailable) {
       const installmentInput = document.querySelector('input[value="installments"]');
@@ -62,8 +70,34 @@ if (user) {
       document.querySelector('#installmentPlan small').textContent = 'Installments close 60 days before departure; pay-in-full is now required.';
     }
     form.hidden = false;
+    updateSchedulePreview();
   }
 }
+
+function updateSchedulePreview() {
+  const plan = form.querySelector('input[name="payment_plan"]:checked')?.value;
+  const code = form.querySelector('input[name="package_code"]:checked')?.value;
+  const selected = availablePackages.find(item => item.code === code);
+  const installments = plan === 'installments';
+  consentWrap.hidden = !installments;
+  consent.required = installments;
+  if (!selected || !finalPaymentDeadline) return;
+  if (!installments) {
+    schedulePreview.textContent = money(selected.total_amount) + ' will be charged today.';
+    return;
+  }
+  let firstDue = new Date();
+  firstDue = new Date(firstDue.getFullYear(), firstDue.getMonth() + 1, 1, 12);
+  if (firstDue > finalPaymentDeadline) firstDue = new Date(finalPaymentDeadline);
+  const count = Math.max(1, (finalPaymentDeadline.getFullYear() - firstDue.getFullYear()) * 12 + finalPaymentDeadline.getMonth() - firstDue.getMonth() + 1);
+  const remaining = selected.total_amount - selected.deposit_amount;
+  const base = Math.floor(remaining / count);
+  schedulePreview.textContent = money(selected.deposit_amount) + ' deposit today, then ' + count + ' automatic monthly payment' + (count === 1 ? '' : 's') + ' of about ' + money(base) + '. Final balance reaches $0 by ' + finalPaymentDeadline.toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'}) + ' (60 days before departure).';
+}
+
+form.addEventListener('change', event => {
+  if (event.target.matches('input[name="payment_plan"], input[name="package_code"]')) updateSchedulePreview();
+});
 
 form.addEventListener('submit', async event => {
   event.preventDefault();
@@ -72,7 +106,14 @@ form.addEventListener('submit', async event => {
   button.disabled = true;
   button.textContent = 'Opening Stripe…';
   message.textContent = '';
-  const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{trip_slug:slug,package_code:values.get('package_code'),payment_plan:values.get('payment_plan')}});
+  const installments = values.get('payment_plan') === 'installments';
+  if (installments && !consent.checked) {
+    message.textContent = 'Please authorize the automatic monthly payment schedule.';
+    button.disabled = false;
+    button.textContent = 'Continue to secure checkout';
+    return;
+  }
+  const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{trip_slug:slug,package_code:values.get('package_code'),payment_plan:values.get('payment_plan'),auto_pay_consent:installments && consent.checked}});
   if (error || !data?.url) {
     message.textContent = data?.error || 'Checkout could not be started. Please try again.';
     button.disabled = false;

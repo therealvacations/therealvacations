@@ -207,12 +207,17 @@ if (bookingsError) {
         const paymentsHtml = payments.map(p => {
             const isDone = p.status === 'succeeded';
             const label = p.kind === 'pay_in_full' ? 'Pay in full' : p.kind === 'deposit' ? 'Deposit' : 'Payment ' + (p.payment_number || '');
-            const action = payable?.payment_id === p.payment_id ? '<button class="pay-button" data-payment-id="' + p.payment_id + '">Pay securely</button>' : '<span class="pending-lbl">' + escapeHtml(p.status.replaceAll('_', ' ')) + '</span>';
+            const canPay = payable?.payment_id === p.payment_id;
+            const action = isDone
+              ? '<span class="pending-lbl">Paid</span>'
+              : p.status === 'scheduled'
+                ? '<span class="pending-lbl">Automatic charge scheduled</span>' + (canPay ? '<br><button class="pay-button" data-payment-id="' + p.payment_id + '">Pay early</button>' : '')
+                : canPay ? '<button class="pay-button" data-payment-id="' + p.payment_id + '">Retry securely</button>' : '<span class="pending-lbl">' + escapeHtml(p.status.replaceAll('_', ' ')) + '</span>';
             return '<div class="schedule-item"><div><span class="date">' + escapeHtml(label) + '</span><br><span style="font-size:12px;color:#999;">Due ' + escapeHtml(p.scheduled_for) + '</span></div><div style="text-align:right"><span class="amount ' + (isDone ? 'done' : '') + '">' + money(p.scheduled_amount) + (isDone ? ' ✓' : '') + '</span><br>' + action + '</div></div>';
         }).join('');
         html += '<div class="trip-card"><div class="trip-header"><h2>' + escapeHtml(trip.title) + '</h2><span class="status status-' + sc + '">' + escapeHtml(b.status.toUpperCase()) + '</span></div>' +
             (diff > 0 ? '<div class="countdown-strip"><h3>Trip starts in</h3><div class="countdown-nums"><div class="cd-box"><span class="n">' + days + '</span><span class="l">Days</span></div><div class="cd-box"><span class="n">' + hrs + '</span><span class="l">Hours</span></div></div></div>' : '') +
-            '<div class="progress-section"><div class="progress-labels"><span>$' + (b.amount_paid / 100).toFixed(2) + ' paid</span><span>$' + (b.total_amount / 100).toFixed(2) + ' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-labels"><span>' + pct + '% complete</span><span>Balance: $' + (b.balance_due / 100).toFixed(2) + '</span></div></div>' +
+            '<div class="progress-section"><div class="progress-labels"><span>$' + (b.amount_paid / 100).toFixed(2) + ' paid</span><span>$' + (b.total_amount / 100).toFixed(2) + ' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-labels"><span>' + pct + '% complete</span><span>Balance: $' + (b.balance_due / 100).toFixed(2) + '</span></div>' + (b.payment_plan === 'installments' ? '<p style="font-size:13px;color:#6b21a8;margin-top:10px"><strong>Automatic monthly payments</strong> · Final balance due ' + escapeHtml(b.final_payment_deadline) + ' (60 days before departure)</p>' : '') + '</div>' +
             (paymentsHtml ? '<div class="section-title">Payments</div>' + paymentsHtml : '') +
             '<p class="payment-message" aria-live="polite"></p></div>';
     }

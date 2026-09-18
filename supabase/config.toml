@@ -15,3 +15,6 @@ verify_jwt = false
 
 [functions.send-email]
 verify_jwt = true
+
+[functions.charge-scheduled-payments]
+verify_jwt = false

@@ -83,7 +83,7 @@ Deno.serve(async (request) => {
     const tripSlug = String(body.trip_slug ?? '').trim()
     const packageCode = String(body.package_code ?? '').trim()
     const paymentPlan = String(body.payment_plan ?? '').trim()
-    if (!/^[a-z0-9-]{3,160}$/.test(tripSlug) || !/^(general|vip)$/.test(packageCode)) {
+    if (!/^[a-z0-9-]{3,160}$/.test(tripSlug) || !/^[a-z0-9-]{1,50}$/.test(packageCode)) {
       return jsonResponse({ error: 'Choose an available trip package' }, 422)
     }
     if (!/^(installments|pay_in_full)$/.test(paymentPlan)) {
@@ -95,6 +95,7 @@ Deno.serve(async (request) => {
       p_trip_slug: tripSlug,
       p_package_code: packageCode,
       p_payment_plan: paymentPlan,
+      p_auto_pay_consent: body.auto_pay_consent === true,
     }).single()
     if (error || !data) {
       console.error('Unable to prepare Stripe booking', error?.message)
@@ -128,12 +129,23 @@ Deno.serve(async (request) => {
   }
   const payment = claimed as CheckoutRow
 
+  const { data: billing } = await admin
+    .from('bookings')
+    .select('payment_plan,stripe_customer_id')
+    .eq('booking_id', payment.booking_id)
+    .eq('user_id', user.id)
+    .single()
+  if (!billing) return jsonResponse({ error: 'Booking payment settings are unavailable' }, 409)
+
   let session: Stripe.Checkout.Session
   try {
     session = await stripe.checkout.sessions.create({
       mode: 'payment',
-      customer_email: user.email,
+      ...(billing.stripe_customer_id
+        ? { customer: billing.stripe_customer_id }
+        : { customer_email: user.email, customer_creation: 'always' as const }),
       client_reference_id: payment.booking_id,
+      payment_method_types: ['card'],
       line_items: [{
         quantity: 1,
         price_data: {
@@ -145,6 +157,7 @@ Deno.serve(async (request) => {
       metadata: { payment_id: payment.payment_id, booking_id: payment.booking_id },
       payment_intent_data: {
         metadata: { payment_id: payment.payment_id, booking_id: payment.booking_id },
+        ...(billing.payment_plan === 'installments' ? { setup_future_usage: 'off_session' as const } : {}),
       },
       success_url: `${siteUrl}/payment-result?status=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${siteUrl}/payment-result?status=cancelled`,

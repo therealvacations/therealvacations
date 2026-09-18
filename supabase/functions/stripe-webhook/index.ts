@@ -60,6 +60,13 @@ Deno.serve(async (request) => {
       if (!paymentId) return jsonResponse({ received: true, legacy: true })
       if (session.payment_status !== 'paid') return jsonResponse({ received: true })
 
+      const paymentIntent = typeof session.payment_intent === 'string'
+        ? await stripe.paymentIntents.retrieve(session.payment_intent)
+        : session.payment_intent
+      const paymentMethodId = typeof paymentIntent?.payment_method === 'string'
+        ? paymentIntent.payment_method
+        : paymentIntent?.payment_method?.id ?? null
+
       const { error } = await admin.rpc('complete_stripe_booking_payment', {
         p_event_id: event.id,
         p_event_type: event.type,
@@ -69,7 +76,10 @@ Deno.serve(async (request) => {
         p_payment_intent_id: typeof session.payment_intent === 'string' ? session.payment_intent : null,
         p_amount_total: session.amount_total ?? 0,
         p_currency: session.currency ?? '',
-        p_customer_id: typeof session.customer === 'string' ? session.customer : null,
+        p_customer_id: typeof session.customer === 'string'
+          ? session.customer
+          : typeof paymentIntent?.customer === 'string' ? paymentIntent.customer : null,
+        p_payment_method_id: paymentMethodId,
       })
       if (error) throw error
       await sendPaymentEmail(paymentId)
