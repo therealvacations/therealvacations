@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Join Your Travel Group | The Real Vacations</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'DM Sans',sans-serif;background:#0f0620;color:#1a0533;min-height:100vh}nav{background:#1a0533;padding:14px 40px;border-bottom:1px solid rgba(192,132,252,.2)}nav img{height:52px}.page{min-height:calc(100vh - 81px);display:grid;place-items:center;padding:32px 20px;background:radial-gradient(circle at top right,rgba(124,58,237,.3),transparent 48%)}.card{width:min(560px,100%);background:#fff;border-radius:22px;padding:38px;box-shadow:0 24px 70px rgba(0,0,0,.4)}.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;color:#7c3aed;font-weight:800}.card h1{font-size:30px;margin:10px 0}.card p{color:#5f6368;line-height:1.65}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}.btn{border:0;border-radius:50px;padding:12px 22px;font:700 14px inherit;cursor:pointer;text-decoration:none;display:inline-block;background:#7c3aed;color:#fff}.btn.secondary{background:#f3e8ff;color:#6b21a8}.btn:disabled{opacity:.55;cursor:not-allowed}.status{margin-top:20px;padding:14px;border-radius:12px;background:#faf5ff;color:#6b21a8;display:none}.status.error{background:#fee2e2;color:#991b1b}.status.success{background:#dcfce7;color:#166534}@media(max-width:600px){nav{padding:12px 18px}.card{padding:28px 22px}}
+</style>
+</head>
+<body>
+<nav><a href="/"><img src="/logo.jpeg" alt="The Real Vacations"></a></nav>
+<main class="page">
+  <section class="card">
+    <div class="eyebrow">Private Group Invitation</div>
+    <h1>Join your travel group</h1>
+    <p id="message">Sign in with the email address your group leader invited. Your invitation link is private and expires after 14 days.</p>
+    <div class="actions" id="guestActions" hidden>
+      <a class="btn" id="loginLink" href="/login">Sign In</a>
+      <a class="btn secondary" id="signupLink" href="/signup">Create Account</a>
+    </div>
+    <div class="actions" id="memberActions" hidden>
+      <button class="btn" id="joinButton">Join This Group</button>
+      <a class="btn secondary" href="/my-trips">My Trips</a>
+    </div>
+    <div class="status" id="status" role="status" aria-live="polite"></div>
+  </section>
+</main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+
+const params = new URLSearchParams(window.location.search);
+const code = params.get('code') || '';
+const nextPath = '/join-group?code=' + encodeURIComponent(code);
+const validCode = /^[A-Za-z0-9_-]{20,100}$/.test(code);
+const status = document.getElementById('status');
+const showStatus = (message, type = '') => {
+  status.textContent = message;
+  status.className = 'status ' + type;
+  status.style.display = 'block';
+};
+
+if (!validCode) {
+  showStatus('This invitation link is incomplete or invalid. Ask your group leader for a new link.', 'error');
+} else {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    document.getElementById('guestActions').hidden = false;
+    document.getElementById('loginLink').href = '/login?next=' + encodeURIComponent(nextPath);
+    document.getElementById('signupLink').href = '/signup?next=' + encodeURIComponent(nextPath);
+  } else {
+    document.getElementById('memberActions').hidden = false;
+    document.getElementById('message').textContent = 'You are signed in as ' + (user.email || 'a TRV traveler') + '. Join only if this invitation was intended for you.';
+    document.getElementById('joinButton').addEventListener('click', async (event) => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      button.textContent = 'Joining...';
+      const { error } = await supabase.functions.invoke('join-group', { body: { code } });
+      if (error) {
+        showStatus('We could not accept this invitation. It may be expired, already used, or assigned to another email address.', 'error');
+        button.disabled = false;
+        button.textContent = 'Try Again';
+        return;
+      }
+      showStatus('You joined the group. Opening your trip dashboard...', 'success');
+      window.setTimeout(() => window.location.replace('/my-trips#travel-groups'), 700);
+    });
+  }
+}
+</script>
+</body>
+</html>
