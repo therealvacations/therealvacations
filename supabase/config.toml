@@ -1,2 +1,8 @@
 [functions.tally-webhook]
 verify_jwt = false
+
+[functions.group-invite]
+verify_jwt = true
+
+[functions.join-group]
+verify_jwt = true
