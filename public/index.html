@@ -272,7 +272,7 @@
       <div class="step">
         <div class="step-num">2</div>
         <h3>Spin &amp; Save</h3>
-        <p>Spin the wheel before you book for a chance to win up to $500 off. Your code is emailed instantly.</p>
+        <p>Spin the wheel before you book for a chance to request a promotional discount. Our team confirms eligibility before it is applied.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
@@ -298,7 +298,7 @@
         </div>
         <div class="faq-item">
           <h3>How does the spin wheel discount work?</h3>
-          <p>Click "Spin for My Discount" anywhere on the site. The wheel spins immediately — no signup required. Whatever it lands on is your prize, from $50 off to $500 off. After spinning, enter your name and email to claim your code. It's emailed to you instantly. Enter it at checkout when booking. Codes are single-use, valid for 48 hours.</p>
+          <p>Click "Spin for My Discount" anywhere on the site. After spinning, enter your name and email to submit the result. Our team confirms eligibility and redemption details before any discount is applied.</p>
         </div>
         <div class="faq-item">
           <h3>Can I travel solo or do I need a group?</h3>
@@ -438,7 +438,7 @@ function claimCode(){
   const email=document.getElementById('claimEmail').value;
   if(!name||!email){alert('Please enter your name and email.');return;}
   fetch('https://formspree.io/f/xgonjyqa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,prize:document.getElementById('prizeText').textContent,source:'spin-wheel'})})
-  .then(()=>{document.getElementById('spinResult').innerHTML='<h3>🎊 Code Sent!</h3><p style="color:#555;font-size:14px">Check your email — your discount code is on its way!<br><a href="/trips" style="color:#7c3aed;font-weight:700">Browse trips →</a></p>';})
+  .then(response=>{if(!response.ok)throw new Error('request failed');document.getElementById('spinResult').innerHTML='<h3>🎊 Request Received!</h3><p style="color:#555;font-size:14px">Our team will confirm eligibility and redemption details.<br><a href="/trips" style="color:#7c3aed;font-weight:700">Browse trips →</a></p>';})
   .catch(()=>{alert('Something went wrong. Please try again.');});
 }
 </script>
