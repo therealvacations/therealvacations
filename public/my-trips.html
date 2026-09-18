@@ -14,6 +14,11 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 .container{max-width:900px;margin:0 auto;padding:40px 24px}
 .welcome{margin-bottom:32px}.welcome h1{font-size:28px;color:#1a0533;margin-bottom:4px}.welcome p{color:#666;font-size:15px}
 .trip-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.08);margin-bottom:24px}
+.portal-section{margin-bottom:36px}.portal-section>h2{font-size:20px;color:#1a0533;margin-bottom:14px}
+.request-card{background:#fff;border-left:5px solid #7c3aed;border-radius:14px;padding:22px;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:18px}
+.request-meta{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.request-pill{background:#f3e8ff;color:#6b21a8;border-radius:50px;padding:5px 11px;font-size:12px;font-weight:700}
+.quote-card{margin-top:16px;padding:18px;border:1px solid #e9d5ff;border-radius:12px;background:#faf5ff}.quote-option{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px;margin-top:10px}
+.quote-option button{margin-top:10px;background:#22c55e;color:#fff;border:0;border-radius:50px;padding:8px 16px;font-weight:700;cursor:pointer}.quote-option button:disabled{opacity:.55;cursor:not-allowed}
 .trip-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;gap:12px}
 .trip-header h2{font-size:22px;color:#1a0533}.trip-header .status{padding:6px 16px;border-radius:50px;font-size:12px;font-weight:700}
 .status-pending{background:#fef3c7;color:#92400e}.status-confirmed{background:#d1fae5;color:#065f46}.status-overdue{background:#fee2e2;color:#991b1b}
@@ -45,7 +50,8 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 </nav>
 <div class="container">
     <div class="welcome"><h1 id="welcomeMsg">Welcome back!</h1><p>Your trips, payments, and travel details — all in one place.</p></div>
-    <div id="tripsContainer"><p>Loading your trips...</p></div>
+    <section class="portal-section"><h2>My Travel Requests & Quotes</h2><div id="requestsContainer"><p>Loading your requests...</p></div></section>
+    <section class="portal-section"><h2>My Confirmed Trips</h2><div id="tripsContainer"><p>Loading your trips...</p></div></section>
 </div>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
@@ -63,6 +69,55 @@ if (user) {
   const { data: profile, error: profileError } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
   if (profileError) console.error('Unable to load traveler profile:', profileError.message);
   if (profile) document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + profile.first_name + '!';
+
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
+  const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(value) || 0) / 100);
+
+  const { data: requests, error: requestsError } = await supabase
+    .from('travel_requests')
+    .select('*, travel_quotes(*, travel_quote_options(*), travel_quote_responses(*))')
+    .order('submitted_at', { ascending: false });
+
+  const requestsContainer = document.getElementById('requestsContainer');
+  if (requestsError) {
+    console.error('Unable to load travel requests:', requestsError.message);
+    requestsContainer.innerHTML = '<div class="request-card"><p>Your request history is not available yet.</p></div>';
+  } else if (!requests || requests.length === 0) {
+    requestsContainer.innerHTML = '<div class="request-card"><p>No travel requests are connected to this account yet.</p></div>';
+  } else {
+    requestsContainer.innerHTML = requests.map(request => {
+      const quotes = (request.travel_quotes || []).filter(quote => quote.status !== 'draft' && quote.status !== 'withdrawn');
+      const quoteHtml = quotes.map(quote => {
+        const existingResponse = (quote.travel_quote_responses || [])[0];
+        const options = (quote.travel_quote_options || []).sort((a, b) => a.sort_order - b.sort_order);
+        const optionsHtml = options.map(option => '<div class="quote-option"><strong>' + escapeHtml(option.name) + '</strong><p>' + escapeHtml(option.description || '') + '</p><p><strong>' + money(option.total_amount) + '</strong>' + (option.deposit_amount ? ' · Deposit ' + money(option.deposit_amount) : '') + '</p>' + (!existingResponse && ['ready','viewed'].includes(quote.status) ? '<button data-quote-id="' + quote.quote_id + '" data-option-id="' + option.option_id + '" class="approve-quote">Approve This Option</button>' : '') + '</div>').join('');
+        return '<div class="quote-card"><strong>' + escapeHtml(quote.title) + '</strong><p>' + escapeHtml(quote.summary || '') + '</p>' + (existingResponse ? '<p class="request-pill">Response: ' + escapeHtml(existingResponse.decision.replaceAll('_', ' ')) + '</p>' : '') + optionsHtml + '</div>';
+      }).join('');
+      const requestTypes = (request.request_types || []).map(type => '<span class="request-pill">' + escapeHtml(type) + '</span>').join('');
+      return '<div class="request-card"><div class="trip-header"><div><h3>' + escapeHtml(request.destination || 'Travel Request') + '</h3><p>Submitted ' + new Date(request.submitted_at).toLocaleDateString() + '</p></div><span class="status status-pending">' + escapeHtml(request.status.replaceAll('_', ' ')) + '</span></div><div class="request-meta">' + requestTypes + '</div>' + quoteHtml + '</div>';
+    }).join('');
+
+    document.querySelectorAll('.approve-quote').forEach(button => {
+      button.addEventListener('click', async () => {
+        button.disabled = true;
+        button.textContent = 'Saving...';
+        const { error } = await supabase.from('travel_quote_responses').upsert({
+          quote_id: button.dataset.quoteId,
+          option_id: button.dataset.optionId,
+          user_id: user.id,
+          decision: 'approved'
+        }, { onConflict: 'quote_id,user_id' });
+        if (error) {
+          console.error('Unable to save quote response:', error.message);
+          button.disabled = false;
+          button.textContent = 'Try Again';
+        } else {
+          button.textContent = 'Approved ✓';
+          document.querySelectorAll('[data-quote-id="' + button.dataset.quoteId + '"]').forEach(item => item.disabled = true);
+        }
+      });
+    });
+  }
 
   const { data: bookings, error: bookingsError } = await supabase.from('bookings').select('*, trips(*), payment_schedule(*), payment_history(*)').eq('user_id', user.id).order('created_at', { ascending: false });
   const container = document.getElementById('tripsContainer');
@@ -87,7 +142,7 @@ if (bookingsError) {
         const historyHtml = (b.payment_history || []).sort((a,b) => new Date(b.payment_date) - new Date(a.payment_date)).map(p => {
             return '<div class="schedule-item"><div><span style="font-size:13px;">' + new Date(p.payment_date).toLocaleDateString() + '</span></div><div><span class="amount ' + (p.status === 'succeeded' ? 'done' : '') + '">$' + (p.amount / 100).toFixed(2) + (p.status === 'succeeded' ? ' ✓' : ' ✕') + '</span></div></div>';
         }).join('');
-        html += '<div class="trip-card"><div class="trip-header"><h2>' + trip.title + '</h2><span class="status status-' + sc + '">' + b.status.toUpperCase() + '</span></div>' +
+        html += '<div class="trip-card"><div class="trip-header"><h2>' + escapeHtml(trip.title) + '</h2><span class="status status-' + sc + '">' + escapeHtml(b.status.toUpperCase()) + '</span></div>' +
             (diff > 0 ? '<div class="countdown-strip"><h3>Trip starts in</h3><div class="countdown-nums"><div class="cd-box"><span class="n">' + days + '</span><span class="l">Days</span></div><div class="cd-box"><span class="n">' + hrs + '</span><span class="l">Hours</span></div></div></div>' : '') +
             '<div class="progress-section"><div class="progress-labels"><span>$' + (b.amount_paid / 100).toFixed(2) + ' paid</span><span>$' + (b.total_amount / 100).toFixed(2) + ' total</span></div><div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div><div class="progress-labels"><span>' + pct + '% complete</span><span>Balance: $' + (b.balance_due / 100).toFixed(2) + '</span></div></div>' +
             (scheduleHtml ? '<div class="section-title">Payment Schedule</div>' + scheduleHtml : '') +
