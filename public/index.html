@@ -26,6 +26,7 @@
     .hero{background:linear-gradient(135deg,#1a0533 0%,#3b1066 60%,#7c3aed 100%);color:#fff;padding:72px 24px 60px;text-align:center}
     .hero-tag{display:inline-block;background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);border-radius:20px;font-size:12px;font-weight:700;padding:5px 16px;margin-bottom:20px;letter-spacing:1px}
     .hero h1{font-size:clamp(30px,5vw,58px);font-weight:800;line-height:1.1;margin-bottom:16px}
+    #homeHeroTitle{white-space:pre-line}
     .hero p{font-size:18px;opacity:.85;max-width:600px;margin:0 auto 12px}
     .hero-checks{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin:16px 0 32px;font-size:14px;opacity:.8}
     .hero-checks span::before{content:"✓ ";color:#c084fc;font-weight:700}
@@ -122,12 +123,12 @@
 </head>
 <body>
 
-<div class="alert-bar">
-  ✨ New group experiences are added throughout the year. <a href="/trips">View current trips →</a>
+<div class="alert-bar" id="homeAnnouncement">
+  <span>✨ New group experiences are added throughout the year.</span> <a href="/trips">View current trips →</a>
 </div>
 
 <nav>
-  <a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations logo"/></a>
+  <a href="/" class="nav-logo"><img id="homeLogo" src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations logo"/></a>
   <div class="nav-links">
     <a href="/">Home</a>
     <a href="/trips">Trips</a>
@@ -146,16 +147,16 @@
 </nav>
 
 <div class="hero">
-  <div class="hero-tag">✨ GROUP TRAVEL REIMAGINED</div>
-  <h1>You Bring Your People.<br>We Handle Everything Else.</h1>
-  <p>All-inclusive group trips to concerts, wine country, and cultural celebrations. No planning stress. No logistics headaches. Just unforgettable experiences.</p>
-  <div class="hero-checks">
+  <div class="hero-tag" id="homeHeroTag">✨ GROUP TRAVEL REIMAGINED</div>
+  <h1 id="homeHeroTitle">You Bring Your People.<br>We Handle Everything Else.</h1>
+  <p id="homeHeroText">All-inclusive group trips to concerts, wine country, and cultural celebrations. No planning stress. No logistics headaches. Just unforgettable experiences.</p>
+  <div class="hero-checks" id="homeTrustItems">
     <span>20+ Years of Group Travel</span>
     <span>Flexible Payment Plans</span>
     <span>24/7 Trip Support</span>
   </div>
   <div class="cta-group">
-    <a href="/trips" class="btn-primary">Explore Our Trips →</a>
+    <a href="/trips" class="btn-primary" id="homeMainCta">Explore Our Trips →</a>
     <button class="btn-ghost" onclick="document.getElementById('spinModal').classList.add('open')">🎡 Spin for My Discount</button>
   </div>
 </div>
@@ -165,9 +166,9 @@
   <!-- PERKS — fixed links -->
   <section>
     <div class="section-label">🌍 Real Vacationer Perks</div>
-    <h2>Real Vacationers Get It First</h2>
-    <p class="section-sub">We don't just plan your trip — we make sure you get the best deals on everything around it.</p>
-    <div class="perks-grid">
+    <h2 id="homePerksHeading">Real Vacationers Get It First</h2>
+    <p class="section-sub" id="homePerksSubheading">We don't just plan your trip — we make sure you get the best deals on everything around it.</p>
+    <div class="perks-grid" id="homePerks">
       <div class="perk-card">
         <div class="perk-icon">✈️</div>
         <h3>Flight Deals</h3>
@@ -199,8 +200,8 @@
   <section class="section-bg" style="padding:60px 24px;margin:0 -24px" id="trips">
     <div class="container">
       <div class="section-label">Upcoming Group Experiences</div>
-      <h2>Choose Your Next Unforgettable Adventure</h2>
-      <p class="section-sub">Curated trips for families, friend groups, and anyone ready to travel together</p>
+      <h2 id="homeTripsHeading">Choose Your Next Unforgettable Adventure</h2>
+      <p class="section-sub" id="homeTripsSubheading">Curated trips for families, friend groups, and anyone ready to travel together</p>
       <div class="trips-grid" id="dynamicTrips"><p style="grid-column:1/-1;text-align:center;color:#666">Loading current trips…</p></div>
     </div>
   </section>
@@ -208,8 +209,8 @@
   <!-- HOW IT WORKS -->
   <section>
     <div class="section-label">Simple Process</div>
-    <h2>Group Travel Without the Group Headache</h2>
-    <div class="steps">
+    <h2 id="homeProcessHeading">Group Travel Without the Group Headache</h2>
+    <div class="steps" id="homeSteps">
       <div class="step">
         <div class="step-num">1</div>
         <h3>Pick Your Trip</h3>
@@ -236,8 +237,8 @@
   <!-- FAQ -->
   <section class="section-bg" style="padding:60px 24px;margin:0 -24px">
     <div class="container">
-      <h2>Questions? We've Got Answers</h2>
-      <div class="faq">
+      <h2 id="homeFaqHeading">Questions? We've Got Answers</h2>
+      <div class="faq" id="homeFaqs">
         <div class="faq-item">
           <h3>How do deposits and payment plans work?</h3>
           <p>Secure your spot with a deposit, then make flexible payments on your own schedule. When you get to the booking page, it will show you exactly what's required based on when you book and the balance due date for your trip. No credit checks, no interest.</p>
@@ -265,8 +266,8 @@
 </div>
 
 <div class="cta-bottom" id="spinwheel">
-  <h2>Ready to Make Memories?</h2>
-  <p>Spin the wheel first — win up to $500 off your trip. Then book your spot before they're gone!</p>
+  <h2 id="homeBottomHeading">Ready to Make Memories?</h2>
+  <p id="homeBottomText">Spin the wheel first — win up to $500 off your trip. Then book your spot before they're gone!</p>
   <button onclick="document.getElementById('spinModal').classList.add('open')" class="btn-primary">🎡 Spin for My Discount</button>
   &nbsp;&nbsp;
   <a href="/trips" class="btn-ghost" style="display:inline-block">View All Trips →</a>
@@ -389,6 +390,7 @@ function claimCode(){
 }
 </script>
 <script type="module" src="/js/content-public.js"></script>
+<script type="module" src="/js/site-settings.js"></script>
 
 </body>
 </html>

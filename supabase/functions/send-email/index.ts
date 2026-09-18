@@ -20,7 +20,7 @@ function money(value: unknown, currency = 'usd') {
 }
 
 function emailShell(heading: string, content: string, siteUrl: string) {
-  return `<!doctype html><html><body style="margin:0;background:#f4f1f7;font-family:Arial,sans-serif;color:#30243e"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:auto;background:#fff;border-radius:16px"><tr><td style="background:#1a0533;color:#fff;padding:24px 30px;border-radius:16px 16px 0 0"><strong style="font-size:20px">The Real Vacations</strong></td></tr><tr><td style="padding:30px"><h1 style="font-size:24px;color:#1a0533;margin:0 0 18px">${escapeHtml(heading)}</h1>${content}<p style="margin-top:28px"><a href="${siteUrl}/my-trips" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold">Open My TRV Trips</a></p><p style="color:#777;font-size:12px;margin-top:28px">Questions? Reply to this email or contact The Real Vacations.</p></td></tr></table></td></tr></table></body></html>`
+  return `<!doctype html><html><body style="margin:0;background:#f4f1f7;font-family:Arial,sans-serif;color:#30243e"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:auto;background:#fff;border-radius:16px"><tr><td style="background:#1a0533;color:#fff;padding:24px 30px;border-radius:16px 16px 0 0"><img src="${siteUrl}/logo.jpeg" width="180" alt="The Real Vacations" style="display:block;max-width:100%;height:auto"><strong style="display:block;font-size:18px;margin-top:12px">The Real Vacations</strong></td></tr><tr><td style="padding:30px"><h1 style="font-size:24px;color:#1a0533;margin:0 0 18px">${escapeHtml(heading)}</h1>${content}<p style="margin-top:28px"><a href="${siteUrl}/my-trips" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold">Open My TRV Trips</a></p><p style="color:#777;font-size:12px;margin-top:28px">Questions? Reply to this email or contact The Real Vacations.</p></td></tr></table></td></tr></table></body></html>`
 }
 
 Deno.serve(async (request) => {
@@ -28,13 +28,13 @@ Deno.serve(async (request) => {
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const sendGridKey = Deno.env.get('SENDGRID_API_KEY')
-  const fromEmail = Deno.env.get('SENDGRID_FROM_EMAIL')
-  const fromName = Deno.env.get('SENDGRID_FROM_NAME') ?? 'The Real Vacations'
+  const resendKey = Deno.env.get('RESEND_API_KEY')
+  const fromEmail = Deno.env.get('RESEND_FROM_EMAIL')
+  const fromName = Deno.env.get('RESEND_FROM_NAME') ?? 'The Real Vacations'
   const replyTo = Deno.env.get('TRV_CONTACT_EMAIL') ?? fromEmail
   const siteUrl = (Deno.env.get('PUBLIC_SITE_URL') ?? 'https://therealvacations.com').replace(/\/$/, '')
   const bearer = (request.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '')
-  if (!supabaseUrl || !serviceRoleKey || !sendGridKey || !fromEmail) {
+  if (!supabaseUrl || !serviceRoleKey || !resendKey || !fromEmail) {
     return jsonResponse({ error: 'Server configuration error' }, 500)
   }
   if (!bearer || bearer !== serviceRoleKey) return jsonResponse({ error: 'Forbidden' }, 403)
@@ -123,32 +123,33 @@ Deno.serve(async (request) => {
   if (claimError) return jsonResponse({ error: 'Unable to claim email delivery' }, 500)
   if (!deliveryId) return jsonResponse({ delivered: true, duplicate: true })
 
-  const sendResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
+  const sendResponse = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
-      authorization: `Bearer ${sendGridKey}`,
+      authorization: `Bearer ${resendKey}`,
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      personalizations: [{ to: [{ email: recipient }] }],
-      from: { email: fromEmail, name: fromName },
-      reply_to: replyTo ? { email: replyTo } : undefined,
+      to: [recipient],
+      from: `${fromName} <${fromEmail}>`,
+      reply_to: replyTo || undefined,
       subject,
-      content: [{ type: 'text/html', value: html }],
-      categories: ['trv-transactional', templateType],
+      html,
+      tags: [{ name: 'category', value: 'trv-transactional' }, { name: 'template', value: templateType.replace(/_/g, '-') }],
     }),
   })
 
+  const providerData = await sendResponse.json().catch(() => ({})) as { id?: string }
   if (!sendResponse.ok) {
     await admin.from('email_deliveries').update({
-      status: 'failed', last_error: `sendgrid_http_${sendResponse.status}`,
+      status: 'failed', last_error: `resend_http_${sendResponse.status}`,
     }).eq('delivery_id', deliveryId)
     return jsonResponse({ error: 'Email provider rejected the message' }, 502)
   }
 
   await admin.from('email_deliveries').update({
     status: 'sent',
-    provider_message_id: sendResponse.headers.get('x-message-id'),
+    provider_message_id: providerData.id ?? null,
     sent_at: new Date().toISOString(),
     last_error: null,
   }).eq('delivery_id', deliveryId)
