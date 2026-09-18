@@ -161,7 +161,14 @@
 </footer>
 <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
 <script type="module">
-import { handleLogin as supabaseLogin, handleGoogleLogin, handleFacebookLogin } from './js/auth.js';
+import { handleLogin as supabaseLogin, handleGoogleLogin, handleFacebookLogin, safePortalPath } from './js/auth.js';
+
+const requestedNext = safePortalPath(new URLSearchParams(window.location.search).get('next'));
+if (requestedNext !== '/my-trips') {
+  document.querySelectorAll('a[href="/signup"]').forEach(link => {
+    link.href = '/signup?next=' + encodeURIComponent(requestedNext);
+  });
+}
 
 window.handleLogin = async function() {
   var email = document.getElementById('email').value.trim();
@@ -182,18 +189,7 @@ window.handleLogin = async function() {
 
   try {
     await supabaseLogin(email, password);
-    const params = new URLSearchParams(window.location.search)
-    const nextParam = params.get('next');
-    const allowedRedirects = new Set([
-      '/my-trips',
-      '/dashboard',
-      '/profile',
-      '/settings'
-    ]);
-    const safeNext = (typeof nextParam === 'string' && allowedRedirects.has(nextParam))
-      ? nextParam
-      : '/my-trips';
-    window.location.href = safeNext;
+    window.location.href = requestedNext;
   } catch (error) {
     alert('Login failed: ' + error.message);
     btn.textContent = 'Sign In to My Dashboard →';
@@ -204,12 +200,12 @@ window.handleLogin = async function() {
 var socialBtns = document.querySelectorAll('.social-btn');
 if (socialBtns[0]) {
   socialBtns[0].addEventListener('click', async function() {
-    try { await handleFacebookLogin(); } catch(e) { alert('Facebook login error: ' + e.message); }
+    try { await handleFacebookLogin(requestedNext); } catch(e) { alert('Facebook login error: ' + e.message); }
   });
 }
 if (socialBtns[1]) {
   socialBtns[1].addEventListener('click', async function() {
-    try { await handleGoogleLogin(); } catch(e) { alert('Google login error: ' + e.message); }
+    try { await handleGoogleLogin(requestedNext); } catch(e) { alert('Google login error: ' + e.message); }
   });
 }
 </script>
