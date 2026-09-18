@@ -89,6 +89,10 @@ Deno.serve(async (request) => {
     if (!/^(installments|pay_in_full)$/.test(paymentPlan)) {
       return jsonResponse({ error: 'Choose a payment plan' }, 422)
     }
+    const signerName = String(body.signer_name ?? '').trim()
+    if (body.booking_terms_consent !== true || signerName.length < 2 || signerName.length > 160) {
+      return jsonResponse({ error: 'Accept the booking policies and provide your legal name' }, 422)
+    }
 
     const { data, error } = await admin.rpc('prepare_stripe_booking_checkout', {
       p_user_id: user.id,
@@ -101,7 +105,24 @@ Deno.serve(async (request) => {
       console.error('Unable to prepare Stripe booking', error?.message)
       return jsonResponse({ error: 'This trip or payment plan is not available' }, 409)
     }
-    paymentId = (data as CheckoutRow).payment_id
+    const prepared = data as CheckoutRow
+    paymentId = prepared.payment_id
+    const sourceIp = (request.headers.get('x-forwarded-for') ?? request.headers.get('cf-connecting-ip') ?? '').split(',')[0].trim().slice(0, 120) || null
+    const { error: acceptanceError } = await admin.rpc('record_booking_acceptance', {
+      p_booking_id: prepared.booking_id, p_user_id: user.id, p_signer_name: signerName,
+      p_booking_terms_version: '2026-09-booking-v1', p_privacy_policy_version: '2026-09-privacy-v1',
+      p_refund_policy_version: '2026-09-refund-v1',
+      p_automatic_payment_authorized: paymentPlan === 'installments' && body.auto_pay_consent === true,
+      p_automatic_payment_terms_version: paymentPlan === 'installments' ? '2026-09-auto-monthly-v1' : null,
+      p_trip_title: prepared.trip_title, p_package_name: prepared.package_name, p_payment_plan: paymentPlan,
+      p_amount_due_now: prepared.amount, p_currency: prepared.currency, p_source_ip: sourceIp,
+      p_user_agent: (request.headers.get('user-agent') ?? '').slice(0, 500) || null,
+      p_agreement_urls: { booking_terms: `${siteUrl}/terms-of-service`, privacy_policy: `${siteUrl}/privacy-policy` },
+    })
+    if (acceptanceError) {
+      console.error('Unable to record booking acceptance', acceptanceError.message)
+      return jsonResponse({ error: 'Your agreement could not be recorded. No payment was started.' }, 500)
+    }
   }
 
   const { data: preparedPayment } = await admin

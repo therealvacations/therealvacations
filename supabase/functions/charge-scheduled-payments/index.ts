@@ -67,6 +67,11 @@ Deno.serve(async (request) => {
         p_payment_method_id: typeof intent.payment_method === 'string' ? intent.payment_method : payment.stripe_payment_method_id,
       })
       if (completeError) throw completeError
+      await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+        method: 'POST',
+        headers: { authorization: `Bearer ${serviceRoleKey}`, apikey: serviceRoleKey, 'content-type': 'application/json' },
+        body: JSON.stringify({ template_type: 'payment_update', payment_id: payment.payment_id, event_id: `autopay:${intent.id}` }),
+      }).catch(() => undefined)
       results.push({ payment_id: payment.payment_id, status: 'succeeded' })
     } catch (chargeError) {
       const stripeError = chargeError as { code?: string; decline_code?: string; message?: string }

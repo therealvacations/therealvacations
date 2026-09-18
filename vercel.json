@@ -1,5 +1,21 @@
 {
   "buildCommand": "node build-nav.js",
+  "redirects": [
+    { "source": "/terms", "destination": "/terms-of-service", "permanent": true },
+    { "source": "/terms.html", "destination": "/terms-of-service", "permanent": true },
+    { "source": "/privacy", "destination": "/privacy-policy", "permanent": true },
+    { "source": "/privacy.html", "destination": "/privacy-policy", "permanent": true }
+  ],
+  "headers": [{
+    "source": "/(.*)",
+    "headers": [
+      { "key": "X-Content-Type-Options", "value": "nosniff" },
+      { "key": "X-Frame-Options", "value": "SAMEORIGIN" },
+      { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
+      { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=(), payment=(self)" },
+      { "key": "Content-Security-Policy", "value": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https://tally.so https://www.youtube.com https://js.stripe.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self' https://formspree.io; upgrade-insecure-requests" }
+    ]
+  }],
   "rewrites": [
     { "source": "/trips", "destination": "/trips.html" },
     { "source": "/contact", "destination": "/contact.html" },

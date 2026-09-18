@@ -2,3 +2,8 @@ node_modules/
 public/js/
 supabase/.temp/
 .vercel/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
