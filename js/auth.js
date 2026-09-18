@@ -4,14 +4,19 @@ import { supabase } from './supabase-client.js'
 // SIGNUP
 // ==========================================
 export async function handleSignup(formData) {
-  const { email, password, firstName, lastName, phone } = formData
+  const { email, password, firstName, lastName, phone, tripInterest } = formData
 
   // 1. Create auth user in Supabase Auth
   const { data: authData, error: signUpError } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { first_name: firstName, last_name: lastName }
+      data: {
+        first_name: firstName,
+        last_name: lastName,
+        phone: phone || null,
+        trip_interest: tripInterest || null
+      }
     }
   })
 
@@ -19,28 +24,9 @@ export async function handleSignup(formData) {
     throw new Error(signUpError.message)
   }
 
-  // 2. Create user profile in users table
-  if (authData.user) {
-    const { error: profileError } = await supabase
-      .from('users')
-      .insert([{
-        user_id: authData.user.id,
-        first_name: firstName,
-        last_name: lastName,
-        phone: phone || null
-      }])
-
-    if (profileError) {
-      console.error('Profile creation error:', profileError)
-      // Don't throw — auth succeeded, profile can be retried
-    }
-  }
-
-  // SECURITY FIX: Do not store sensitive data (email, name) in localStorage
-  // These can be retrieved from Supabase Auth API when needed
-  // localStorage is vulnerable to XSS attacks and should never contain PII
-
-  return authData.user
+  // The database trigger creates public.users atomically with auth.users.
+  // This avoids half-created accounts when email confirmation is enabled.
+  return authData
 }
 
 // ==========================================
@@ -69,7 +55,7 @@ export async function handleGoogleLogin() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin + '/dashboard'
+      redirectTo: window.location.origin + '/my-trips'
     }
   })
   if (error) throw new Error(error.message)
@@ -83,7 +69,7 @@ export async function handleFacebookLogin() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'facebook',
     options: {
-      redirectTo: window.location.origin + '/dashboard'
+      redirectTo: window.location.origin + '/my-trips'
     }
   })
   if (error) throw new Error(error.message)
@@ -124,7 +110,7 @@ export async function getCurrentUser() {
 // ==========================================
 export async function resetPassword(email) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/update-password'
+    redirectTo: window.location.origin + '/reset-password'
   })
   if (error) throw new Error(error.message)
   return data
