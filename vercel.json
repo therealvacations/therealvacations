@@ -28,6 +28,16 @@
       "source": "/privacy.html",
       "destination": "/privacy-policy",
       "permanent": true
+    },
+    {
+      "source": "/services/custom-trips",
+      "destination": "/custom-trip-form",
+      "permanent": false
+    },
+    {
+      "source": "/services/last-minute-travel",
+      "destination": "/request-travel",
+      "permanent": false
     }
   ],
   "headers": [
@@ -179,10 +189,6 @@
       "destination": "/request-received.html"
     },
     {
-      "source": "/services/custom-trips",
-      "destination": "/forms-custom-trips.html"
-    },
-    {
       "source": "/services/corporate-travel",
       "destination": "/forms-corporate-travel.html"
     },
@@ -213,10 +219,6 @@
     {
       "source": "/request-travel",
       "destination": "/request-travel.html"
-    },
-    {
-      "source": "/services/last-minute-travel",
-      "destination": "/forms-last-minute-travel.html"
     }
   ]
 }
