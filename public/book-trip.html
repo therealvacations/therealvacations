@@ -22,6 +22,7 @@
       <label class="plan"><input type="radio" name="payment_plan" value="pay_in_full"><span><strong>Pay in full</strong><br><small>Pay the complete package price securely in Stripe.</small></span></label>
     </div>
     <p class="schedule-preview" id="schedulePreview"></p>
+    <div class="signature"><label for="promoCode">VIP prize code (optional)</label><input id="promoCode" name="promo_code" autocomplete="off" maxlength="20" placeholder="TRV-XXXXXXXX"><small style="display:block;color:#777;margin-top:6px">Prize codes are issued only to TRV VIP subscribers and expire 24 hours after they are issued.</small></div>
     <label class="autopay-consent" id="autopayConsent"><input id="autopayAuthorized" type="checkbox"><span>I authorize The Real Vacations and Stripe to charge the card used for my deposit automatically each month according to this schedule. My remaining balance will be <strong>$0 no later than 60 days before departure</strong>.</span></label>
     <label class="agreement"><input id="bookingAgreement" type="checkbox" required><span>I agree to the <a href="/terms-of-service" target="_blank" rel="noopener">Booking Terms and Cancellation/Refund Policy</a> and acknowledge the <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>. I understand that my reservation is confirmed only after a successful payment and written confirmation.</span></label>
     <div class="signature"><label for="signerName">Electronic signature — type your full legal name</label><input id="signerName" name="signer_name" autocomplete="name" minlength="2" maxlength="160" required></div>
@@ -49,6 +50,7 @@ const consentWrap = document.getElementById('autopayConsent');
 const consent = document.getElementById('autopayAuthorized');
 const bookingAgreement = document.getElementById('bookingAgreement');
 const signerName = document.getElementById('signerName');
+const promoCode = document.getElementById('promoCode');
 let availablePackages = [];
 let finalPaymentDeadline = null;
 const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(Number(value) / 100);
@@ -123,7 +125,15 @@ form.addEventListener('submit', async event => {
     button.textContent = 'Continue to secure checkout';
     return;
   }
-  const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{trip_slug:slug,package_code:values.get('package_code'),payment_plan:values.get('payment_plan'),auto_pay_consent:installments && consent.checked,booking_terms_consent:true,signer_name:signerName.value.trim()}});
+  const { data, error } = await supabase.functions.invoke('create-checkout-session', {body:{
+    trip_slug:slug,
+    package_code:values.get('package_code'),
+    payment_plan:values.get('payment_plan'),
+    auto_pay_consent:installments && consent.checked,
+    booking_terms_consent:true,
+    signer_name:signerName.value.trim(),
+    promo_code:promoCode.value.trim().toUpperCase()
+  }});
   if (error || !data?.url) {
     message.textContent = data?.error || 'Checkout could not be started. Please try again.';
     button.disabled = false;
