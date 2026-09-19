@@ -128,9 +128,10 @@ export async function getCurrentUser() {
 // ==========================================
 // PASSWORD RESET
 // ==========================================
-export async function resetPassword(email) {
+export async function resetPassword(email, resetPath = '/reset-password') {
+  const safeResetPath = resetPath === '/reset-password?admin=1' ? resetPath : '/reset-password'
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: window.location.origin + '/reset-password'
+    redirectTo: window.location.origin + safeResetPath
   })
   if (error) throw new Error(error.message)
   return data
