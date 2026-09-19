@@ -198,6 +198,7 @@ window.handleSignup = async function() {
   var tripInterest = document.getElementById('trip-interest').value;
   var password  = document.getElementById('password').value.trim();
   var terms     = document.getElementById('terms').checked;
+  var subscribe = document.getElementById('spin-promo').checked;
 
   if (!firstName) { alert('Please enter your first name.'); return; }
   if (!lastName)  { alert('Please enter your last name.'); return; }
@@ -211,6 +212,22 @@ window.handleSignup = async function() {
 
   try {
     const signup = await supabaseSignup({ email, password, firstName, lastName, phone, tripInterest, nextPath: requestedNext });
+
+    if (subscribe) {
+      const { supabase } = await import('./js/supabase-client.js');
+      const { data: subData, error: subError } = await supabase.functions.invoke('vip-signup', { body: {
+        name: firstName + ' ' + lastName,
+        email,
+        phone,
+        source: 'account_signup',
+        trip_interest: tripInterest || 'All TRV Group Trips',
+        opted_in: true
+      }});
+      if (subError || !subData?.ok) {
+        console.warn('Account created, but email subscription could not be confirmed.');
+      }
+    }
+
     if (signup.session) {
       window.location.replace(requestedNext);
       return;
