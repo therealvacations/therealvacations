@@ -53,7 +53,7 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
     <div class="welcome"><h1 id="welcomeMsg">Welcome back!</h1><p>Your trips, payments, and travel details — all in one place.</p></div>
     <section class="portal-section"><h2>My Travel Requests & Quotes</h2><div id="requestsContainer"><p>Loading your requests...</p></div></section>
     <section class="portal-section" id="travel-groups"><h2>My Travel Groups</h2><div id="groupsContainer"><p>Loading your groups...</p></div></section>
-    <section class="portal-section"><h2>My Confirmed Trips</h2><div id="tripsContainer"><p>Loading your trips...</p></div></section>
+    <section class="portal-section"><h2>My Approved Custom Bookings</h2><div id="customBookingsContainer"><p>Loading approved bookings...</p></div></section><section class="portal-section"><h2>My Confirmed Trips</h2><div id="tripsContainer"><p>Loading your trips...</p></div></section>
 </div>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
@@ -74,6 +74,31 @@ if (user) {
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
   const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(value) || 0) / 100);
+
+  const { data: customBookings, error: customBookingsError } = await supabase
+    .from('custom_bookings')
+    .select('custom_booking_id,status,total_amount,deposit_amount,amount_paid,balance_due,created_at,travel_quotes!inner(title,summary),travel_quote_options!inner(name,description)')
+    .order('created_at', { ascending: false });
+  const customBookingsContainer = document.getElementById('customBookingsContainer');
+  if (customBookingsError) {
+    console.error('Unable to load custom bookings:', customBookingsError.message);
+    customBookingsContainer.innerHTML = '<div class="request-card"><p>Your approved custom bookings are not available yet.</p></div>';
+  } else if (!customBookings || customBookings.length === 0) {
+    customBookingsContainer.innerHTML = '<div class="request-card"><p>When you approve a custom quote, your booking and payment status will appear here.</p></div>';
+  } else {
+    customBookingsContainer.innerHTML = customBookings.map(booking => {
+      const q = booking.travel_quotes || {};
+      const o = booking.travel_quote_options || {};
+      const paid = money(booking.amount_paid);
+      const balance = money(booking.balance_due);
+      const total = money(booking.total_amount);
+      const statusLabel = String(booking.status || 'awaiting_payment').replaceAll('_',' ');
+      const button = booking.balance_due > 0
+        ? '<a class="btn" style="margin-top:12px" href="/quote-checkout?booking=' + booking.custom_booking_id + '">' + (booking.amount_paid > 0 ? 'Pay Remaining Balance' : 'Complete Booking & Payment') + ' →</a>'
+        : '<span class="request-pill">Paid in full ✓</span>';
+      return '<div class="request-card"><div class="trip-header"><div><h3>' + escapeHtml(q.title || 'Custom TRV Booking') + '</h3><p>' + escapeHtml(o.name || '') + '</p></div><span class="status status-' + (booking.balance_due > 0 ? 'pending' : 'confirmed') + '">' + escapeHtml(statusLabel) + '</span></div><p>' + escapeHtml(o.description || q.summary || '') + '</p><div class="group-summary"><div class="group-stat"><strong>' + total + '</strong><span>Total</span></div><div class="group-stat"><strong>' + paid + '</strong><span>Paid</span></div><div class="group-stat"><strong>' + balance + '</strong><span>Balance</span></div></div>' + button + '</div>';
+    }).join('');
+  }
 
   const { data: groups, error: groupsError } = await supabase
     .from('travel_groups')
