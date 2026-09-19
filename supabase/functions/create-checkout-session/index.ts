@@ -17,6 +17,14 @@ function isUuid(value: unknown) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(String(value ?? ''))
 }
 
+function prizeDiscountCents(prize: string, totalAmount: number) {
+  const fixed = prize.match(/^\$(\d+(?:\.\d{1,2})?)\s*Off/i)
+  if (fixed) return Math.min(totalAmount, Math.round(Number(fixed[1]) * 100))
+  const percent = prize.match(/^(\d+(?:\.\d+)?)%\s*Off/i)
+  if (percent) return Math.min(totalAmount, Math.round(totalAmount * (Number(percent[1]) / 100)))
+  return 0
+}
+
 type CheckoutRow = {
   payment_id: string
   booking_id: string
@@ -59,6 +67,10 @@ Deno.serve(async (request) => {
 
   const stripe = new Stripe(stripeSecretKey)
   let paymentId = String(body.payment_id ?? '')
+  const requestedPromoCode = String(body.promo_code ?? '').trim().toUpperCase()
+  let appliedPromoCode = ''
+  let appliedPrize = ''
+  let appliedDiscountAmount = 0
 
   if (paymentId) {
     if (!isUuid(paymentId)) return jsonResponse({ error: 'Invalid payment' }, 422)
@@ -94,6 +106,46 @@ Deno.serve(async (request) => {
       return jsonResponse({ error: 'Accept the booking policies and provide your legal name' }, 422)
     }
 
+    if (requestedPromoCode) {
+      if (!/^TRV-[A-Z0-9]{8}$/.test(requestedPromoCode)) {
+        return jsonResponse({ error: 'That prize code is not valid' }, 422)
+      }
+
+      const [{ data: subscriber }, { data: codeRow }, { data: packageInfo }] = await Promise.all([
+        admin.from('subscribers')
+          .select('email,spin_prize,spin_code,spin_expires_at,opted_in')
+          .ilike('email', user.email)
+          .eq('spin_code', requestedPromoCode)
+          .maybeSingle(),
+        admin.from('discount_codes')
+          .select('code,expires_at,max_uses,used_count')
+          .eq('code', requestedPromoCode)
+          .maybeSingle(),
+        admin.from('trip_packages')
+          .select('total_amount,deposit_amount,trips!inner(slug,status)')
+          .eq('code', packageCode)
+          .eq('is_active', true)
+          .eq('trips.slug', tripSlug)
+          .eq('trips.status', 'active')
+          .maybeSingle(),
+      ])
+
+      const now = new Date()
+      const subscriberExpiry = subscriber?.spin_expires_at ? new Date(subscriber.spin_expires_at) : null
+      const codeExpiry = codeRow?.expires_at ? new Date(codeRow.expires_at) : null
+      const maxUses = Number(codeRow?.max_uses ?? 1)
+      const usedCount = Number(codeRow?.used_count ?? 0)
+
+      if (!subscriber?.opted_in || !subscriberExpiry || subscriberExpiry <= now ||
+          !codeRow || !codeExpiry || codeExpiry <= now || usedCount >= maxUses || !packageInfo) {
+        return jsonResponse({ error: 'This prize code has expired, has already been used, or is not eligible' }, 422)
+      }
+
+      appliedPromoCode = requestedPromoCode
+      appliedPrize = String(subscriber.spin_prize ?? '')
+      appliedDiscountAmount = prizeDiscountCents(appliedPrize, Number(packageInfo.total_amount ?? 0))
+    }
+
     const { data, error } = await admin.rpc('prepare_stripe_booking_checkout', {
       p_user_id: user.id,
       p_trip_slug: tripSlug,
@@ -106,6 +158,43 @@ Deno.serve(async (request) => {
       return jsonResponse({ error: 'This trip or payment plan is not available' }, 409)
     }
     const prepared = data as CheckoutRow
+
+    if (appliedPromoCode) {
+      const { data: bookingAmounts, error: bookingAmountsError } = await admin
+        .from('bookings')
+        .select('total_amount,deposit_amount,payment_plan')
+        .eq('booking_id', prepared.booking_id)
+        .eq('user_id', user.id)
+        .single()
+      if (bookingAmountsError || !bookingAmounts) {
+        return jsonResponse({ error: 'Prize code could not be applied' }, 500)
+      }
+
+      const originalTotal = Number(bookingAmounts.total_amount ?? 0)
+      const originalDeposit = Number(bookingAmounts.deposit_amount ?? 0)
+      const discountedTotal = Math.max(0, originalTotal - appliedDiscountAmount)
+      const amountDueNow = paymentPlan === 'pay_in_full'
+        ? discountedTotal
+        : Math.min(originalDeposit, discountedTotal)
+
+      const { error: promoBookingError } = await admin.from('bookings').update({
+        total_amount: discountedTotal,
+        deposit_amount: Math.min(originalDeposit, discountedTotal),
+        balance_due: discountedTotal,
+        promo_code: appliedPromoCode,
+        promo_description: appliedPrize,
+        promo_discount_amount: appliedDiscountAmount,
+      }).eq('booking_id', prepared.booking_id).eq('user_id', user.id)
+      if (promoBookingError) return jsonResponse({ error: 'Prize code could not be applied' }, 500)
+
+      const { error: promoPaymentError } = await admin.from('booking_payments').update({
+        scheduled_amount: amountDueNow,
+      }).eq('payment_id', prepared.payment_id)
+      if (promoPaymentError) return jsonResponse({ error: 'Prize code could not be applied' }, 500)
+
+      prepared.amount = amountDueNow
+    }
+
     paymentId = prepared.payment_id
     const sourceIp = (request.headers.get('x-forwarded-for') ?? request.headers.get('cf-connecting-ip') ?? '').split(',')[0].trim().slice(0, 120) || null
     const { error: acceptanceError } = await admin.rpc('record_booking_acceptance', {
@@ -175,9 +264,17 @@ Deno.serve(async (request) => {
           product_data: { name: `${payment.trip_title} — ${payment.package_name}` },
         },
       }],
-      metadata: { payment_id: payment.payment_id, booking_id: payment.booking_id },
+      metadata: {
+        payment_id: payment.payment_id,
+        booking_id: payment.booking_id,
+        ...(appliedPromoCode ? { promo_code: appliedPromoCode, promo_prize: appliedPrize } : {}),
+      },
       payment_intent_data: {
-        metadata: { payment_id: payment.payment_id, booking_id: payment.booking_id },
+        metadata: {
+          payment_id: payment.payment_id,
+          booking_id: payment.booking_id,
+          ...(appliedPromoCode ? { promo_code: appliedPromoCode } : {}),
+        },
         ...(billing.payment_plan === 'installments' ? { setup_future_usage: 'off_session' as const } : {}),
       },
       success_url: `${siteUrl}/payment-result?status=success&session_id={CHECKOUT_SESSION_ID}`,
