@@ -38,7 +38,7 @@ export default async function handler(req, res) {
     const fullName = clean(body.full_name);
     const { first, last } = splitName(fullName);
     const serviceType = clean(body.service_type) || 'website-service-request';
-    const requestTypes = body.services_needed.length
+    const requestTypes = serviceType === 'travel-request' && body.services_needed.length
       ? body.services_needed.map((value) => clean(value)).filter(Boolean)
       : [serviceType];
 
