@@ -28,8 +28,8 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 </nav>
 
 <header class="hero">
-<h1>Tell us what you need. Only what you need.</h1>
-<p>Choose one service or several. We will only ask questions for the travel services you select — no unnecessary hotel, rental car, cruise, or ticket pages.</p>
+<h1>Your trip starts here.</h1>
+<p>Choose exactly what you need and send us the details. Your request will be secured with The Real Vacations and moved into supplier confirmation — without making you answer questions for services you did not select.</p>
 </header>
 
 <main class="wrap">
@@ -50,7 +50,7 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <label class="service-choice"><input type="checkbox" name="services_needed" value="Tickets & Attractions" data-section="ticketSection"><span><strong>🎟️ Tickets & Attractions</strong><br><small>Theme parks, events, tours</small></span></label>
 <label class="service-choice"><input type="checkbox" name="services_needed" value="Full Trip Planning" data-section="customSection"><span><strong>🌴 Full Trip Planning</strong><br><small>Complete custom vacation or group</small></span></label>
 </div>
-<div class="urgent"><strong>Leaving within 72 hours?</strong> Include your best phone number below and any hard deadlines such as meetings, events, or required arrival times.</div>
+<div class="urgent"><strong>Leaving soon?</strong> Last-minute and expedited travel requests receive priority handling and may include an additional expedited service fee. Any applicable fee will be disclosed before payment is processed. Include the best phone number to reach you and any hard deadlines such as meetings, events, or required arrival times.</div>
 </section>
 
 <section class="card">
@@ -156,9 +156,19 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 </section>
 
 <section class="card">
+<h2>3. Secure My Request</h2>
+<p class="muted">Submitting sends your travel details directly to TRV for live supplier confirmation. Airfare, hotel/resort space, rental cars, cruises, tickets, and other travel components remain subject to supplier availability and final pricing until confirmed.</p>
+<label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:13px;line-height:1.55">
+<input type="checkbox" name="supplier_confirmation_acknowledged" value="yes" required style="margin-top:3px">
+<span>I understand my request is <strong>awaiting supplier confirmation</strong> until TRV confirms availability and final pricing with the applicable airline, hotel/resort, rental-car company, cruise line, attraction, or other supplier.</span>
+</label>
+<label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:13px;line-height:1.55">
+<input type="checkbox" name="payment_authorization_acknowledged" value="yes" required style="margin-top:3px">
+<span>I authorize TRV to contact me with the confirmed total and applicable service fee before payment is processed. If I have a secure payment method on file and separately authorize its use for this request, TRV may use that approved payment method after supplier confirmation.</span>
+</label>
 <div id="formError" class="error"></div>
-<button class="submit" type="submit">Send My Travel Request →</button>
-<p class="hint" style="text-align:center;margin-top:12px">Your request goes directly to The Real Vacations for review and a personalized quote.</p>
+<button class="submit" type="submit">Secure My Travel Request →</button>
+<p class="hint" style="text-align:center;margin-top:12px">Your request is sent directly to The Real Vacations for live supplier confirmation. No supplier reservation is represented as confirmed until TRV sends your official confirmation credentials.</p>
 </section>
 </form>
 </main>
