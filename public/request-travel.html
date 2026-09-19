@@ -1,20 +1,186 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Request Travel | The Real Vacations</title><meta name="description" content="Request last-minute travel help or a fully planned custom trip from The Real Vacations."/><link rel="icon" href="/favicon.ico"/>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Request Travel | The Real Vacations</title>
+<meta name="description" content="Request exactly the travel help you need — flights, hotels, rental cars, cruises, tickets, or complete custom trip planning."/>
+<link rel="icon" href="/favicon.ico"/>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#faf7fd;color:#2d2138}a{text-decoration:none;color:inherit}
 nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
-.hero{background:linear-gradient(135deg,#1a0533,#5b21b6);color:#fff;padding:66px 22px;text-align:center}.hero h1{font-size:clamp(34px,6vw,54px);margin:0 0 12px}.hero p{max-width:760px;margin:auto;line-height:1.6;color:#eadff6}
-.wrap{max-width:1050px;margin:auto;padding:48px 22px 70px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:22px}.card{background:#fff;border:1px solid #e7deef;border-radius:20px;padding:26px;box-shadow:0 10px 26px rgba(44,25,63,.06)}.card h2{color:#1a0533;margin:0 0 9px}.card p{color:#655970;line-height:1.6}.badge{display:inline-block;background:#f3e8ff;color:#6d28d9;padding:5px 10px;border-radius:999px;font-size:11px;font-weight:800;margin-bottom:12px}.btn{display:inline-block;margin-top:12px;background:#7c3aed;color:#fff;padding:11px 18px;border-radius:999px;font-weight:800}.secondary{background:#efe8f7;color:#1a0533}.more{margin-top:34px;background:#fff;border:1px solid #e7deef;border-radius:18px;padding:24px}.more a{color:#6d28d9;font-weight:700;margin-right:16px;display:inline-block;margin-top:8px}
-footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{color:#c4b5fd;margin:0 6px}@media(max-width:700px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}}
-</style></head>
+.hero{background:linear-gradient(135deg,#1a0533,#5b21b6);color:#fff;padding:58px 22px;text-align:center}.hero h1{font-size:clamp(34px,6vw,54px);margin:0 0 12px}.hero p{max-width:780px;margin:auto;line-height:1.65;color:#eadff6}
+.wrap{max-width:980px;margin:auto;padding:42px 22px 70px}.card{background:#fff;border:1px solid #e7deef;border-radius:20px;padding:28px;box-shadow:0 10px 26px rgba(44,25,63,.06);margin-bottom:22px}
+.card h2{color:#1a0533;margin:0 0 8px}.muted{color:#6c6175;line-height:1.55}.service-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:20px}
+.service-choice{display:flex;gap:10px;align-items:flex-start;border:2px solid #e8e0ef;border-radius:14px;padding:15px;cursor:pointer;background:#fff}.service-choice:has(input:checked){border-color:#7c3aed;background:#f7f1ff}.service-choice input{margin-top:3px}
+.section{display:none}.section.show{display:block}.section h3{margin:0 0 16px;color:#1a0533}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #cec3d8;border-radius:9px;font:inherit;background:#fff}.field textarea{min-height:96px;resize:vertical}.hint{font-size:12px;color:#807388;margin-top:5px}
+.urgent{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:13px;margin-top:16px}
+.submit{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:15px;font-weight:800;font-size:16px;cursor:pointer}.submit:hover{background:#6d28d9}.error{display:none;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:12px;border-radius:10px;margin:0 0 16px}.error.show{display:block}
+footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{color:#c4b5fd;margin:0 6px}
+@media(max-width:700px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}.row{grid-template-columns:1fr}}
+</style>
+</head>
 <body>
-<nav><a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"/></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a></div><div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div></nav>
-<header class="hero"><h1>What do you need us to plan?</h1><p>Whether you leave in a few days or you want us to build a full vacation for your family or group, start here and we’ll route your request correctly.</p></header>
-<main class="wrap"><section class="grid">
-<article class="card"><span class="badge">TRAVELING SOON</span><h2>Last-Minute Travel</h2><p>For work trips, quick getaways, or travel coming up in the next few days. Request flights, hotel, rental car, or a combination of all three.</p><a class="btn" href="/services/last-minute-travel">Request Last-Minute Travel →</a></article>
-<article class="card"><span class="badge">CUSTOM VACATION OR GROUP</span><h2>Plan My Trip</h2><p>Tell us the destination, dates, group size, budget, and the experience you want. Great for couples, families, friend groups, celebrations, and full custom itineraries.</p><a class="btn" href="/custom-trip-form">Start My Custom Trip Request →</a></article>
+<nav>
+<a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"/></a>
+<div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a></div>
+<div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div>
+</nav>
+
+<header class="hero">
+<h1>Tell us what you need. Only what you need.</h1>
+<p>Choose one service or several. We will only ask questions for the travel services you select — no unnecessary hotel, rental car, cruise, or ticket pages.</p>
+</header>
+
+<main class="wrap">
+<form id="travelRequestForm" action="/api/submit-service-request" method="POST">
+<input type="hidden" name="service_type" value="travel-request">
+<input type="hidden" id="summaryDestination" name="destination">
+<input type="hidden" id="summaryDates" name="preferred_dates">
+<input type="hidden" id="summaryTripType" name="trip_type" value="travel-request">
+
+<section class="card">
+<h2>1. What do you need?</h2>
+<p class="muted">Select only what you want us to arrange.</p>
+<div class="service-grid">
+<label class="service-choice"><input type="checkbox" name="services_needed" value="Flight" data-section="flightSection"><span><strong>✈️ Flight</strong><br><small>One-way or round trip</small></span></label>
+<label class="service-choice"><input type="checkbox" name="services_needed" value="Hotel" data-section="hotelSection"><span><strong>🏨 Hotel</strong><br><small>Room or stay only</small></span></label>
+<label class="service-choice"><input type="checkbox" name="services_needed" value="Rental Car" data-section="carSection"><span><strong>🚗 Rental Car</strong><br><small>Vehicle only</small></span></label>
+<label class="service-choice"><input type="checkbox" name="services_needed" value="Cruise" data-section="cruiseSection"><span><strong>🛳️ Cruise</strong><br><small>Cruise planning</small></span></label>
+<label class="service-choice"><input type="checkbox" name="services_needed" value="Tickets & Attractions" data-section="ticketSection"><span><strong>🎟️ Tickets & Attractions</strong><br><small>Theme parks, events, tours</small></span></label>
+<label class="service-choice"><input type="checkbox" name="services_needed" value="Full Trip Planning" data-section="customSection"><span><strong>🌴 Full Trip Planning</strong><br><small>Complete custom vacation or group</small></span></label>
+</div>
+<div class="urgent"><strong>Leaving within 72 hours?</strong> Include your best phone number below and any hard deadlines such as meetings, events, or required arrival times.</div>
 </section>
-<section class="more"><h2>More ways we can help</h2><p>Need something more specialized?</p><a href="/services/corporate-travel">Corporate Travel</a><a href="/services/destination-weddings">Destination Weddings</a><a href="/services/on-tour-travel-management">On-Tour Travel</a><a href="/services/travel-consulting">Travel Consulting</a></section></main>
+
+<section class="card">
+<h2>2. Who are we helping?</h2>
+<div class="row">
+<div class="field"><label>Full Name *</label><input name="full_name" required></div>
+<div class="field"><label>Email *</label><input type="email" name="email" required></div>
+</div>
+<div class="row">
+<div class="field"><label>Phone</label><input type="tel" name="phone"></div>
+<div class="field"><label>Number of Travelers</label><input type="number" min="1" name="group_size" value="1"></div>
+</div>
+</section>
+
+<section class="card section" id="flightSection">
+<h3>✈️ Flight Details</h3>
+<div class="row">
+<div class="field"><label>Flying From *</label><input name="flight_origin" data-required></div>
+<div class="field"><label>Flying To *</label><input name="flight_destination" data-required></div>
+</div>
+<div class="row">
+<div class="field"><label>Departure Date *</label><input type="date" name="flight_depart_date" data-required></div>
+<div class="field"><label>Return Date</label><input type="date" name="flight_return_date"></div>
+</div>
+<div class="row">
+<div class="field"><label>Preferred Times</label><input name="flight_times" placeholder="Morning, after 5 PM, nonstop preferred..."></div>
+<div class="field"><label>Cabin</label><select name="flight_cabin"><option value="">No preference</option><option>Economy</option><option>Premium Economy</option><option>Business</option><option>First Class</option></select></div>
+</div>
+<div class="field"><label>Airline / loyalty / baggage preferences</label><textarea name="flight_airline"></textarea></div>
+</section>
+
+<section class="card section" id="hotelSection">
+<h3>🏨 Hotel Details</h3>
+<div class="field"><label>City / Area *</label><input name="hotel_destination" data-required></div>
+<div class="row">
+<div class="field"><label>Check-In *</label><input type="date" name="hotel_check_in" data-required></div>
+<div class="field"><label>Check-Out *</label><input type="date" name="hotel_check_out" data-required></div>
+</div>
+<div class="field"><label>Rooms</label><input name="hotel_rooms" placeholder="1 room, 2 rooms, suite, etc."></div>
+<div class="field"><label>Hotel preferences</label><textarea name="hotel_preferences" placeholder="Area, brand, star level, bed type, amenities..."></textarea></div>
+</section>
+
+<section class="card section" id="carSection">
+<h3>🚗 Rental Car Details</h3>
+<div class="field"><label>Pickup Location *</label><input name="car_pickup_location" data-required placeholder="Airport or city"></div>
+<div class="row">
+<div class="field"><label>Pickup Date *</label><input type="date" name="car_pickup_date" data-required></div>
+<div class="field"><label>Return Date *</label><input type="date" name="car_return_date" data-required></div>
+</div>
+<div class="field"><label>Vehicle Type</label><select name="car_type"><option value="">No preference</option><option>Economy</option><option>Midsize</option><option>Full Size</option><option>SUV</option><option>Minivan</option><option>Luxury</option></select></div>
+</section>
+
+<section class="card section" id="cruiseSection">
+<h3>🛳️ Cruise Details</h3>
+<div class="field"><label>Destination / Cruise Region *</label><input name="cruise_destination" data-required placeholder="Caribbean, Alaska, Mediterranean..."></div>
+<div class="row">
+<div class="field"><label>Travel Dates / Window *</label><input name="cruise_dates" data-required placeholder="Exact dates or flexible range"></div>
+<div class="field"><label>Preferred Departure Port</label><input name="cruise_port"></div>
+</div>
+<div class="field"><label>Cruise preferences</label><textarea name="cruise_preferences" placeholder="Cruise line, ship, cabin, itinerary, celebrations..."></textarea></div>
+</section>
+
+<section class="card section" id="ticketSection">
+<h3>🎟️ Tickets & Attractions</h3>
+<div class="field"><label>What tickets do you need? *</label><input name="ticket_attraction" data-required placeholder="Disney, Universal Epic Universe, concert, tour..."></div>
+<div class="row">
+<div class="field"><label>Date(s) *</label><input name="ticket_dates" data-required placeholder="Exact dates or date range"></div>
+<div class="field"><label>Quantity *</label><input type="number" min="1" name="ticket_quantity" data-required></div>
+</div>
+<div class="field"><label>Ticket details</label><textarea name="ticket_details" placeholder="Ages, park days, Park Hopper, military tickets already owned, event section preferences, etc."></textarea></div>
+</section>
+
+<section class="card section" id="customSection">
+<h3>🌴 Full Custom Trip Details</h3>
+<div class="field"><label>Destination(s) *</label><input name="custom_destination" data-required placeholder="Turks & Caicos, Orlando, Japan..."></div>
+<div class="field"><label>Travel Dates *</label><input name="custom_dates" data-required placeholder="Exact dates or flexible window"></div>
+<div class="row">
+<div class="field"><label>Approximate Budget</label><input name="budget_range" placeholder="Total or per-person budget"></div>
+<div class="field"><label>Type of Trip</label><input name="custom_trip_type" placeholder="Family, couples, birthday, group, work..."></div>
+</div>
+<div class="field"><label>What do you want included?</label><textarea name="preferences" placeholder="Flights, villa/resort, transfers, meals, excursions, tickets, private chef, etc."></textarea></div>
+<div class="field"><label>Anything else we should know?</label><textarea name="group_details" placeholder="Celebrations, room setup, accessibility, children's ages, must-haves, special requests..."></textarea></div>
+</section>
+
+<section class="card">
+<div id="formError" class="error"></div>
+<button class="submit" type="submit">Send My Travel Request →</button>
+<p class="hint" style="text-align:center;margin-top:12px">Your request goes directly to The Real Vacations for review and a personalized quote.</p>
+</section>
+</form>
+</main>
+
 <footer><p>© 2026 The Real Vacations</p><a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></footer>
-</body></html>
+
+<script>
+const form=document.getElementById('travelRequestForm');
+const choices=[...document.querySelectorAll('[data-section]')];
+function sync(){
+  choices.forEach(box=>{
+    const section=document.getElementById(box.dataset.section);
+    section.classList.toggle('show',box.checked);
+    section.querySelectorAll('[data-required]').forEach(input=>input.required=box.checked);
+    if(!box.checked) section.querySelectorAll('input,select,textarea').forEach(input=>{
+      if(input.type!=='hidden') input.required=false;
+    });
+  });
+}
+choices.forEach(box=>box.addEventListener('change',sync));
+sync();
+
+form.addEventListener('submit',e=>{
+  const selected=choices.filter(x=>x.checked);
+  const error=document.getElementById('formError');
+  if(!selected.length){
+    e.preventDefault(); error.textContent='Choose at least one travel service so we know what you need.'; error.classList.add('show'); return;
+  }
+  error.classList.remove('show');
+
+  const val=n=>form.elements[n]?.value?.trim()||'';
+  document.getElementById('summaryDestination').value=
+    val('flight_destination')||val('hotel_destination')||val('cruise_destination')||val('custom_destination')||val('car_pickup_location')||val('ticket_attraction');
+  const parts=[];
+  if(val('flight_depart_date')) parts.push(val('flight_depart_date')+(val('flight_return_date')?' to '+val('flight_return_date'):''));
+  else if(val('hotel_check_in')) parts.push(val('hotel_check_in')+' to '+val('hotel_check_out'));
+  else if(val('cruise_dates')) parts.push(val('cruise_dates'));
+  else if(val('custom_dates')) parts.push(val('custom_dates'));
+  else if(val('ticket_dates')) parts.push(val('ticket_dates'));
+  document.getElementById('summaryDates').value=parts.join(', ');
+  document.getElementById('summaryTripType').value=selected.map(x=>x.value).join(' + ');
+});
+</script>
+</body>
+</html>
