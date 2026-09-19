@@ -14,7 +14,7 @@ export function safePortalPath(value) {
     }
     const trip = parsed.searchParams.get('trip') || ''
     const packageCode = parsed.searchParams.get('package') || ''
-    if (parsed.origin === window.location.origin && parsed.pathname === '/book-trip' && /^[a-z0-9-]{3,160}$/.test(trip) && /^(general|vip)$/.test(packageCode)) {
+    if (parsed.origin === window.location.origin && parsed.pathname === '/book-trip' && /^[a-z0-9-]{3,160}$/.test(trip) && /^[a-z0-9-]{1,50}$/.test(packageCode)) {
       return parsed.pathname + '?trip=' + encodeURIComponent(trip) + '&package=' + encodeURIComponent(packageCode)
     }
   } catch {}
@@ -30,7 +30,7 @@ export async function handleSignup(formData) {
     email,
     password,
     options: {
-      emailRedirectTo: window.location.origin + safeNext,
+      emailRedirectTo: window.location.origin + '/account-confirmed?next=' + encodeURIComponent(safeNext),
       data: {
         first_name: firstName,
         last_name: lastName,
