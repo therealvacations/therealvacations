@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Payment Result | The Real Vacations</title>
+<style>body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#30243e}.wrap{min-height:100vh;display:grid;place-items:center;padding:24px}.card{max-width:680px;background:#fff;border-radius:22px;padding:38px;text-align:center;box-shadow:0 14px 36px rgba(45,24,74,.1)}h1{color:#1a0533}.btn{display:inline-block;margin-top:18px;background:#7c3aed;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:800}.muted{color:#6f6577;line-height:1.6}</style></head>
+<body><main class="wrap"><section class="card"><h1 id="title">Confirming your payment…</h1><p class="muted" id="text">We’re verifying the payment securely with Stripe.</p><a class="btn" href="/my-trips">Open My Trips</a></section></main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const sessionId=new URLSearchParams(location.search).get('session_id')||'';
+const {data:{user}}=await supabase.auth.getUser();
+if(!user) location.replace('/login?next='+encodeURIComponent(location.pathname+location.search));
+if(user){
+ const {data:{session}}=await supabase.auth.getSession();
+ const resp=await fetch('/api/confirm-custom-payment',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},body:JSON.stringify({session_id:sessionId})});
+ const data=await resp.json().catch(()=>({}));
+ const title=document.getElementById('title'),text=document.getElementById('text');
+ if(resp.ok&&data.ok){title.textContent=data.booking?.balance_due===0?'Your trip is paid in full.':'Your payment was received.';text.textContent=data.booking?.balance_due===0?'Your TRV booking is confirmed and your balance is $0.':'Your approved trip is now secured. Your remaining balance is shown in My Trips.';}
+ else{title.textContent='We could not confirm the payment yet.';text.textContent=data.error||'Open My Trips in a moment. If Stripe completed the charge and this message remains, contact The Real Vacations.';}
+}
+</script></body></html>
