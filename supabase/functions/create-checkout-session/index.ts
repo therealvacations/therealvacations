@@ -121,22 +121,17 @@ Deno.serve(async (request) => {
     }
 
     if (requestedPromoCode) {
-      if (!/^TRV-[A-Z0-9]{8}$/.test(requestedPromoCode)) {
-        return jsonResponse({ error: 'That prize code is not valid' }, 422)
+      if (!/^[A-Z0-9][A-Z0-9-]{2,30}$/.test(requestedPromoCode)) {
+        return jsonResponse({ error: 'That promo code is not valid' }, 422)
       }
 
-      const [{ data: subscriber }, { data: codeRow }, { data: packageInfo }] = await Promise.all([
-        admin.from('subscribers')
-          .select('email,spin_prize,spin_code,spin_expires_at,opted_in')
-          .ilike('email', user.email)
-          .eq('spin_code', requestedPromoCode)
-          .maybeSingle(),
+      const [{ data: codeRow }, { data: packageInfo }] = await Promise.all([
         admin.from('discount_codes')
-          .select('code,expires_at,max_uses,used_count')
+          .select('code,discount_amount,discount_type,trip_id,expires_at,max_uses,used_count')
           .eq('code', requestedPromoCode)
           .maybeSingle(),
         admin.from('trip_packages')
-          .select('total_amount,deposit_amount,trips!inner(slug,status)')
+          .select('total_amount,deposit_amount,trip_id,trips!inner(slug,status)')
           .eq('code', packageCode)
           .eq('is_active', true)
           .eq('trips.slug', tripSlug)
@@ -145,19 +140,44 @@ Deno.serve(async (request) => {
       ])
 
       const now = new Date()
-      const subscriberExpiry = subscriber?.spin_expires_at ? new Date(subscriber.spin_expires_at) : null
       const codeExpiry = codeRow?.expires_at ? new Date(codeRow.expires_at) : null
-      const maxUses = Number(codeRow?.max_uses ?? 1)
+      const maxUses = codeRow?.max_uses == null ? null : Number(codeRow.max_uses)
       const usedCount = Number(codeRow?.used_count ?? 0)
 
-      if (!subscriber?.opted_in || !subscriberExpiry || subscriberExpiry <= now ||
-          !codeRow || !codeExpiry || codeExpiry <= now || usedCount >= maxUses || !packageInfo) {
-        return jsonResponse({ error: 'This prize code has expired, has already been used, or is not eligible' }, 422)
+      if (!codeRow || !packageInfo || (codeExpiry && codeExpiry <= now) ||
+          (maxUses != null && usedCount >= maxUses) ||
+          (codeRow.trip_id && codeRow.trip_id !== packageInfo.trip_id)) {
+        return jsonResponse({ error: 'This promo code has expired, reached its use limit, or is not eligible for this trip' }, 422)
       }
 
       appliedPromoCode = requestedPromoCode
-      appliedPrize = String(subscriber.spin_prize ?? '')
-      appliedDiscountAmount = prizeDiscountCents(appliedPrize, Number(packageInfo.total_amount ?? 0))
+
+      if (codeRow.discount_type === 'wheel_prize') {
+        const { data: subscriber } = await admin.from('subscribers')
+          .select('email,spin_prize,spin_code,spin_expires_at,opted_in')
+          .ilike('email', user.email)
+          .eq('spin_code', requestedPromoCode)
+          .maybeSingle()
+        const subscriberExpiry = subscriber?.spin_expires_at ? new Date(subscriber.spin_expires_at) : null
+        if (!subscriber?.opted_in || !subscriberExpiry || subscriberExpiry <= now) {
+          return jsonResponse({ error: 'This prize code has expired, has already been used, or is not eligible' }, 422)
+        }
+        appliedPrize = String(subscriber.spin_prize ?? '')
+        appliedDiscountAmount = prizeDiscountCents(appliedPrize, Number(packageInfo.total_amount ?? 0))
+      } else if (codeRow.discount_type === 'fixed') {
+        appliedDiscountAmount = Math.min(Number(packageInfo.total_amount ?? 0), Math.max(0, Number(codeRow.discount_amount ?? 0)))
+        appliedPrize = `${new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(appliedDiscountAmount/100)} off`
+      } else if (codeRow.discount_type === 'percent') {
+        const percent = Math.min(100, Math.max(0, Number(codeRow.discount_amount ?? 0)))
+        appliedDiscountAmount = Math.min(Number(packageInfo.total_amount ?? 0), Math.round(Number(packageInfo.total_amount ?? 0) * (percent / 100)))
+        appliedPrize = `${percent}% off`
+      } else {
+        return jsonResponse({ error: 'This promo code is not configured correctly' }, 422)
+      }
+
+      if (appliedDiscountAmount <= 0) {
+        return jsonResponse({ error: 'This promo code does not have a usable discount' }, 422)
+      }
     }
 
     const { data, error } = await admin.rpc('prepare_stripe_booking_checkout', {
