@@ -81,9 +81,16 @@ var _sb=window.supabase.createClient("https://lqdflvnkiskzmvvknmmh.supabase.co",
 var allDeals=[];
 
 async function loadDeals(){
-  var res=await _sb.from('deals').select('*').eq('is_active',true).order('sort_order');
-  allDeals=res.data||[];
-  renderDeals(allDeals);
+  var grid=document.getElementById('dealsGrid');
+  try{
+    var res=await _sb.from('deals').select('*').eq('is_active',true).order('sort_order');
+    if(res.error) throw res.error;
+    allDeals=res.data||[];
+    renderDeals(allDeals);
+  }catch(err){
+    console.error('Deals load failed',err);
+    grid.innerHTML='<p>Deals could not be loaded right now. Please check back shortly.</p>';
+  }
 }
 
 function renderDeals(deals){
