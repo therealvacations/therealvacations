@@ -55,7 +55,8 @@ async function loadTrips() {
     packagesByTrip.set(item.trip_id, list)
   }
 
-  container.replaceChildren(...trips.map((trip) => {
+  const visibleTrips = (trips || []).filter((trip) => !String(trip.slug || '').startsWith('trv-internal-test-'))
+  container.replaceChildren(...visibleTrips.map((trip) => {
     const card = node('article', `trip-card${trip.is_featured ? ' featured-card' : ''}`)
     const header = node('div', 'trip-card-header')
     const imageUrl = safeUrl(trip.cover_image_url, '')
