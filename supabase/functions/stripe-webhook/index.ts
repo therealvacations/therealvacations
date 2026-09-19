@@ -80,10 +80,18 @@ Deno.serve(async (request) => {
         const periodEnd = (subscription as any).current_period_end
           ? new Date(Number((subscription as any).current_period_end) * 1000).toISOString()
           : null
+        const trialStart = (subscription as any).trial_start
+          ? new Date(Number((subscription as any).trial_start) * 1000).toISOString()
+          : null
+        const trialEnd = (subscription as any).trial_end
+          ? new Date(Number((subscription as any).trial_end) * 1000).toISOString()
+          : null
         const { error: vipError } = await admin.from('vip_memberships').upsert({
           user_id: userId,
           status: subscription.status === 'trialing' ? 'trialing' : 'active',
           billing_plan: String(billingPlan),
+          trial_started_at: trialStart,
+          trial_ends_at: trialEnd,
           paid_through: periodEnd,
           stripe_customer_id: customerId,
           stripe_subscription_id: subscriptionId,
@@ -198,8 +206,16 @@ Deno.serve(async (request) => {
         const periodEnd = (subscription as any).current_period_end
           ? new Date(Number((subscription as any).current_period_end) * 1000).toISOString()
           : null
+        const trialStart = (subscription as any).trial_start
+          ? new Date(Number((subscription as any).trial_start) * 1000).toISOString()
+          : null
+        const trialEnd = (subscription as any).trial_end
+          ? new Date(Number((subscription as any).trial_end) * 1000).toISOString()
+          : null
         const { error: membershipError } = await admin.from('vip_memberships').update({
           status,
+          trial_started_at: trialStart,
+          trial_ends_at: trialEnd,
           paid_through: periodEnd,
           stripe_customer_id: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
           stripe_subscription_id: subscription.id,
