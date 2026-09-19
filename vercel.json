@@ -125,6 +125,10 @@
       "destination": "/signup.html"
     },
     {
+      "source": "/account-confirmed",
+      "destination": "/account-confirmed.html"
+    },
+    {
       "source": "/my-trips",
       "destination": "/my-trips.html"
     },
