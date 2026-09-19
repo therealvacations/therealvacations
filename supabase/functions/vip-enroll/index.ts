@@ -30,6 +30,15 @@ Deno.serve(async (req: Request) => {
     const validTrial = existing.status === "trialing" && existing.trial_ends_at && new Date(existing.trial_ends_at) > now;
     const validPaid = existing.status === "active" && (!existing.paid_through || new Date(existing.paid_through) > now);
     if (validTrial || validPaid) return json({ok:true,membership:existing,already_active:true});
+    if (existing.trial_started_at) {
+      return json({
+        ok:false,
+        eligible_for_trial:false,
+        trial_already_used:true,
+        requires_paid_membership:true,
+        message:"The complimentary 2-month VIP trial has already been used on this account."
+      },403);
+    }
   }
 
   const {data: qualifying} = await admin.from("bookings")
