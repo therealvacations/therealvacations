@@ -101,6 +101,20 @@ Deno.serve(async (request) => {
     if (!/^(installments|pay_in_full)$/.test(paymentPlan)) {
       return jsonResponse({ error: 'Choose a payment plan' }, 422)
     }
+
+    if (paymentPlan === 'installments') {
+      const { data: subscriber } = await admin.from('subscribers')
+        .select('subscriber_id,opted_in')
+        .ilike('email', user.email)
+        .eq('opted_in', true)
+        .maybeSingle()
+      if (!subscriber) {
+        return jsonResponse({
+          error: 'Deposit + monthly payments require a free TRV email subscription. Subscribe first, then continue.'
+        }, 422)
+      }
+    }
+
     const signerName = String(body.signer_name ?? '').trim()
     if (body.booking_terms_consent !== true || signerName.length < 2 || signerName.length > 160) {
       return jsonResponse({ error: 'Accept the booking policies and provide your legal name' }, 422)
