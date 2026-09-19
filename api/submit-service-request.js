@@ -38,6 +38,9 @@ export default async function handler(req, res) {
     const fullName = clean(body.full_name);
     const { first, last } = splitName(fullName);
     const serviceType = clean(body.service_type) || 'website-service-request';
+    const requestTypes = body.services_needed.length
+      ? body.services_needed.map((value) => clean(value)).filter(Boolean)
+      : [serviceType];
 
     if (!email || !email.includes('@') || !fullName) {
       return res.status(422).send('Name and email are required');
@@ -137,7 +140,7 @@ export default async function handler(req, res) {
       requester_phone: clean(body.phone) || null,
       primary_first_name: first,
       primary_last_name: last,
-      request_types: [serviceType],
+      request_types: requestTypes,
       destination: clean(body.destination) || null,
       traveler_count: travelerCount,
       is_group_request: travelerCount ? travelerCount > 1 : false,
