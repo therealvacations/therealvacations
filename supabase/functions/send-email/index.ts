@@ -66,6 +66,20 @@ Deno.serve(async (request) => {
     subject = 'We received your travel request'
     relatedTable = 'travel_requests'; relatedId = travelRequest.request_id
     html = emailShell('Your request is with our travel team', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>We received your request${travelRequest.destination ? ` for <strong>${escapeHtml(travelRequest.destination)}</strong>` : ''}. We’ll review the details and follow up with next steps.</p>`, siteUrl)
+  } else if (requestedType === 'vip_welcome') {
+    const userId = String(body.user_id ?? '')
+    const { data: membership } = await admin.from('vip_memberships')
+      .select('user_id,status,billing_plan,welcome_gift_status')
+      .eq('user_id', userId).maybeSingle()
+    if (!membership || !['active','trialing'].includes(membership.status)) return jsonResponse({ error: 'VIP membership not found' }, 404)
+    const { data: authUser } = await admin.auth.admin.getUserById(userId)
+    if (!authUser.user?.email) return jsonResponse({ error: 'VIP member email not found' }, 404)
+    recipient = authUser.user.email
+    subject = 'Welcome to TRV VIP'
+    relatedTable = 'vip_memberships'; relatedId = membership.user_id
+    const firstName = authUser.user.user_metadata?.first_name || 'Traveler'
+    const planLabel = membership.billing_plan === 'annual' ? '$129.99/year' : membership.billing_plan === 'monthly' ? '$15.99/month' : 'VIP membership'
+    html = emailShell('Welcome to TRV VIP', `<p>Hi ${escapeHtml(firstName)},</p><p>Your TRV VIP membership is active.</p><p><strong>Plan:</strong> ${escapeHtml(planLabel)}</p><p>You now have access to private travel offers, member-only perks, and VIP opportunities inside your TRV account.</p><p>As a new paid VIP member, you also receive a TRV welcome travel/lifestyle item. Your item may be a T-shirt, hat, cup/tumbler, or another nice TRV-branded item. The exact item varies.</p><p><a href="${siteUrl}/vip" style="color:#7c3aed;font-weight:bold">Open TRV VIP and add your welcome-item delivery details →</a></p>`, siteUrl)
   } else if (requestedType === 'group_invitation') {
     const invitationId = String(body.invitation_id ?? '')
     const joinUrl = String(body.join_url ?? '')
