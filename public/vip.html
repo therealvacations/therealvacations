@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>TRV VIP | The Real Vacations</title><link rel="icon" href="/favicon.ico"/>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#30243e}
+nav{background:#1a0533;padding:14px 28px;display:flex;justify-content:space-between;align-items:center}nav img{height:48px}nav a{color:#fff;text-decoration:none;font-weight:700}
+.wrap{max-width:1100px;margin:36px auto;padding:0 18px 60px}.hero{background:linear-gradient(135deg,#1a0533,#5b21b6);color:#fff;border-radius:24px;padding:34px;margin-bottom:26px}
+.hero h1{margin:0 0 10px;font-size:38px}.hero p{max-width:760px;line-height:1.6;color:#e9ddf7}
+.status{margin-top:18px;display:inline-block;background:rgba(255,255,255,.12);padding:9px 14px;border-radius:999px;font-weight:800}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}.card{background:#fff;border:1px solid #e6dff0;border-radius:18px;padding:20px;box-shadow:0 10px 24px rgba(42,22,65,.06)}
+.card h3{margin:0 0 8px;color:#1a0533}.card p{color:#6f6578;line-height:1.5}.price{font-size:20px;font-weight:800;color:#7c3aed}
+.btn{display:inline-block;margin-top:12px;background:#7c3aed;color:#fff;text-decoration:none;padding:10px 16px;border-radius:999px;font-weight:800}.muted{color:#6f6578}
+.locked{text-align:center;background:#fff;border:1px solid #e6dff0;border-radius:18px;padding:32px}
+</style></head>
+<body><nav><a href="/"><img src="/logo.jpeg" alt="The Real Vacations"/></a><a href="/my-trips">My Trips</a></nav>
+<main class="wrap"><section class="hero"><h1>TRV VIP</h1><p>Private travel perks, limited-time offers, member-only experiences, and handpicked extras for travelers who want more from every escape.</p><div class="status" id="vipStatus">Checking membership…</div></section><section id="content"><p class="muted">Loading VIP access…</p></section></main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const {data:{user}}=await supabase.auth.getUser();
+if(!user) location.replace('/login?next='+encodeURIComponent('/vip'));
+const statusEl=document.getElementById('vipStatus'),content=document.getElementById('content');
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+if(user){
+  const {data:membership}=await supabase.from('vip_memberships').select('*').eq('user_id',user.id).maybeSingle();
+  const active=membership && ((membership.status==='trialing'&&membership.trial_ends_at&&new Date(membership.trial_ends_at)>new Date()) || (membership.status==='active'&&(!membership.paid_through||new Date(membership.paid_through)>new Date())));
+  if(!active){
+    statusEl.textContent='VIP membership not active';
+    content.innerHTML='<div class="locked"><h2>VIP access is currently locked.</h2><p class="muted">Your free TRV email subscription and TRV VIP membership are separate. Paid VIP enrollment will appear here once your membership option is available.</p><a class="btn" href="/my-trips">Back to My Trips</a></div>';
+  }else{
+    statusEl.textContent=membership.status==='trialing'?'VIP trial active':'VIP active';
+    const {data:offers,error}=await supabase.from('vip_offers').select('offer_id,title,category,description,display_price,image_url,starts_at,ends_at,sort_order').order('sort_order');
+    if(error||!offers||offers.length===0) content.innerHTML='<div class="locked"><h2>Your VIP access is active.</h2><p class="muted">New member-only offers are being prepared. Check back soon.</p></div>';
+    else content.innerHTML='<div class="grid">'+offers.map(o=>'<article class="card">'+(o.image_url?'<img src="'+esc(o.image_url)+'" alt="" style="width:100%;border-radius:12px;margin-bottom:12px">':'')+'<small>'+esc(o.category)+'</small><h3>'+esc(o.title)+'</h3><p>'+esc(o.description||'')+'</p>'+(o.display_price?'<div class="price">'+esc(o.display_price)+'</div>':'')+'<a class="btn" href="/api/vip-offer?offer='+encodeURIComponent(o.offer_id)+'">Open VIP Offer →</a></article>').join('')+'</div>';
+  }
+}
+</script></body></html>
