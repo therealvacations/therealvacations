@@ -66,6 +66,39 @@ Deno.serve(async (request) => {
     subject = 'Your TRV travel request is secured'
     relatedTable = 'travel_requests'; relatedId = travelRequest.request_id
     html = emailShell('Your travel request is secured with TRV', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>Your travel request${travelRequest.destination ? ` for <strong>${escapeHtml(travelRequest.destination)}</strong>` : ''} is now with The Real Vacations and is <strong>awaiting live supplier confirmation</strong>.</p><p>We’re confirming availability and final details with the applicable airline, hotel or resort, rental-car company, cruise line, attraction, or other supplier. Once confirmed, we’ll finalize the reservation, arrange the authorized payment, and send your official confirmation numbers and travel credentials.</p><p>For time-sensitive travel, we may also call or text to make sure you received everything you need before departure.</p><p style="color:#777;font-size:12px"><strong>Important:</strong> Your TRV request is secured, but individual supplier reservations are not confirmed until The Real Vacations sends written confirmation.</p>`, siteUrl)
+  } else if (requestedType === 'request_payment_ready') {
+    const requestId = String(body.request_id ?? '')
+    const fulfillmentId = String(body.fulfillment_id ?? '')
+    const checkoutUrl = String(body.checkout_url ?? '')
+    if (!checkoutUrl.startsWith('https://checkout.stripe.com/')) return jsonResponse({ error: 'Invalid payment URL' }, 422)
+
+    const { data: travelRequest } = await admin.from('travel_requests')
+      .select('request_id,requester_email,primary_first_name,destination')
+      .eq('request_id', requestId).maybeSingle()
+    const { data: fulfillment } = await admin.from('travel_request_fulfillments')
+      .select('fulfillment_id,supplier_name,supplier_subtotal,service_fee,total_amount,currency,confirmation_details,status')
+      .eq('fulfillment_id', fulfillmentId).eq('request_id', requestId).maybeSingle()
+    if (!travelRequest || !fulfillment) return jsonResponse({ error: 'Confirmed request not found' }, 404)
+
+    recipient = travelRequest.requester_email
+    subject = 'Your confirmed TRV travel arrangements are ready'
+    relatedTable = 'travel_request_fulfillments'; relatedId = fulfillment.fulfillment_id
+    html = emailShell('Your travel arrangements are ready to complete', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>We have completed supplier confirmation for your travel request${travelRequest.destination ? ` to <strong>${escapeHtml(travelRequest.destination)}</strong>` : ''}.</p><p><strong>Confirmed travel:</strong> ${escapeHtml(fulfillment.supplier_name || 'Travel arrangements')}<br><strong>Supplier amount:</strong> ${money(fulfillment.supplier_subtotal, fulfillment.currency)}<br>${Number(fulfillment.service_fee || 0) > 0 ? `<strong>TRV service fee:</strong> ${money(fulfillment.service_fee, fulfillment.currency)}<br>` : ''}<strong>Total due:</strong> ${money(fulfillment.total_amount, fulfillment.currency)}</p><p><a href="${escapeHtml(checkoutUrl)}" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold;display:inline-block">Complete Secure Payment →</a></p><p style="color:#777;font-size:12px">Your supplier reservation is not considered fully confirmed until payment is completed and The Real Vacations sends your final confirmation credentials.</p>`, siteUrl)
+  } else if (requestedType === 'request_confirmed') {
+    const requestId = String(body.request_id ?? '')
+    const fulfillmentId = String(body.fulfillment_id ?? '')
+    const { data: travelRequest } = await admin.from('travel_requests')
+      .select('request_id,requester_email,primary_first_name,destination')
+      .eq('request_id', requestId).maybeSingle()
+    const { data: fulfillment } = await admin.from('travel_request_fulfillments')
+      .select('fulfillment_id,supplier_name,total_amount,currency,confirmation_details,status')
+      .eq('fulfillment_id', fulfillmentId).eq('request_id', requestId).maybeSingle()
+    if (!travelRequest || !fulfillment || fulfillment.status !== 'paid') return jsonResponse({ error: 'Paid confirmed request not found' }, 404)
+
+    recipient = travelRequest.requester_email
+    subject = 'Your TRV reservation is confirmed'
+    relatedTable = 'travel_request_fulfillments'; relatedId = fulfillment.fulfillment_id
+    html = emailShell('Your reservation is confirmed', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>Your payment of <strong>${money(fulfillment.total_amount, fulfillment.currency)}</strong> has been received and your confirmed travel arrangements are now recorded with The Real Vacations.</p><p><strong>Confirmed travel:</strong> ${escapeHtml(fulfillment.supplier_name || 'Travel arrangements')}</p>${fulfillment.confirmation_details ? `<p><strong>Confirmation details:</strong><br>${escapeHtml(fulfillment.confirmation_details).replace(/\\n/g,'<br>')}</p>` : ''}<p>Keep this email with your travel documents. Your trip details will also remain available through your TRV account.</p>`, siteUrl)
   } else if (requestedType === 'vip_welcome') {
     const userId = String(body.user_id ?? '')
     const { data: membership } = await admin.from('vip_memberships')
