@@ -91,6 +91,38 @@ Deno.serve(async (request) => {
         p_payment_method_id: paymentMethodId,
       })
       if (error) throw error
+
+      const promoCode = session.metadata?.promo_code
+      const bookingId = session.metadata?.booking_id
+      if (promoCode && bookingId) {
+        const { data: redeemedBooking } = await admin
+          .from('bookings')
+          .update({ promo_redeemed_at: new Date().toISOString() })
+          .eq('booking_id', bookingId)
+          .eq('promo_code', promoCode)
+          .is('promo_redeemed_at', null)
+          .select('booking_id')
+          .maybeSingle()
+
+        if (redeemedBooking) {
+          const { data: codeRow } = await admin
+            .from('discount_codes')
+            .select('used_count,max_uses')
+            .eq('code', promoCode)
+            .maybeSingle()
+          if (codeRow) {
+            const currentUsed = Number(codeRow.used_count ?? 0)
+            const maxUses = Number(codeRow.max_uses ?? 1)
+            if (currentUsed < maxUses) {
+              await admin.from('discount_codes')
+                .update({ used_count: currentUsed + 1 })
+                .eq('code', promoCode)
+                .eq('used_count', currentUsed)
+            }
+          }
+        }
+      }
+
       await tryPaymentEmail(paymentId)
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object as Stripe.Checkout.Session
