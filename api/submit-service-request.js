@@ -80,7 +80,7 @@ export default async function handler(req, res) {
       traveler_count: travelerCount,
       is_group_request: travelerCount ? travelerCount > 1 : false,
       service_fee_status: 'not_answered',
-      status: 'new',
+      status: 'received',
       answers,
       submitted_at: new Date().toISOString(),
     });
