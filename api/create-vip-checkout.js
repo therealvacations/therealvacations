@@ -24,9 +24,41 @@ export default async function handler(req,res){
   const plan=String(req.body?.plan||'');
   if(!['monthly','annual'].includes(plan)) return res.status(422).json({error:'Choose a valid VIP plan'});
 
+  const clean=v=>String(v??'').trim();
+  const shipping={
+    name:clean(req.body?.name),
+    address1:clean(req.body?.address1),
+    address2:clean(req.body?.address2)||null,
+    city:clean(req.body?.city),
+    state:clean(req.body?.state),
+    postal_code:clean(req.body?.postal_code),
+    country:clean(req.body?.country)||'US'
+  };
+  const size=clean(req.body?.size);
+  const note=clean(req.body?.note)||null;
+  if(!shipping.name||!shipping.address1||!shipping.city||!shipping.state||!shipping.postal_code){
+    return res.status(422).json({error:'Complete the required welcome-gift shipping fields'});
+  }
+
   const monthly=1599, annual=12999;
   const amount=plan==='monthly'?monthly:annual;
   const interval=plan==='monthly'?'month':'year';
+
+  const {error:membershipError}=await admin.from('vip_memberships').upsert({
+    user_id:user.id,
+    status:'inactive',
+    billing_plan:plan,
+    welcome_gift_status:'not_eligible',
+    welcome_gift_shipping:shipping,
+    welcome_gift_size:size||null,
+    welcome_gift_note:note,
+    updated_at:new Date().toISOString()
+  },{onConflict:'user_id'});
+  if(membershipError) return res.status(500).json({error:'VIP enrollment details could not be saved'});
+
+  const now=new Date();
+  const annualTrialEnd=new Date(now);
+  annualTrialEnd.setMonth(annualTrialEnd.getMonth()+2);
 
   const form=formEncode({
     mode:'subscription',
@@ -44,6 +76,9 @@ export default async function handler(req,res){
     'subscription_data[metadata][checkout_type]':'vip_membership',
     'subscription_data[metadata][user_id]':user.id,
     'subscription_data[metadata][billing_plan]':plan,
+    ...(plan==='monthly'
+      ? {'subscription_data[trial_period_days]':7}
+      : {'subscription_data[trial_end]':Math.floor(annualTrialEnd.getTime()/1000)}),
     success_url:siteUrl+'/vip?joined=1',
     cancel_url:siteUrl+'/vip?cancelled=1'
   });
