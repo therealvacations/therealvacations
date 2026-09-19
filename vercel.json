@@ -209,6 +209,14 @@
     {
       "source": "/vip",
       "destination": "/vip.html"
+    },
+    {
+      "source": "/request-travel",
+      "destination": "/request-travel.html"
+    },
+    {
+      "source": "/services/last-minute-travel",
+      "destination": "/forms-last-minute-travel.html"
     }
   ]
 }
