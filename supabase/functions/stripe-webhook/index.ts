@@ -122,6 +122,55 @@ Deno.serve(async (request) => {
         return jsonResponse({ received: true, vip_membership: true })
       }
 
+      if (session.metadata?.checkout_type === 'travel_request_fulfillment') {
+        const fulfillmentId = session.metadata?.fulfillment_id
+        const requestId = session.metadata?.request_id
+        if (!fulfillmentId || !requestId) {
+          return jsonResponse({ error: 'Travel request checkout metadata is incomplete' }, 422)
+        }
+        if (session.payment_status !== 'paid') return jsonResponse({ received: true })
+
+        const paymentIntentId = typeof session.payment_intent === 'string'
+          ? session.payment_intent
+          : session.payment_intent?.id ?? null
+
+        const { error: fulfillmentError } = await admin.rpc('finish_travel_request_charge', {
+          p_fulfillment_id: fulfillmentId,
+          p_status: 'paid',
+          p_payment_intent_id: paymentIntentId,
+          p_failure_code: null,
+          p_failure_message: null,
+        })
+        if (fulfillmentError) throw fulfillmentError
+
+        await admin.from('travel_request_fulfillments').update({
+          stripe_checkout_session_id: session.id,
+          updated_at: new Date().toISOString(),
+        }).eq('fulfillment_id', fulfillmentId)
+
+        try {
+          const confirmation = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${serviceRoleKey}`,
+              apikey: serviceRoleKey,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              template_type: 'request_confirmed',
+              request_id: requestId,
+              fulfillment_id: fulfillmentId,
+              event_id: event.id,
+            }),
+          })
+          if (!confirmation.ok) console.error('Request confirmation email failed', confirmation.status)
+        } catch (emailError) {
+          console.error('Request confirmation email failed', emailError instanceof Error ? emailError.message : 'Unknown error')
+        }
+
+        return jsonResponse({ received: true, travel_request_fulfillment: true })
+      }
+
       if (session.metadata?.checkout_type === 'custom_quote') {
         const paymentId = session.metadata?.payment_id
         const customBookingId = session.metadata?.custom_booking_id
@@ -211,6 +260,22 @@ Deno.serve(async (request) => {
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object as Stripe.Checkout.Session
       const paymentId = session.metadata?.payment_id
+
+      if (session.metadata?.checkout_type === 'travel_request_fulfillment') {
+        const fulfillmentId = session.metadata?.fulfillment_id
+        if (!fulfillmentId) return jsonResponse({ received: true, travel_request_fulfillment: true })
+        const failedStatus = event.type === 'checkout.session.expired' ? 'cancelled' : 'failed'
+        const { error: fulfillmentFailure } = await admin.from('travel_request_fulfillments').update({
+          status: failedStatus,
+          failure_code: event.type === 'checkout.session.expired' ? 'checkout_expired' : 'async_payment_failed',
+          failure_message: event.type === 'checkout.session.expired'
+            ? 'The secure payment session expired before payment was completed.'
+            : 'Stripe reported that the payment did not complete.',
+          updated_at: new Date().toISOString(),
+        }).eq('fulfillment_id', fulfillmentId).neq('status', 'paid')
+        if (fulfillmentFailure) throw fulfillmentFailure
+        return jsonResponse({ received: true, travel_request_fulfillment: true })
+      }
 
       if (session.metadata?.checkout_type === 'custom_quote') {
         if (!paymentId) return jsonResponse({ received: true, custom_quote: true })
