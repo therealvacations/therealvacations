@@ -91,6 +91,26 @@ Deno.serve(async (request) => {
           updated_at: new Date().toISOString(),
         }, { onConflict: 'user_id' })
         if (vipError) throw vipError
+
+        try {
+          const welcome = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${serviceRoleKey}`,
+              apikey: serviceRoleKey,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              template_type: 'vip_welcome',
+              user_id: userId,
+              event_id: event.id,
+            }),
+          })
+          if (!welcome.ok) console.error('VIP welcome email failed', welcome.status)
+        } catch (emailError) {
+          console.error('VIP welcome email failed', emailError instanceof Error ? emailError.message : 'Unknown error')
+        }
+
         return jsonResponse({ received: true, vip_membership: true })
       }
 
