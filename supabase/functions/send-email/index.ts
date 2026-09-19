@@ -63,9 +63,9 @@ Deno.serve(async (request) => {
       .eq('tally_submission_id', submissionId).maybeSingle()
     if (!travelRequest) return jsonResponse({ error: 'Travel request not found' }, 404)
     recipient = travelRequest.requester_email
-    subject = 'We received your travel request'
+    subject = 'Your TRV travel request is secured'
     relatedTable = 'travel_requests'; relatedId = travelRequest.request_id
-    html = emailShell('Your request is with our travel team', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>We received your request${travelRequest.destination ? ` for <strong>${escapeHtml(travelRequest.destination)}</strong>` : ''}. We’ll review the details and follow up with next steps.</p>`, siteUrl)
+    html = emailShell('Your travel request is secured with TRV', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>Your travel request${travelRequest.destination ? ` for <strong>${escapeHtml(travelRequest.destination)}</strong>` : ''} is now with The Real Vacations and is <strong>awaiting live supplier confirmation</strong>.</p><p>We’re confirming availability and final details with the applicable airline, hotel or resort, rental-car company, cruise line, attraction, or other supplier. Once confirmed, we’ll finalize the reservation, arrange the authorized payment, and send your official confirmation numbers and travel credentials.</p><p>For time-sensitive travel, we may also call or text to make sure you received everything you need before departure.</p><p style="color:#777;font-size:12px"><strong>Important:</strong> Your TRV request is secured, but individual supplier reservations are not confirmed until The Real Vacations sends written confirmation.</p>`, siteUrl)
   } else if (requestedType === 'vip_welcome') {
     const userId = String(body.user_id ?? '')
     const { data: membership } = await admin.from('vip_memberships')
