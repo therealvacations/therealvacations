@@ -208,15 +208,33 @@ function showPanel(id) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function handleSubscribe() {
+async function handleSubscribe() {
   var first = document.getElementById('subFirstName').value.trim();
   var last  = document.getElementById('subLastName').value.trim();
   var email = document.getElementById('subEmail').value.trim();
   if (!first) { alert('Please enter your first name.'); return; }
   if (!last)  { alert('Please enter your last name.'); return; }
   if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
-  // TODO: Connect to EmailJS or Formspree to create subscriber and trigger welcome email
-  console.log('Subscribe:', first, last, email);
+
+  var client = window.supabase.createClient(
+    'https://lqdflvnkiskzmvvknmmh.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxxZGZsdm5raXNrem12dmtubW1oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUzNjY2MjksImV4cCI6MjA5MDk0MjYyOX0.sU1j_bV5bpxJN7dj8Qa-RRc5GWkuYQu5No_WM5Sea4k'
+  );
+  var params = new URLSearchParams(location.search);
+  var prize = params.get('prize') || '';
+  var trip = params.get('trip') || 'All TRV Group Trips';
+  var result = await client.functions.invoke('vip-signup', { body: {
+    name: first + ' ' + last,
+    email: email,
+    source: prize ? 'vip_prize_claim' : 'vip_signup',
+    trip_interest: trip,
+    spin_prize: prize,
+    opted_in: true
+  }});
+  if (result.error || !result.data || !result.data.ok) {
+    alert((result.data && result.data.error) || 'We could not complete your VIP signup. Please try again.');
+    return;
+  }
   showPanel('panelCheckEmail');
 }
 
@@ -234,5 +252,6 @@ function handleVerifyCode() {
   if (!code || code.length < 4) { alert('Please enter your verification code from the welcome email.'); return; }
   console.log('V
 <script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase-js.min.js"></script>
 </body>
 </html>
