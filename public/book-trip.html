@@ -24,6 +24,7 @@
     <p class="schedule-preview" id="schedulePreview"></p>
     <div class="signature"><label for="promoCode">VIP prize code (optional)</label><input id="promoCode" name="promo_code" autocomplete="off" maxlength="20" placeholder="TRV-XXXXXXXX"><small style="display:block;color:#777;margin-top:6px">Prize codes are issued only to TRV VIP subscribers and expire 24 hours after they are issued.</small></div>
     <label class="autopay-consent" id="autopayConsent"><input id="autopayAuthorized" type="checkbox"><span>I authorize The Real Vacations and Stripe to charge the card used for my deposit automatically each month according to this schedule. My remaining balance will be <strong>$0 no later than 60 days before departure</strong>.</span></label>
+    <label class="agreement" id="subscriberConsentWrap"><input id="subscriberConsent" type="checkbox"><span>Deposit + monthly payment plans require a free TRV email subscription. I agree to receive trip updates, offers, and account-related travel emails from The Real Vacations. I can unsubscribe from marketing emails later, but an active subscription is required while using this payment option.</span></label>
     <label class="agreement"><input id="bookingAgreement" type="checkbox" required><span>I agree to the <a href="/terms-of-service" target="_blank" rel="noopener">Booking Terms and Cancellation/Refund Policy</a> and acknowledge the <a href="/privacy-policy" target="_blank" rel="noopener">Privacy Policy</a>. I understand that my reservation is confirmed only after a successful payment and written confirmation.</span></label>
     <div class="signature"><label for="signerName">Electronic signature — type your full legal name</label><input id="signerName" name="signer_name" autocomplete="name" minlength="2" maxlength="160" required></div>
     <p class="notice">Prices are loaded from The Real Vacations’ payment database. Card details are entered only on Stripe’s hosted checkout.</p>
@@ -50,6 +51,8 @@ const consentWrap = document.getElementById('autopayConsent');
 const consent = document.getElementById('autopayAuthorized');
 const bookingAgreement = document.getElementById('bookingAgreement');
 const signerName = document.getElementById('signerName');
+const subscriberConsentWrap = document.getElementById('subscriberConsentWrap');
+const subscriberConsent = document.getElementById('subscriberConsent');
 const promoCode = document.getElementById('promoCode');
 let availablePackages = [];
 let finalPaymentDeadline = null;
@@ -87,6 +90,8 @@ function updateSchedulePreview() {
   const installments = plan === 'installments';
   consentWrap.hidden = !installments;
   consent.required = installments;
+  subscriberConsentWrap.hidden = !installments;
+  subscriberConsent.required = installments;
   if (!selected || !finalPaymentDeadline) return;
   if (!installments) {
     schedulePreview.textContent = money(selected.total_amount) + ' will be charged today.';
@@ -118,6 +123,27 @@ form.addEventListener('submit', async event => {
     button.disabled = false;
     button.textContent = 'Continue to secure checkout';
     return;
+  }
+  if (installments && !subscriberConsent.checked) {
+    message.textContent = 'Please subscribe to TRV email updates to use the deposit + monthly payment option.';
+    button.disabled = false;
+    button.textContent = 'Continue to secure checkout';
+    return;
+  }
+  if (installments) {
+    const { data: subData, error: subError } = await supabase.functions.invoke('vip-signup', { body: {
+      name: signerName.value.trim(),
+      email: user.email,
+      source: 'installment_checkout',
+      trip_interest: slug,
+      opted_in: true
+    }});
+    if (subError || !subData?.ok) {
+      message.textContent = subData?.error || 'Your email subscription could not be confirmed.';
+      button.disabled = false;
+      button.textContent = 'Continue to secure checkout';
+      return;
+    }
   }
   if (!bookingAgreement.checked || signerName.value.trim().length < 2) {
     message.textContent = 'Please accept the booking policies and type your full legal name.';
