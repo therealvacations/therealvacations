@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Complete Your Booking | The Real Vacations</title><link rel="icon" href="/favicon.ico"/>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#2e2436}
+nav{background:#1a0533;padding:14px 28px}nav img{height:48px}.wrap{max-width:760px;margin:42px auto;padding:0 18px}
+.card{background:#fff;border:1px solid #e7deef;border-radius:22px;padding:30px;box-shadow:0 14px 35px rgba(45,24,74,.08)}
+h1{color:#1a0533;margin:0 0 8px}.muted{color:#6d6273;line-height:1.6}.summary{background:#faf5ff;border-radius:14px;padding:18px;margin:22px 0}
+.row{display:flex;justify-content:space-between;gap:20px;padding:8px 0}.row strong{color:#1a0533}
+.plan{display:block;border:2px solid #e8e0ef;border-radius:13px;padding:16px;margin:10px 0;cursor:pointer}.plan:has(input:checked){border-color:#7c3aed;background:#faf5ff}
+input[type=text]{width:100%;padding:12px;border:1px solid #cfc5d8;border-radius:10px;font:inherit}.agreement{display:flex;gap:10px;align-items:flex-start;background:#f7f4fa;border-radius:12px;padding:14px;margin:16px 0;font-size:13px;line-height:1.5}
+button{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:14px;font-weight:800;font-size:16px;cursor:pointer}button:disabled{opacity:.55}.error{color:#b42318;margin-top:12px}.back{display:inline-block;margin-top:18px;color:#6d28d9;text-decoration:none;font-weight:700}
+</style></head>
+<body><nav><a href="/"><img src="/logo.jpeg" alt="The Real Vacations"/></a></nav>
+<main class="wrap"><section class="card">
+<h1>Turn your approved quote into your booking.</h1>
+<p class="muted">Your selected TRV option is locked to this booking record. Choose your payment step below and continue securely through Stripe.</p>
+<div id="loading">Loading your approved quote…</div>
+<form id="form" hidden>
+<div class="summary" id="summary"></div>
+<div id="plans"></div>
+<label class="agreement"><input id="terms" type="checkbox" required><span>I approve this booking and agree to the <a href="/terms-of-service" target="_blank">Booking Terms and Cancellation/Refund Policy</a> and acknowledge the <a href="/privacy-policy" target="_blank">Privacy Policy</a>.</span></label>
+<div><label for="signer"><strong>Electronic signature — full legal name</strong></label><input id="signer" type="text" minlength="2" maxlength="160" required/></div>
+<button type="submit">Continue to secure Stripe checkout</button>
+<p class="error" id="msg"></p>
+</form>
+<a class="back" href="/my-trips">← Back to My Trips</a>
+</section></main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const qs=new URLSearchParams(location.search), bookingId=qs.get('booking')||'';
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+const loading=document.getElementById('loading'),form=document.getElementById('form'),summary=document.getElementById('summary'),plans=document.getElementById('plans'),msg=document.getElementById('msg');
+const {data:{user}}=await supabase.auth.getUser();
+if(!user) location.replace('/login?next='+encodeURIComponent('/quote-checkout?booking='+bookingId));
+if(user){
+ const {data:b,error}=await supabase.from('custom_bookings').select('custom_booking_id,status,total_amount,deposit_amount,amount_paid,balance_due,travel_quotes!inner(title,summary)').eq('custom_booking_id',bookingId).maybeSingle();
+ if(error||!b){loading.textContent='This approved booking could not be found.'}
+ else{
+  loading.hidden=true; form.hidden=false;
+  summary.innerHTML='<div class="row"><strong>'+b.travel_quotes.title+'</strong><span>'+money(b.total_amount)+'</span></div><div class="row"><span>Paid</span><span>'+money(b.amount_paid)+'</span></div><div class="row"><span>Remaining balance</span><strong>'+money(b.balance_due)+'</strong></div>';
+  if(b.balance_due<=0){plans.innerHTML='<p class="muted">This booking is already paid in full.</p>';form.querySelector('button').disabled=true}
+  else if(b.amount_paid>0){plans.innerHTML='<label class="plan"><input type="radio" name="payment_plan" value="balance" checked> <strong>Pay remaining balance — '+money(b.balance_due)+'</strong></label>'}
+  else{
+   const dep=b.deposit_amount&&b.deposit_amount>0?'<label class="plan"><input type="radio" name="payment_plan" value="deposit" checked> <strong>Pay deposit — '+money(b.deposit_amount)+'</strong><br><small>Secure the approved quote now and pay the remaining balance later.</small></label>':'';
+   plans.innerHTML=dep+'<label class="plan"><input type="radio" name="payment_plan" value="pay_in_full" '+(!dep?'checked':'')+'> <strong>Pay in full — '+money(b.balance_due)+'</strong></label>';
+  }
+ }
+}
+form.addEventListener('submit',async e=>{
+ e.preventDefault(); const button=form.querySelector('button'); button.disabled=true; button.textContent='Opening Stripe…'; msg.textContent='';
+ if(!document.getElementById('terms').checked||document.getElementById('signer').value.trim().length<2){msg.textContent='Please accept the booking terms and type your full legal name.';button.disabled=false;button.textContent='Continue to secure Stripe checkout';return}
+ const {data:{session}}=await supabase.auth.getSession();
+ const resp=await fetch('/api/create-custom-checkout',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},body:JSON.stringify({custom_booking_id:bookingId,payment_plan:new FormData(form).get('payment_plan'),signer_name:document.getElementById('signer').value.trim()})});
+ const data=await resp.json().catch(()=>({}));
+ if(!resp.ok||!data.url){msg.textContent=data.error||'Checkout could not be started.';button.disabled=false;button.textContent='Continue to secure Stripe checkout';return}
+ location.assign(data.url);
+});
+</script></body></html>
