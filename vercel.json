@@ -205,6 +205,10 @@
     {
       "source": "/custom-payment-result",
       "destination": "/custom-payment-result.html"
+    },
+    {
+      "source": "/vip",
+      "destination": "/vip.html"
     }
   ]
 }
