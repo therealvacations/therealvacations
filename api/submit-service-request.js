@@ -121,6 +121,8 @@ export default async function handler(req, res) {
       preferences: clean(body.preferences) || null,
       group_details: clean(body.group_details) || null,
       traveler_details: clean(body.traveler_details) || null,
+      company_name: clean(body.company_name) || null,
+      artist_or_group: clean(body.artist_or_group) || null,
       services_needed: body.services_needed,
       service_details: serviceDetails,
     };
