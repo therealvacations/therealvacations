@@ -13,7 +13,7 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 .wrap{max-width:980px;margin:auto;padding:42px 22px 70px}.card{background:#fff;border:1px solid #e7deef;border-radius:20px;padding:28px;box-shadow:0 10px 26px rgba(44,25,63,.06);margin-bottom:22px}
 .card h2{color:#1a0533;margin:0 0 8px}.muted{color:#6c6175;line-height:1.55}.service-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-top:20px}
 .service-choice{display:flex;gap:10px;align-items:flex-start;border:2px solid #e8e0ef;border-radius:14px;padding:15px;cursor:pointer;background:#fff}.service-choice:has(input:checked){border-color:#7c3aed;background:#f7f1ff}.service-choice input{margin-top:3px}
-.section{display:none}.section.show{display:block}.section h3{margin:0 0 16px;color:#1a0533}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #cec3d8;border-radius:9px;font:inherit;background:#fff}.field textarea{min-height:96px;resize:vertical}.hint{font-size:12px;color:#807388;margin-top:5px}
+.section{display:none}.section.show{display:block}.section h3{margin:0 0 16px;color:#1a0533}.lodging-block{display:none;background:#f8f4fc;border:1px solid #e5d9ef;border-radius:12px;padding:16px;margin-bottom:14px}.lodging-block.show{display:block}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #cec3d8;border-radius:9px;font:inherit;background:#fff}.field textarea{min-height:96px;resize:vertical}.hint{font-size:12px;color:#807388;margin-top:5px}
 .urgent{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:13px;margin-top:16px}
 .submit{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:15px;font-weight:800;font-size:16px;cursor:pointer}.submit:hover{background:#6d28d9}.error{display:none;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:12px;border-radius:10px;margin:0 0 16px}.error.show{display:block}
 footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{color:#c4b5fd;margin:0 6px}
@@ -63,6 +63,7 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <div class="field"><label>Phone</label><input type="tel" name="phone"></div>
 <div class="field"><label>Number of Travelers</label><input type="number" min="1" name="group_size" value="1"></div>
 </div>
+<div class="field"><label>Traveler details</label><input name="traveler_details" placeholder="Optional: adults/children and children's ages"></div>
 </section>
 
 <section class="card section" id="flightSection">
@@ -89,16 +90,23 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <div class="field"><label>Check-In *</label><input type="date" name="hotel_check_in" data-required></div>
 <div class="field"><label>Check-Out *</label><input type="date" name="hotel_check_out" data-required></div>
 </div>
-<div class="field"><label>Rooms</label><input name="hotel_rooms" placeholder="1 room, 2 rooms, suite, etc."></div>
+<div class="field"><label>How many hotel rooms or suites? *</label><input type="number" min="1" name="hotel_rooms" data-required></div>
 <div class="field"><label>Hotel preferences</label><textarea name="hotel_preferences" placeholder="Area, brand, star level, bed type, amenities..."></textarea></div>
 </section>
 
 <section class="card section" id="carSection">
 <h3>🚗 Rental Car Details</h3>
+<div class="row">
 <div class="field"><label>Pickup Location *</label><input name="car_pickup_location" data-required placeholder="Airport or city"></div>
+<div class="field"><label>Return Location</label><input name="car_return_location" placeholder="Leave blank if same as pickup"></div>
+</div>
 <div class="row">
 <div class="field"><label>Pickup Date *</label><input type="date" name="car_pickup_date" data-required></div>
+<div class="field"><label>Pickup Time</label><input type="time" name="car_pickup_time"></div>
+</div>
+<div class="row">
 <div class="field"><label>Return Date *</label><input type="date" name="car_return_date" data-required></div>
+<div class="field"><label>Return Time</label><input type="time" name="car_return_time"></div>
 </div>
 <div class="field"><label>Vehicle Type</label><select name="car_type"><option value="">No preference</option><option>Economy</option><option>Midsize</option><option>Full Size</option><option>SUV</option><option>Minivan</option><option>Luxury</option></select></div>
 </section>
@@ -110,7 +118,11 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <div class="field"><label>Travel Dates / Window *</label><input name="cruise_dates" data-required placeholder="Exact dates or flexible range"></div>
 <div class="field"><label>Preferred Departure Port</label><input name="cruise_port"></div>
 </div>
-<div class="field"><label>Cruise preferences</label><textarea name="cruise_preferences" placeholder="Cruise line, ship, cabin, itinerary, celebrations..."></textarea></div>
+<div class="row">
+<div class="field"><label>Cabins Needed</label><input type="number" min="1" name="cruise_cabins"></div>
+<div class="field"><label>Cabin Preference</label><select name="cruise_cabin_type"><option value="">No preference</option><option>Interior</option><option>Oceanview</option><option>Balcony</option><option>Suite</option></select></div>
+</div>
+<div class="field"><label>Cruise preferences</label><textarea name="cruise_preferences" placeholder="Cruise line, ship, itinerary, celebrations, accessibility, dining preferences..."></textarea></div>
 </section>
 
 <section class="card section" id="ticketSection">
@@ -131,8 +143,16 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <div class="field"><label>Approximate Budget</label><input name="budget_range" placeholder="Total or per-person budget"></div>
 <div class="field"><label>Type of Trip</label><input name="custom_trip_type" placeholder="Family, couples, birthday, group, work..."></div>
 </div>
-<div class="field"><label>What do you want included?</label><textarea name="preferences" placeholder="Flights, villa/resort, transfers, meals, excursions, tickets, private chef, etc."></textarea></div>
-<div class="field"><label>Anything else we should know?</label><textarea name="group_details" placeholder="Celebrations, room setup, accessibility, children's ages, must-haves, special requests..."></textarea></div>
+<div class="field"><label>What type of lodging do you want?</label>
+<select name="custom_lodging_type" id="customLodgingType">
+<option value="">Not sure yet</option><option value="hotel-resort">Hotel or Resort</option><option value="villa-house-condo">Villa, House, or Condo</option><option value="either">Open to Either</option><option value="none">No Lodging Needed</option>
+</select></div>
+<div id="customHotelBlock" class="lodging-block"><div class="field"><label>How many hotel rooms or suites? *</label><input type="number" min="1" name="custom_hotel_rooms" id="customHotelRooms"></div></div>
+<div id="customPrivateBlock" class="lodging-block"><div class="row"><div class="field"><label>How many bedrooms? *</label><input type="number" min="1" name="custom_bedrooms" id="customBedrooms"></div><div class="field"><label>How many bathrooms do you prefer?</label><input type="number" min="1" step="0.5" name="custom_bathrooms"></div></div></div>
+<div id="customEitherBlock" class="lodging-block"><p class="hint">Give us whichever setup you know. We can compare hotels/resorts and private homes.</p><div class="row"><div class="field"><label>Hotel rooms/suites</label><input type="number" min="1" name="custom_hotel_rooms_either"></div><div class="field"><label>Bedrooms if private home</label><input type="number" min="1" name="custom_bedrooms_either"></div></div><div class="field"><label>Bathrooms if private home</label><input type="number" min="1" step="0.5" name="custom_bathrooms_either"></div></div>
+<div class="field" id="customLodgingPrefsWrap"><label>Lodging must-haves</label><textarea name="custom_lodging_preferences" placeholder="Beachfront, private pool, all-inclusive, adjoining rooms, kitchen, chef, accessibility..."></textarea></div>
+<div class="field"><label>What do you want included?</label><textarea name="preferences" placeholder="Flights, transfers, rental cars, meals, excursions, tickets, private chef, etc."></textarea></div>
+<div class="field"><label>Anything else we should know?</label><textarea name="group_details" placeholder="Celebrations, rooming setup, accessibility, children's ages, must-haves, special requests..."></textarea></div>
 </section>
 
 <section class="card">
@@ -152,14 +172,37 @@ function sync(){
   choices.forEach(box=>{
     const section=document.getElementById(box.dataset.section);
     section.classList.toggle('show',box.checked);
-    section.querySelectorAll('[data-required]').forEach(input=>input.required=box.checked);
-    if(!box.checked) section.querySelectorAll('input,select,textarea').forEach(input=>{
-      if(input.type!=='hidden') input.required=false;
+    section.querySelectorAll('input,select,textarea').forEach(input=>{
+      if(input.type!=='hidden') input.disabled=!box.checked;
     });
+    section.querySelectorAll('[data-required]').forEach(input=>input.required=box.checked);
   });
 }
 choices.forEach(box=>box.addEventListener('change',sync));
 sync();
+
+const customLodgingType=document.getElementById('customLodgingType');
+const customHotelBlock=document.getElementById('customHotelBlock');
+const customPrivateBlock=document.getElementById('customPrivateBlock');
+const customEitherBlock=document.getElementById('customEitherBlock');
+const customHotelRooms=document.getElementById('customHotelRooms');
+const customBedrooms=document.getElementById('customBedrooms');
+const customLodgingPrefsWrap=document.getElementById('customLodgingPrefsWrap');
+function syncCustomLodging(){
+  [customHotelBlock,customPrivateBlock,customEitherBlock].forEach(block=>{
+    block.classList.remove('show');
+    block.querySelectorAll('input,select,textarea').forEach(input=>{input.disabled=true;input.required=false;});
+  });
+  if(!customLodgingType || customLodgingType.disabled) return;
+  if(customLodgingType.value==='hotel-resort'){customHotelBlock.classList.add('show');customHotelBlock.querySelectorAll('input,select,textarea').forEach(i=>i.disabled=false);customHotelRooms.required=true;}
+  if(customLodgingType.value==='villa-house-condo'){customPrivateBlock.classList.add('show');customPrivateBlock.querySelectorAll('input,select,textarea').forEach(i=>i.disabled=false);customBedrooms.required=true;}
+  if(customLodgingType.value==='either'){customEitherBlock.classList.add('show');customEitherBlock.querySelectorAll('input,select,textarea').forEach(i=>i.disabled=false);}
+  customLodgingPrefsWrap.style.display=customLodgingType.value==='none'?'none':'block';
+  customLodgingPrefsWrap.querySelectorAll('textarea').forEach(i=>i.disabled=customLodgingType.value==='none');
+}
+customLodgingType?.addEventListener('change',syncCustomLodging);
+choices.find(x=>x.dataset.section==='customSection')?.addEventListener('change',syncCustomLodging);
+syncCustomLodging();
 
 form.addEventListener('submit',e=>{
   const selected=choices.filter(x=>x.checked);
@@ -170,6 +213,16 @@ form.addEventListener('submit',e=>{
   error.classList.remove('show');
 
   const val=n=>form.elements[n]?.value?.trim()||'';
+  const invalidDate=(startName,endName)=>val(startName)&&val(endName)&&val(endName)<val(startName);
+  if(invalidDate('flight_depart_date','flight_return_date')||invalidDate('hotel_check_in','hotel_check_out')||invalidDate('car_pickup_date','car_return_date')){
+    e.preventDefault(); error.textContent='One of your return/check-out dates is before the start date. Please correct it.'; error.classList.add('show'); return;
+  }
+  if(customLodgingType?.value==='either'){
+    const hr=val('custom_hotel_rooms_either'), br=val('custom_bedrooms_either'), ba=val('custom_bathrooms_either');
+    if(hr) form.elements['custom_hotel_rooms'].value=hr;
+    if(br) form.elements['custom_bedrooms'].value=br;
+    if(ba) form.elements['custom_bathrooms'].value=ba;
+  }
   document.getElementById('summaryDestination').value=
     val('flight_destination')||val('hotel_destination')||val('cruise_destination')||val('custom_destination')||val('car_pickup_location')||val('ticket_attraction');
   const parts=[];
