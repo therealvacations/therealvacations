@@ -79,6 +79,13 @@ export default async function handler(req, res) {
         quantity: clean(body.ticket_quantity) || null,
         details: clean(body.ticket_details) || null,
       },
+      lodging: {
+        type: clean(body.lodging_type) || null,
+        hotel_rooms_or_suites: clean(body.hotel_rooms_or_suites) || null,
+        bedrooms: clean(body.lodging_bedrooms) || null,
+        bathrooms: clean(body.lodging_bathrooms) || null,
+        preferences: clean(body.lodging_preferences) || null,
+      },
     };
 
     const answers = {
