@@ -52,11 +52,11 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 
 <div id="eitherBlock" class="lodging-block">
 <p class="hint" style="margin-top:0">If you’re open to either, tell us the setup you need and we’ll compare the best hotel/resort and private-home options.</p>
-<div class="row"><div class="field"><label>Hotel rooms/suites needed</label><input type="number" min="1" name="hotel_rooms_or_suites"></div><div class="field"><label>Bedrooms if private home</label><input type="number" min="1" name="lodging_bedrooms"></div></div>
-<div class="field"><label>Bathrooms if private home</label><input type="number" min="1" step="0.5" name="lodging_bathrooms"></div>
+<div class="row"><div class="field"><label>Hotel rooms/suites needed</label><input type="number" min="1" name="hotel_rooms_or_suites_either"></div><div class="field"><label>Bedrooms if private home</label><input type="number" min="1" name="lodging_bedrooms_either"></div></div>
+<div class="field"><label>Bathrooms if private home</label><input type="number" min="1" step="0.5" name="lodging_bathrooms_either"></div>
 </div>
 
-<div class="field"><label>Lodging must-haves</label><textarea name="lodging_preferences" placeholder="Beachfront, private pool, all-inclusive, adjoining rooms, kitchen, daily chef, accessibility needs, etc."></textarea></div>
+<div class="field" id="lodgingPreferencesWrap"><label>Lodging must-haves</label><textarea name="lodging_preferences" placeholder="Beachfront, private pool, all-inclusive, adjoining rooms, kitchen, daily chef, accessibility needs, etc."></textarea></div>
 </section>
 
 <section class="card"><h2>What should we include?</h2>
@@ -73,12 +73,19 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 const type=document.getElementById('lodgingType');
 const hotel=document.getElementById('hotelBlock'), priv=document.getElementById('privateBlock'), either=document.getElementById('eitherBlock');
 const hotelRooms=document.getElementById('hotelRooms'), bedrooms=document.getElementById('bedrooms');
+const lodgingPreferencesWrap=document.getElementById('lodgingPreferencesWrap');
+function setBlock(block,on){
+  block.classList.toggle('show',on);
+  block.querySelectorAll('input,select,textarea').forEach(input=>{input.disabled=!on;input.required=false;});
+}
 function syncLodging(){
-  [hotel,priv,either].forEach(x=>x.classList.remove('show'));
+  setBlock(hotel,false); setBlock(priv,false); setBlock(either,false);
   hotelRooms.required=false; bedrooms.required=false;
-  if(type.value==='hotel-resort'){hotel.classList.add('show');hotelRooms.required=true;}
-  if(type.value==='villa-house-condo'){priv.classList.add('show');bedrooms.required=true;}
-  if(type.value==='either') either.classList.add('show');
+  if(type.value==='hotel-resort'){setBlock(hotel,true);hotelRooms.required=true;}
+  if(type.value==='villa-house-condo'){setBlock(priv,true);bedrooms.required=true;}
+  if(type.value==='either') setBlock(either,true);
+  lodgingPreferencesWrap.style.display=type.value==='none'?'none':'block';
+  lodgingPreferencesWrap.querySelectorAll('textarea').forEach(input=>input.disabled=type.value==='none');
 }
 type.addEventListener('change',syncLodging);syncLodging();
 </script>
