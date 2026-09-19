@@ -20,6 +20,10 @@ function normalizeBody(req) {
   return { ...raw, services_needed: services };
 }
 
+function truthy(value) {
+  return ['yes','true','1','on'].includes(clean(value).toLowerCase());
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -34,16 +38,63 @@ export default async function handler(req, res) {
 
   try {
     const body = normalizeBody(req);
-    const email = clean(body.email).toLowerCase();
+    const serviceType = clean(body.service_type) || 'website-service-request';
+    const bookingFlow = ['travel-request', 'custom-trip'].includes(serviceType);
+
+    const supabase = createClient(supabaseUrl, serviceRoleKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    });
+
+    let authenticatedUser = null;
+    let savedMethod = null;
+
+    if (bookingFlow) {
+      const token = String(req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+      if (!token) return res.status(401).json({ error: 'Sign in to your TRV account before securing this booking request.' });
+
+      const { data: authData, error: authError } = await supabase.auth.getUser(token);
+      authenticatedUser = authData?.user || null;
+      if (authError || !authenticatedUser?.email) {
+        return res.status(401).json({ error: 'Your TRV sign-in expired. Please sign in again.' });
+      }
+
+      const { data: method, error: methodError } = await supabase
+        .from('user_payment_methods')
+        .select('method_id,stripe_payment_method_id,stripe_customer_id,last4,brand,exp_month,exp_year')
+        .eq('user_id', authenticatedUser.id)
+        .eq('is_default', true)
+        .not('stripe_payment_method_id', 'is', null)
+        .limit(1)
+        .maybeSingle();
+
+      if (methodError || !method?.stripe_payment_method_id) {
+        return res.status(422).json({ error: 'Add a secure payment method to your TRV account before securing this booking request.' });
+      }
+      savedMethod = method;
+
+      if (!truthy(body.supplier_confirmation_acknowledged) ||
+          !truthy(body.payment_authorization_acknowledged)) {
+        return res.status(422).json({ error: 'Please accept the supplier-confirmation and payment authorization terms.' });
+      }
+      if (clean(body.authorization_signer_name).length < 2) {
+        return res.status(422).json({ error: 'Type your full legal name as your electronic signature.' });
+      }
+      if (/within-72-hours|within-5-days/i.test(clean(body.urgency)) &&
+          !truthy(body.expedited_fee_acknowledged)) {
+        return res.status(422).json({ error: 'Please acknowledge the expedited-service fee policy for last-minute travel.' });
+      }
+    }
+
+    const submittedEmail = clean(body.email).toLowerCase();
+    const email = bookingFlow ? clean(authenticatedUser.email).toLowerCase() : submittedEmail;
     const fullName = clean(body.full_name);
     const { first, last } = splitName(fullName);
-    const serviceType = clean(body.service_type) || 'website-service-request';
     const requestTypes = serviceType === 'travel-request' && body.services_needed.length
       ? body.services_needed.map((value) => clean(value)).filter(Boolean)
       : [serviceType];
 
     if (!email || !email.includes('@') || !fullName) {
-      return res.status(422).send('Name and email are required');
+      return res.status(422).json({ error: 'Name and email are required.' });
     }
 
     const submissionId = `website-${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
@@ -118,6 +169,8 @@ export default async function handler(req, res) {
       group_size: clean(body.group_size) || null,
       trip_type: clean(body.trip_type) || null,
       budget_range: clean(body.budget_range) || null,
+      urgency: clean(body.urgency) || null,
+      expedited_request: /within-72-hours|within-5-days/i.test(clean(body.urgency)),
       preferences: clean(body.preferences) || null,
       group_details: clean(body.group_details) || null,
       traveler_details: clean(body.traveler_details) || null,
@@ -125,21 +178,25 @@ export default async function handler(req, res) {
       artist_or_group: clean(body.artist_or_group) || null,
       supplier_confirmation_acknowledged: clean(body.supplier_confirmation_acknowledged) || null,
       payment_authorization_acknowledged: clean(body.payment_authorization_acknowledged) || null,
+      expedited_fee_acknowledged: clean(body.expedited_fee_acknowledged) || null,
+      payment_method_summary: savedMethod ? {
+        brand: savedMethod.brand || null,
+        last4: savedMethod.last4 || null,
+        exp_month: savedMethod.exp_month || null,
+        exp_year: savedMethod.exp_year || null,
+      } : null,
       services_needed: body.services_needed,
       service_details: serviceDetails,
     };
 
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false },
-    });
-
     const groupSizeMatch = clean(body.group_size).match(/\d+/);
     const travelerCount = groupSizeMatch ? Number(groupSizeMatch[0]) : null;
 
-    const { error } = await supabase.from('travel_requests').insert({
+    const { data: inserted, error } = await supabase.from('travel_requests').insert({
       tally_event_id: submissionId,
       tally_submission_id: submissionId,
       tally_form_id: 'website-service-form',
+      user_id: authenticatedUser?.id || null,
       requester_email: email,
       requester_phone: clean(body.phone) || null,
       primary_first_name: first,
@@ -147,16 +204,38 @@ export default async function handler(req, res) {
       request_types: requestTypes,
       destination: clean(body.destination) || null,
       traveler_count: travelerCount,
+      urgency: clean(body.urgency) || null,
       is_group_request: travelerCount ? travelerCount > 1 : false,
-      service_fee_status: 'not_answered',
+      service_fee_status: truthy(body.expedited_fee_acknowledged) ? 'accepted' : 'not_answered',
       status: 'received',
       answers,
       submitted_at: new Date().toISOString(),
-    });
+    }).select('request_id').single();
 
-    if (error) {
+    if (error || !inserted?.request_id) {
       console.error('Service request insert failed', error);
-      return res.status(500).send('Unable to save request');
+      return res.status(500).json({ error: 'Unable to save request.' });
+    }
+
+    if (bookingFlow) {
+      const sourceIp = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim().slice(0,120) || null;
+      const { error: acceptanceError } = await supabase.rpc('record_travel_request_authorization', {
+        p_request_id: inserted.request_id,
+        p_user_id: authenticatedUser.id,
+        p_method_id: savedMethod.method_id,
+        p_signer_name: clean(body.authorization_signer_name),
+        p_supplier_confirmation_authorized: true,
+        p_payment_after_confirmation_authorized: true,
+        p_expedited_fee_acknowledged: truthy(body.expedited_fee_acknowledged),
+        p_terms_version: '2026-09-travel-request-v1',
+        p_source_ip: sourceIp,
+        p_user_agent: String(req.headers['user-agent'] || '').slice(0,500) || null,
+      });
+      if (acceptanceError) {
+        console.error('Travel request authorization failed', acceptanceError);
+        await supabase.from('travel_requests').delete().eq('request_id', inserted.request_id);
+        return res.status(500).json({ error: 'Your authorization could not be recorded, so the request was not finalized.' });
+      }
     }
 
     try {
@@ -177,10 +256,19 @@ export default async function handler(req, res) {
       console.error('Confirmation email failed', emailError);
     }
 
+    if (clean(body.response_mode).toLowerCase() === 'json' ||
+        String(req.headers.accept || '').includes('application/json')) {
+      return res.status(200).json({
+        ok: true,
+        request_id: inserted.request_id,
+        redirect: '/request-received',
+      });
+    }
+
     res.writeHead(303, { Location: '/request-received' });
     return res.end();
   } catch (error) {
     console.error('Service request handler failed', error);
-    return res.status(500).send('Unable to submit request');
+    return res.status(500).json({ error: 'Unable to submit request.' });
   }
 }
