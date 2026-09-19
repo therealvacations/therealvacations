@@ -1,111 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom Trip Request Form | The Real Vacations</title>
-    <link rel="icon" type="image/jpeg" href="favicon.jpeg">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; background: #f8f9fa; }
-
-        /* Nav */
-        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; position: sticky; top: 0; z-index: 100; }
-        nav a img { height: 52px; }
-        .nav-links { display: flex; gap: 24px; flex-wrap: wrap; }
-        .nav-links a { color: #fff; font-size: 14px; font-weight: 500; transition: color 0.2s; text-decoration: none; }
-        .nav-links a:hover { color: #c084fc; }
-
-        .content { max-width: 900px; margin: 2rem auto; padding: 0 5%; }
-
-        .intro { background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 2rem; text-align: center; }
-        .intro h1 { color: #1a1a2e; font-size: 2rem; margin-bottom: 1rem; }
-        .intro p { color: #666; font-size: 1.1rem; line-height: 1.8; }
-
-        .form-container { background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem; }
-        .form-container iframe { width: 100%; height: 1100px; border: none; margin: 0 auto; display: block; }
-
-        /* ✅ FIX: Replaced dead deposit/login buttons with warm CTA to email support */
-        .help-section { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 3rem 2rem; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); text-align: center; margin-bottom: 2rem; }
-        .help-section h2 { font-size: 2rem; margin-bottom: 1rem; }
-        .help-section p { font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.95; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.7; }
-        .help-btn { display: inline-block; background: white; color: #667eea; padding: 18px 40px; text-decoration: none; border-radius: 50px; font-weight: 700; font-size: 1.1rem; transition: transform 0.3s, box-shadow 0.3s; }
-        .help-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .help-note { margin-top: 1.5rem; font-size: 0.95rem; opacity: 0.9; }
-        .help-note a { color: white; text-decoration: underline; }
-
-        /* Footer */
-        footer { background: #0f0620; color: #ccc; padding: 50px 40px 28px; margin-top: 2rem; }
-        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 36px; max-width: 1100px; margin: 0 auto 36px; }
-        .footer-col h4 { color: #fff; font-size: 14px; font-weight: 700; margin-bottom: 16px; text-transform: uppercase; letter-spacing: 1px; }
-        .footer-col a, .footer-col p { color: #aaa; font-size: 13px; line-height: 2; display: block; transition: color 0.2s; text-decoration: none; }
-        .footer-col a:hover { color: #c084fc; }
-        .footer-bottom { border-top: 1px solid #2d1b4e; padding-top: 20px; text-align: center; font-size: 12px; color: #666; max-width: 1100px; margin: 0 auto; }
-
-        @media (max-width: 768px) {
-            .nav-links { display: none; }
-            .intro h1 { font-size: 1.5rem; }
-            .help-section h2 { font-size: 1.5rem; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Plan a Custom Trip | The Real Vacations</title>
+<meta name="description" content="Tell The Real Vacations what you want to experience and request a personalized custom trip quote.">
+<link rel="icon" href="/favicon.ico">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f8f6fb;color:#2c2136}
+a{text-decoration:none;color:inherit}nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
+.hero{background:linear-gradient(135deg,#1a0533,#5b21b6);color:#fff;text-align:center;padding:62px 22px}.hero h1{font-size:clamp(32px,6vw,52px);margin:0 0 12px}.hero p{max-width:760px;margin:0 auto;line-height:1.65;color:#eadff6}
+.wrap{max-width:980px;margin:0 auto;padding:42px 20px 64px}.card{background:#fff;border:1px solid #e7dff0;border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(49,31,68,.07)}
+.form-container iframe{width:100%;min-height:1150px;border:0}.help{margin-top:20px;background:#f1e9fb;border-radius:16px;padding:22px;text-align:center}.help a{color:#6d28d9;font-weight:800}
+footer{background:#0f0620;color:#ccc;padding:38px 22px;text-align:center}footer a{color:#c4b5fd;margin:0 7px}
+@media(max-width:760px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}.form-container iframe{min-height:1250px}}
+</style>
 </head>
 <body>
-    <!-- Nav -->
-    <nav>
-        <a href="/"><img src="logo.jpeg" alt="The Real Vacations" style="height:52px;"></a>
-        <div class="nav-links">
-            <a href="/">Home</a>
-            <a href="/trips">Trips</a>
-            <a href="https://flights.therealvacations.com">Flights</a>
-            <a href="/real-stories">Real Stories</a>
-            <a href="/about">About</a>
-            <a href="/how-it-works">How It Works</a>
-            <a href="/resources">Resources</a>
-            <a href="/blog">Blog</a>
-            <a href="/contact">Contact</a>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <div class="content">
-        <div class="intro">
-            <h1>Plan Your Custom Trip</h1>
-            <p>Complete the form below to tell us about your dream vacation. A travel specialist will review your request and contact you within 24-48 hours with a personalized quote.</p>
-        </div>
-
-        <!-- Canonical Tally intake form; submissions feed the portal workflow. -->
-        <div class="form-container">
-            <iframe data-tally-src="https://tally.so/embed/KYKG48?alignLeft=1&amp;hideTitle=1&amp;transparentBackground=1&amp;dynamicHeight=1" title="The Real Vacations travel request form">Loading…</iframe>
-        </div>
-
-        <!-- ✅ FIX: Replaced dead deposit/login buttons with warm email CTA -->
-        <div class="help-section">
-            <h2>Have Questions or Need Help?</h2>
-            <p>Whether you're dreaming up the perfect getaway, need help choosing a package, or just want to talk through your ideas — we're here for you. Your perfect trip is one conversation away.</p>
-            <a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>
-        </div>
+<nav>
+  <a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"></a>
+  <div class="nav-links">
+    <a href="/">Home</a><a href="/trips">Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/custom-trip-form">Plan a Custom Trip</a>
+  </div>
+  <div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div>
+</nav>
+<header class="hero">
+  <h1>Plan a Custom Trip</h1>
+  <p>Tell us where you want to go, who is traveling, what matters most, and the experience you want to create. We’ll review your request and build a personalized quote around it.</p>
+</header>
+<main class="wrap">
+  <section class="card">
+    <div class="form-container">
+      <iframe data-tally-src="https://tally.so/embed/KYKG48?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" title="The Real Vacations custom trip request form">Loading…</iframe>
     </div>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-grid">
-            <div class="footer-col">
-                <img src="logo.jpeg" alt="The Real Vacations" style="height:48px; margin-bottom:14px;">
-                <p>Creating unforgettable group travel experiences for over 20 years.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Quick Links</h4>
-                <a href="/trips">Upcoming Trips</a><a href="https://flights.therealvacations.com">Flights</a>
-                <a href="/about">About Us</a>
-                <a href="/how-it-works">How It Works</a>
-                <a href="/real-stories">Real Stories</a>
-                <a href="/blog">Blog</a>
-            </div>
-            <div class="footer-col">
-                <h4>Contact Us</h4>
-                <a href="/cdn-cgi/l/email-protection#dcbfb3b2a8bdbfa89ca8b4b9aeb9bdb0aabdbfbda8b5b3b2aff2bfb3b1"><span class=
-  <div style="text-align:center; margin-bottom:20px;"><a href="https://www.instagram.com/therealvacations/" target="_blank" style="color:#c084fc; font-size:14px; margin:0 12px; text-decoration:none;">�
+  </section>
+  <section class="help">
+    <strong>Need help before submitting?</strong>
+    <p>Email us at <a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>.</p>
+  </section>
+</main>
+<footer>
+  <p>© 2026 The Real Vacations</p>
+  <p><a href="/real-stories">Real Stories</a><a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></p>
+</footer>
 <script src="https://tally.so/widgets/embed.js" async></script>
-<script type="text/javascript" src="https://cdn.ywxi.net/js/1.js" async></script>
 </body>
 </html>
