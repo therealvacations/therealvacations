@@ -44,6 +44,43 @@ export default async function handler(req, res) {
     }
 
     const submissionId = `website-${Date.now()}-${Math.random().toString(36).slice(2,10)}`;
+    const serviceDetails = {
+      flight: {
+        origin: clean(body.flight_origin) || null,
+        destination: clean(body.flight_destination) || null,
+        depart_date: clean(body.flight_depart_date) || null,
+        return_date: clean(body.flight_return_date) || null,
+        preferred_times: clean(body.flight_times) || null,
+        airline_preferences: clean(body.flight_airline) || null,
+        cabin: clean(body.flight_cabin) || null,
+      },
+      hotel: {
+        destination: clean(body.hotel_destination) || null,
+        check_in: clean(body.hotel_check_in) || null,
+        check_out: clean(body.hotel_check_out) || null,
+        rooms: clean(body.hotel_rooms) || null,
+        preferences: clean(body.hotel_preferences) || null,
+      },
+      rental_car: {
+        pickup_location: clean(body.car_pickup_location) || null,
+        pickup_date: clean(body.car_pickup_date) || null,
+        return_date: clean(body.car_return_date) || null,
+        vehicle_type: clean(body.car_type) || null,
+      },
+      cruise: {
+        destination: clean(body.cruise_destination) || null,
+        dates: clean(body.cruise_dates) || null,
+        departure_port: clean(body.cruise_port) || null,
+        preferences: clean(body.cruise_preferences) || null,
+      },
+      tickets: {
+        attraction: clean(body.ticket_attraction) || null,
+        dates: clean(body.ticket_dates) || null,
+        quantity: clean(body.ticket_quantity) || null,
+        details: clean(body.ticket_details) || null,
+      },
+    };
+
     const answers = {
       source: 'therealvacations.com',
       service_type: serviceType,
@@ -58,6 +95,7 @@ export default async function handler(req, res) {
       preferences: clean(body.preferences) || null,
       group_details: clean(body.group_details) || null,
       services_needed: body.services_needed,
+      service_details: serviceDetails,
     };
 
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
