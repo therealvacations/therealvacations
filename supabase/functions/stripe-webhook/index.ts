@@ -65,6 +65,35 @@ Deno.serve(async (request) => {
   try {
     if (event.type === 'checkout.session.completed' || event.type === 'checkout.session.async_payment_succeeded') {
       const session = event.data.object as Stripe.Checkout.Session
+
+      if (session.metadata?.checkout_type === 'vip_membership') {
+        const userId = session.metadata?.user_id
+        const billingPlan = session.metadata?.billing_plan
+        const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id ?? null
+        if (!userId || !subscriptionId || !['monthly','annual'].includes(String(billingPlan ?? ''))) {
+          return jsonResponse({ error: 'VIP checkout metadata is incomplete' }, 422)
+        }
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        const customerId = typeof session.customer === 'string'
+          ? session.customer
+          : typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+        const periodEnd = (subscription as any).current_period_end
+          ? new Date(Number((subscription as any).current_period_end) * 1000).toISOString()
+          : null
+        const { error: vipError } = await admin.from('vip_memberships').upsert({
+          user_id: userId,
+          status: subscription.status === 'trialing' ? 'trialing' : 'active',
+          billing_plan: String(billingPlan),
+          paid_through: periodEnd,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+          welcome_gift_status: 'pending',
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+        if (vipError) throw vipError
+        return jsonResponse({ received: true, vip_membership: true })
+      }
+
       const paymentId = session.metadata?.payment_id
       if (!paymentId) return jsonResponse({ received: true, legacy: true })
       if (session.payment_status !== 'paid') return jsonResponse({ received: true })
@@ -139,6 +168,26 @@ Deno.serve(async (request) => {
       })
       if (error) throw error
       if (event.type === 'checkout.session.async_payment_failed') await tryPaymentEmail(paymentId)
+    } else if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.deleted') {
+      const subscription = event.data.object as Stripe.Subscription
+      const userId = subscription.metadata?.user_id
+      if (userId) {
+        const status = event.type === 'customer.subscription.deleted'
+          ? 'cancelled'
+          : ['active','trialing'].includes(subscription.status) ? subscription.status : 'past_due'
+        const periodEnd = (subscription as any).current_period_end
+          ? new Date(Number((subscription as any).current_period_end) * 1000).toISOString()
+          : null
+        const { error: membershipError } = await admin.from('vip_memberships').update({
+          status,
+          paid_through: periodEnd,
+          stripe_customer_id: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
+          stripe_subscription_id: subscription.id,
+          billing_plan: subscription.metadata?.billing_plan || null,
+          updated_at: new Date().toISOString(),
+        }).eq('user_id', userId)
+        if (membershipError) throw membershipError
+      }
     } else if (event.type === 'charge.refunded') {
       const charge = event.data.object as Stripe.Charge
       let paymentId = charge.metadata?.payment_id
