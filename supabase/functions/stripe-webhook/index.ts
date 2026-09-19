@@ -122,6 +122,33 @@ Deno.serve(async (request) => {
         return jsonResponse({ received: true, vip_membership: true })
       }
 
+      if (session.metadata?.checkout_type === 'custom_quote') {
+        const paymentId = session.metadata?.payment_id
+        const customBookingId = session.metadata?.custom_booking_id
+        if (!paymentId || !customBookingId) {
+          return jsonResponse({ error: 'Custom quote checkout metadata is incomplete' }, 422)
+        }
+        if (session.payment_status !== 'paid') return jsonResponse({ received: true })
+
+        const paymentIntent = typeof session.payment_intent === 'string'
+          ? await stripe.paymentIntents.retrieve(session.payment_intent)
+          : session.payment_intent
+        const customerId = typeof session.customer === 'string'
+          ? session.customer
+          : typeof paymentIntent?.customer === 'string' ? paymentIntent.customer : null
+
+        const { error: customError } = await admin.rpc('complete_custom_booking_payment', {
+          p_payment_id: paymentId,
+          p_checkout_session_id: session.id,
+          p_payment_intent_id: typeof session.payment_intent === 'string' ? session.payment_intent : null,
+          p_amount_total: session.amount_total ?? 0,
+          p_customer_id: customerId,
+        })
+        if (customError) throw customError
+
+        return jsonResponse({ received: true, custom_quote: true })
+      }
+
       const paymentId = session.metadata?.payment_id
       if (!paymentId) return jsonResponse({ received: true, legacy: true })
       if (session.payment_status !== 'paid') return jsonResponse({ received: true })
@@ -184,6 +211,17 @@ Deno.serve(async (request) => {
     } else if (event.type === 'checkout.session.expired' || event.type === 'checkout.session.async_payment_failed') {
       const session = event.data.object as Stripe.Checkout.Session
       const paymentId = session.metadata?.payment_id
+
+      if (session.metadata?.checkout_type === 'custom_quote') {
+        if (!paymentId) return jsonResponse({ received: true, custom_quote: true })
+        const { error: customFailure } = await admin.from('custom_booking_payments').update({
+          status: event.type === 'checkout.session.expired' ? 'expired' : 'failed',
+          updated_at: new Date().toISOString(),
+        }).eq('payment_id', paymentId).neq('status', 'succeeded')
+        if (customFailure) throw customFailure
+        return jsonResponse({ received: true, custom_quote: true })
+      }
+
       if (!paymentId) return jsonResponse({ received: true, legacy: true })
       const { error } = await admin.rpc('sync_stripe_booking_payment_status', {
         p_event_id: event.id,
