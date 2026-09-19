@@ -7,7 +7,7 @@ const show=(msg,error=false)=>{const box=document.getElementById('adminMessage')
 async function loadVipMembers(){
   const list=document.getElementById('vipMemberList'); if(!list) return;
   const {data,error}=await supabase.from('vip_memberships')
-    .select('user_id,status,billing_plan,trial_started_at,trial_ends_at,paid_through,welcome_gift_status,welcome_gift_size,welcome_gift_shipping,welcome_gift_note,welcome_gift_sent_at,created_at')
+    .select('user_id,status,billing_plan,trial_started_at,trial_ends_at,paid_through,stripe_subscription_id,welcome_gift_status,welcome_gift_size,welcome_gift_shipping,welcome_gift_note,welcome_gift_sent_at,created_at')
     .order('created_at',{ascending:false});
   if(error){list.innerHTML='<p>VIP members could not be loaded.</p>';return;}
   if(!data?.length){list.innerHTML='<div class="empty-state">No VIP memberships yet.</div>';return;}
