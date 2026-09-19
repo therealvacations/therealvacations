@@ -123,6 +123,8 @@ export default async function handler(req, res) {
       traveler_details: clean(body.traveler_details) || null,
       company_name: clean(body.company_name) || null,
       artist_or_group: clean(body.artist_or_group) || null,
+      supplier_confirmation_acknowledged: clean(body.supplier_confirmation_acknowledged) || null,
+      payment_authorization_acknowledged: clean(body.payment_authorization_acknowledged) || null,
       services_needed: body.services_needed,
       service_details: serviceDetails,
     };
