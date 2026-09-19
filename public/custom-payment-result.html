@@ -1,18 +1,57 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Payment Result | The Real Vacations</title>
-<style>body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#30243e}.wrap{min-height:100vh;display:grid;place-items:center;padding:24px}.card{max-width:680px;background:#fff;border-radius:22px;padding:38px;text-align:center;box-shadow:0 14px 36px rgba(45,24,74,.1)}h1{color:#1a0533}.btn{display:inline-block;margin-top:18px;background:#7c3aed;color:#fff;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:800}.muted{color:#6f6577;line-height:1.6}</style></head>
-<body><main class="wrap"><section class="card"><h1 id="title">Confirming your payment…</h1><p class="muted" id="text">We’re verifying the payment securely with Stripe.</p><a class="btn" href="/my-trips">Open My Trips</a></section></main>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Your TRV Trip Is In Motion | The Real Vacations</title><link rel="icon" href="/favicon.ico"/>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#30243e}.wrap{max-width:960px;margin:36px auto;padding:0 18px 60px}
+.hero{background:linear-gradient(135deg,#1a0533,#6d28d9);color:#fff;border-radius:24px;padding:34px;text-align:center}.hero h1{font-size:40px;margin:0 0 10px}.hero p{color:#e9ddf7;line-height:1.6}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:20px}.card{background:#fff;border:1px solid #e7deef;border-radius:18px;padding:22px;box-shadow:0 10px 24px rgba(42,22,65,.06)}.card h2{color:#1a0533;margin:0 0 10px}.card p{color:#6f6578;line-height:1.55}
+.btn{display:inline-block;background:#7c3aed;color:#fff;text-decoration:none;padding:11px 18px;border-radius:999px;font-weight:800;margin-top:8px}.btn.secondary{background:#efe8f7;color:#1a0533}
+.socials{display:flex;gap:10px;flex-wrap:wrap}.socials a{padding:9px 14px;border-radius:999px;background:#f3edf9;color:#4c1d95;text-decoration:none;font-weight:800}
+input{width:100%;padding:11px;border:1px solid #cec4d7;border-radius:10px;font:inherit}button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:11px 18px;font-weight:800;cursor:pointer;margin-top:10px}.small{font-size:12px;color:#81758a}
+</style></head>
+<body><main class="wrap">
+<section class="hero"><div style="font-size:44px">💜</div><h1 id="title">Your trip is in motion.</h1><p id="text">We’re confirming your payment securely with Stripe and preparing your next steps.</p></section>
+<section class="grid">
+<article class="card"><h2>Your TRV trip</h2><p id="paymentSummary">Confirming payment…</p><a class="btn" href="/my-trips">Open My Trips</a></article>
+<article class="card" id="subscriberCard"><h2>Become a Real Vacationer</h2><p>Get new trips, flash deals, trivia, giveaways and destination inspiration first. This is the free TRV email list — separate from paid TRV VIP.</p><input id="subName" placeholder="Your name"><button id="subscribeBtn" type="button">Join the Free TRV List</button><p class="small" id="subMsg"></p></article>
+<article class="card"><h2>TRV VIP</h2><p id="vipText">Checking your membership status…</p><a class="btn secondary" id="vipBtn" href="/vip">Open TRV VIP</a></article>
+<article class="card"><h2>The trip starts before departure.</h2><p>Follow The Real Vacations for trip previews, destination inspiration, travel trivia, giveaways and popup deals.</p><div class="socials"><a href="https://www.instagram.com/therealvacations/" target="_blank" rel="noopener">Instagram</a><a href="https://www.facebook.com/therealvacations/" target="_blank" rel="noopener">Facebook</a><a href="https://www.youtube.com/@TheRealVacations" target="_blank" rel="noopener">YouTube</a></div></article>
+</section></main>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
 const sessionId=new URLSearchParams(location.search).get('session_id')||'';
 const {data:{user}}=await supabase.auth.getUser();
 if(!user) location.replace('/login?next='+encodeURIComponent(location.pathname+location.search));
+const title=document.getElementById('title'),text=document.getElementById('text'),summary=document.getElementById('paymentSummary'),vipText=document.getElementById('vipText'),vipBtn=document.getElementById('vipBtn');
 if(user){
  const {data:{session}}=await supabase.auth.getSession();
  const resp=await fetch('/api/confirm-custom-payment',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},body:JSON.stringify({session_id:sessionId})});
  const data=await resp.json().catch(()=>({}));
- const title=document.getElementById('title'),text=document.getElementById('text');
- if(resp.ok&&data.ok){title.textContent=data.booking?.balance_due===0?'Your trip is paid in full.':'Your payment was received.';text.textContent=data.booking?.balance_due===0?'Your TRV booking is confirmed and your balance is $0.':'Your approved trip is now secured. Your remaining balance is shown in My Trips.';}
- else{title.textContent='We could not confirm the payment yet.';text.textContent=data.error||'Open My Trips in a moment. If Stripe completed the charge and this message remains, contact The Real Vacations.';}
+ if(resp.ok&&data.ok){
+   const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+   const b=data.booking||{};
+   title.textContent=b.balance_due===0?'Your trip is paid in full.':'Your trip is officially in motion.';
+   text.textContent=b.balance_due===0?'Your TRV booking is paid and your balance is $0.':'Your payment was received and your approved trip is now secured.';
+   summary.innerHTML='<strong>Paid:</strong> '+money(b.amount_paid)+'<br><strong>Remaining balance:</strong> '+money(b.balance_due);
+ }else{
+   title.textContent='We could not confirm the payment yet.';
+   text.textContent=data.error||'Open My Trips in a moment. If Stripe completed the charge and this message remains, contact The Real Vacations.';
+   summary.textContent='Payment status is still being verified.';
+ }
+ const {data:membership}=await supabase.from('vip_memberships').select('status,trial_ends_at,paid_through').eq('user_id',user.id).maybeSingle();
+ const active=membership && ((membership.status==='trialing'&&membership.trial_ends_at&&new Date(membership.trial_ends_at)>new Date())||(membership.status==='active'&&(!membership.paid_through||new Date(membership.paid_through)>new Date())));
+ if(active){
+   vipText.textContent=membership.status==='trialing'?'Your TRV VIP trial is active. Open your private member offers.':'Your TRV VIP membership is active. Open your private member offers.';
+   vipBtn.textContent='Open My VIP Offers';
+ }else{
+   vipText.textContent='TRV VIP is the paid membership layer for private offers and member-only perks. Your free email subscription is separate.';
+   vipBtn.textContent='Learn About TRV VIP';
+ }
+ document.getElementById('subscribeBtn').addEventListener('click',async()=>{
+   const btn=document.getElementById('subscribeBtn'),msg=document.getElementById('subMsg');btn.disabled=true;msg.textContent='Joining…';
+   const {data,error}=await supabase.functions.invoke('vip-signup',{body:{name:document.getElementById('subName').value.trim()||user.user_metadata?.first_name||'',email:user.email,source:'post_booking_thank_you',opted_in:true}});
+   if(error||!data?.ok){msg.textContent=data?.error||'We could not add you right now.';btn.disabled=false;return}
+   msg.textContent='You’re on the free TRV email list ✓';btn.textContent='Joined ✓';
+ });
 }
 </script></body></html>
