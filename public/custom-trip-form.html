@@ -1,49 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Plan a Custom Trip | The Real Vacations</title>
-<meta name="description" content="Tell The Real Vacations what you want to experience and request a personalized custom trip quote.">
-<link rel="icon" href="/favicon.ico">
+<meta name="description" content="Request a personalized vacation or group trip from The Real Vacations."/>
+<link rel="icon" href="/favicon.ico"/>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f8f6fb;color:#2c2136}
-a{text-decoration:none;color:inherit}nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
-.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
-.hero{background:linear-gradient(135deg,#1a0533,#5b21b6);color:#fff;text-align:center;padding:62px 22px}.hero h1{font-size:clamp(32px,6vw,52px);margin:0 0 12px}.hero p{max-width:760px;margin:0 auto;line-height:1.65;color:#eadff6}
-.wrap{max-width:980px;margin:0 auto;padding:42px 20px 64px}.card{background:#fff;border:1px solid #e7dff0;border-radius:20px;padding:20px;box-shadow:0 10px 28px rgba(49,31,68,.07)}
-.form-container iframe{width:100%;min-height:1150px;border:0}.help{margin-top:20px;background:#f1e9fb;border-radius:16px;padding:22px;text-align:center}.help a{color:#6d28d9;font-weight:800}
-footer{background:#0f0620;color:#ccc;padding:38px 22px;text-align:center}footer a{color:#c4b5fd;margin:0 7px}
-@media(max-width:760px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}.form-container iframe{min-height:1250px}}
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#faf7fd;color:#2d2138}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
+.hero{background:linear-gradient(135deg,#1a0533,#5b21b6);color:#fff;text-align:center;padding:58px 22px}.hero h1{font-size:clamp(34px,6vw,52px);margin:0 0 12px}.hero p{max-width:760px;margin:auto;line-height:1.65;color:#eadff6}
+.wrap{max-width:920px;margin:auto;padding:42px 22px 70px}.card{background:#fff;border:1px solid #e7deef;border-radius:20px;padding:28px;box-shadow:0 10px 26px rgba(44,25,63,.06);margin-bottom:20px}.card h2{color:#1a0533;margin:0 0 16px}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #cec3d8;border-radius:9px;font:inherit}.field textarea{min-height:96px}.lodging-block{display:none;background:#f8f4fc;border:1px solid #e5d9ef;border-radius:14px;padding:18px;margin-top:12px}.lodging-block.show{display:block}.submit{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:15px;font-weight:800;font-size:16px;cursor:pointer}.hint{font-size:12px;color:#7a6d84;line-height:1.45}footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{color:#c4b5fd;margin:0 6px}@media(max-width:700px){.row{grid-template-columns:1fr}.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}}
 </style>
 </head>
 <body>
-<nav>
-  <a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"></a>
-  <div class="nav-links">
-    <a href="/">Home</a><a href="/trips">Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a>
-  </div>
-  <div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div>
-</nav>
-<header class="hero">
-  <h1>Plan a Custom Trip</h1>
-  <p>Tell us where you want to go, who is traveling, what matters most, and the experience you want to create. We’ll review your request and build a personalized quote around it.</p>
-</header>
+<nav><a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"/></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a></div><div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div></nav>
+
+<header class="hero"><h1>Plan a Custom Trip</h1><p>Tell us what you want the trip to feel like and what you need included. We’ll build the quote around your group instead of making you fit a generic package.</p></header>
+
 <main class="wrap">
-  <section class="card">
-    <div class="form-container">
-      <iframe data-tally-src="https://tally.so/embed/KYKG48?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" title="The Real Vacations custom trip request form">Loading…</iframe>
-    </div>
-  </section>
-  <section class="help">
-    <strong>Need help before submitting?</strong>
-    <p>Email us at <a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>.</p>
-  </section>
+<form action="/api/submit-service-request" method="POST" id="customTripForm">
+<input type="hidden" name="service_type" value="custom-trip">
+<input type="hidden" name="trip_type" value="custom-trip">
+
+<section class="card"><h2>Traveler & Trip Basics</h2>
+<div class="row"><div class="field"><label>Full Name *</label><input name="full_name" required></div><div class="field"><label>Email *</label><input type="email" name="email" required></div></div>
+<div class="row"><div class="field"><label>Phone</label><input type="tel" name="phone"></div><div class="field"><label>Number of Travelers *</label><input name="group_size" required placeholder="e.g. 10 travelers / 5 couples"></div></div>
+<div class="field"><label>Destination(s) *</label><input name="destination" required placeholder="e.g. Turks & Caicos"></div>
+<div class="field"><label>Travel Dates *</label><input name="preferred_dates" required placeholder="Exact dates or flexible window"></div>
+<div class="field"><label>Approximate Budget</label><input name="budget_range" placeholder="Total budget or per-person range"></div>
+</section>
+
+<section class="card"><h2>Lodging</h2>
+<div class="field"><label>What type of lodging do you want? *</label>
+<select name="lodging_type" id="lodgingType" required>
+<option value="">Choose one...</option>
+<option value="hotel-resort">Hotel or Resort</option>
+<option value="villa-house-condo">Villa, House, or Condo</option>
+<option value="either">Open to Hotel/Resort or Private Home</option>
+<option value="none">No lodging needed</option>
+</select>
+<p class="hint">We’ll only ask lodging questions that match what you choose.</p>
+</div>
+
+<div id="hotelBlock" class="lodging-block">
+<div class="field"><label>How many hotel rooms or suites do you need? *</label><input type="number" min="1" name="hotel_rooms_or_suites" id="hotelRooms"></div>
+</div>
+
+<div id="privateBlock" class="lodging-block">
+<div class="row"><div class="field"><label>How many bedrooms do you need? *</label><input type="number" min="1" name="lodging_bedrooms" id="bedrooms"></div><div class="field"><label>How many bathrooms do you prefer?</label><input type="number" min="1" step="0.5" name="lodging_bathrooms" id="bathrooms"></div></div>
+</div>
+
+<div id="eitherBlock" class="lodging-block">
+<p class="hint" style="margin-top:0">If you’re open to either, tell us the setup you need and we’ll compare the best hotel/resort and private-home options.</p>
+<div class="row"><div class="field"><label>Hotel rooms/suites needed</label><input type="number" min="1" name="hotel_rooms_or_suites"></div><div class="field"><label>Bedrooms if private home</label><input type="number" min="1" name="lodging_bedrooms"></div></div>
+<div class="field"><label>Bathrooms if private home</label><input type="number" min="1" step="0.5" name="lodging_bathrooms"></div>
+</div>
+
+<div class="field"><label>Lodging must-haves</label><textarea name="lodging_preferences" placeholder="Beachfront, private pool, all-inclusive, adjoining rooms, kitchen, daily chef, accessibility needs, etc."></textarea></div>
+</section>
+
+<section class="card"><h2>What should we include?</h2>
+<div class="field"><label>Services / experiences you want</label><textarea name="preferences" placeholder="Flights, transfers, rental cars, theme-park tickets, excursions, dining, private chef, celebration setup, tours, etc."></textarea></div>
+<div class="field"><label>Anything else we should know?</label><textarea name="group_details" placeholder="Children's ages, celebrations, accessibility, rooming setup, military tickets already owned, must-have activities, etc."></textarea></div>
+<button class="submit" type="submit">Send My Custom Trip Request →</button>
+</section>
+</form>
 </main>
-<footer>
-  <p>© 2026 The Real Vacations</p>
-  <p><a href="/real-stories">Real Stories</a><a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></p>
-</footer>
-<script src="https://tally.so/widgets/embed.js" async></script>
-</body>
-</html>
+
+<footer><p>© 2026 The Real Vacations</p><a href="/request-travel">Request Travel</a><a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></footer>
+
+<script>
+const type=document.getElementById('lodgingType');
+const hotel=document.getElementById('hotelBlock'), priv=document.getElementById('privateBlock'), either=document.getElementById('eitherBlock');
+const hotelRooms=document.getElementById('hotelRooms'), bedrooms=document.getElementById('bedrooms');
+function syncLodging(){
+  [hotel,priv,either].forEach(x=>x.classList.remove('show'));
+  hotelRooms.required=false; bedrooms.required=false;
+  if(type.value==='hotel-resort'){hotel.classList.add('show');hotelRooms.required=true;}
+  if(type.value==='villa-house-condo'){priv.classList.add('show');bedrooms.required=true;}
+  if(type.value==='either') either.classList.add('show');
+}
+type.addEventListener('change',syncLodging);syncLodging();
+</script>
+</body></html>
