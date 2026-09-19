@@ -19,6 +19,21 @@
         <div class="field"><label for="quoteValidUntil">Valid until</label><input id="quoteValidUntil" type="date"/></div>
         <div class="field"><label for="quoteOptions">Quote options</label><textarea id="quoteOptions" style="min-height:210px" placeholder="Oceanfront Escape | 12500 | 2500 | Private villa, transfers, welcome experience"></textarea><p class="hint">One per line: Option name | total dollars | deposit dollars | description</p></div>
         <div class="form-actions"><button class="primary-button" id="saveQuoteButton" type="button">Save Draft</button><button class="secondary-button" id="publishQuoteButton" type="button">Publish & Email Client</button><button class="secondary-button" id="clearQuoteButton" type="button">Clear</button></div>
+
+        <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
+        <h2 style="font-size:18px">Supplier Confirmation & Payment</h2>
+        <p class="hint">Use this after you have confirmed the supplier's live availability and final price. The system verifies that this request has a saved payment method and signed authorization before creating the secure payment step.</p>
+        <div class="field"><label for="fulfillmentSupplier">Supplier / confirmed service</label><input id="fulfillmentSupplier" placeholder="Delta + National Car Rental, Universal tickets, Villa supplier..."/></div>
+        <div class="field-grid">
+          <div class="field"><label for="fulfillmentSubtotal">Supplier-confirmed amount ($)</label><input id="fulfillmentSubtotal" type="number" min="0" step="0.01" placeholder="0.00"/></div>
+          <div class="field"><label for="fulfillmentFee">TRV service fee ($)</label><input id="fulfillmentFee" type="number" min="0" step="0.01" value="0.00"/></div>
+        </div>
+        <div class="field"><label for="fulfillmentConfirmation">Confirmation numbers / client travel credentials</label><textarea id="fulfillmentConfirmation" placeholder="Airline confirmation, hotel confirmation, rental-car confirmation, ticket delivery notes..."></textarea></div>
+        <div id="fulfillmentStatus" class="hint">Select a request to view payment readiness.</div>
+        <div class="form-actions">
+          <button class="primary-button" id="createConfirmedPaymentButton" type="button">Create Confirmed Payment Link</button>
+          <a class="secondary-button" id="openConfirmedPaymentLink" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">Open Payment Link ↗</a>
+        </div>
       </div>
       <div class="records"><h2>Travel Requests</h2><div id="requestQuoteList"><p>Loading requests…</p></div></div>
     </section>
