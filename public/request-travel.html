@@ -6,6 +6,7 @@
 <title>Request Travel | The Real Vacations</title>
 <meta name="description" content="Request exactly the travel help you need — flights, hotels, rental cars, cruises, tickets, or complete custom trip planning."/>
 <link rel="icon" href="/favicon.ico"/>
+<script src="https://js.stripe.com/v3/"></script>
 <style>
 *{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#faf7fd;color:#2d2138}a{text-decoration:none;color:inherit}
 nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
@@ -15,7 +16,7 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 .service-choice{display:flex;gap:10px;align-items:flex-start;border:2px solid #e8e0ef;border-radius:14px;padding:15px;cursor:pointer;background:#fff}.service-choice:has(input:checked){border-color:#7c3aed;background:#f7f1ff}.service-choice input{margin-top:3px}
 .section{display:none}.section.show{display:block}.section h3{margin:0 0 16px;color:#1a0533}.lodging-block{display:none;background:#f8f4fc;border:1px solid #e5d9ef;border-radius:12px;padding:16px;margin-bottom:14px}.lodging-block.show{display:block}.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{margin-bottom:15px}.field label{display:block;font-size:13px;font-weight:800;margin-bottom:6px}.field input,.field select,.field textarea{width:100%;padding:12px;border:1px solid #cec3d8;border-radius:9px;font:inherit;background:#fff}.field textarea{min-height:96px;resize:vertical}.hint{font-size:12px;color:#807388;margin-top:5px}
 .urgent{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:13px;margin-top:16px}
-.submit{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:15px;font-weight:800;font-size:16px;cursor:pointer}.submit:hover{background:#6d28d9}.error{display:none;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:12px;border-radius:10px;margin:0 0 16px}.error.show{display:block}
+.submit{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:15px;font-weight:800;font-size:16px;cursor:pointer}.submit:hover{background:#6d28d9}.submit:disabled{opacity:.55;cursor:not-allowed}.error{display:none;background:#fef2f2;color:#991b1b;border:1px solid #fecaca;padding:12px;border-radius:10px;margin:0 0 16px}.error.show{display:block}.account-gate{max-width:760px;margin:36px auto;background:#fff;border:1px solid #e7deef;border-radius:20px;padding:28px;text-align:center}.account-gate a{display:inline-block;margin:8px 5px;padding:11px 18px;border-radius:999px;font-weight:800}.account-gate .primary{background:#7c3aed;color:#fff}.account-gate .secondary{background:#efe8f7;color:#1a0533}.payment-box{background:#f8f4fc;border:1px solid #e4d7ef;border-radius:14px;padding:18px;margin:18px 0}.payment-status{font-weight:800;color:#1a0533;margin-bottom:10px}#card-element{background:#fff;border:1px solid #cec3d8;border-radius:9px;padding:14px;margin:10px 0}.small-btn{border:0;border-radius:999px;background:#1a0533;color:#fff;padding:10px 16px;font-weight:800;cursor:pointer}.fee-ack{display:none;background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:14px;margin:14px 0}.fee-ack.show{display:block}
 footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{color:#c4b5fd;margin:0 6px}
 @media(max-width:700px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}.row{grid-template-columns:1fr}}
 </style>
@@ -32,8 +33,15 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <p>Choose exactly what you need and send us the details. Your request will be secured with The Real Vacations and moved into supplier confirmation — without making you answer questions for services you did not select.</p>
 </header>
 
-<main class="wrap">
+<div id="accountGate" class="account-gate" style="display:none">
+<h2>Sign in before you secure travel</h2>
+<p class="muted">Booking requests are connected to your TRV account so your authorization, payment method, confirmations, and trip details stay together.</p>
+<a class="primary" href="/login?next=%2Frequest-travel">Sign In</a>
+<a class="secondary" href="/signup?next=%2Frequest-travel">Create Free Account</a>
+</div>
+<main class="wrap" id="requestWrap" style="display:none">
 <form id="travelRequestForm" action="/api/submit-service-request" method="POST">
+<input type="hidden" name="response_mode" value="json">
 <input type="hidden" name="service_type" value="travel-request">
 <input type="hidden" id="summaryDestination" name="destination">
 <input type="hidden" id="summaryDates" name="preferred_dates">
@@ -64,6 +72,13 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <div class="field"><label>Number of Travelers</label><input type="number" min="1" name="group_size" value="1"></div>
 </div>
 <div class="field"><label>Traveler details</label><input name="traveler_details" placeholder="Optional: adults/children and children's ages"></div>
+<div class="field"><label>How soon do you need this confirmed? *</label>
+<select name="urgency" id="urgency" required>
+<option value="">Choose one...</option>
+<option value="standard">Standard — more than 5 days away</option>
+<option value="within-5-days">Last-minute — travel within 3–5 days</option>
+<option value="within-72-hours">Urgent — travel within 72 hours</option>
+</select></div>
 </section>
 
 <section class="card section" id="flightSection">
@@ -158,13 +173,34 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 <section class="card">
 <h2>3. Secure My Request</h2>
 <p class="muted">Submitting sends your travel details directly to TRV for live supplier confirmation. Airfare, hotel/resort space, rental cars, cruises, tickets, and other travel components remain subject to supplier availability and final pricing until confirmed.</p>
+
+<div class="payment-box">
+<div id="paymentStatus" class="payment-status">Checking your saved payment method…</div>
+<div id="savedCardSummary" class="hint"></div>
+<div id="cardSetup" style="display:none">
+<div class="field"><label>Name on Card *</label><input type="text" id="cardholderName" autocomplete="cc-name"></div>
+<div id="card-element"></div>
+<button class="small-btn" type="button" id="saveCardButton">Save Secure Payment Method</button>
+<p class="hint">Card details are entered directly into Stripe. The Real Vacations does not store your full card number.</p>
+</div>
+<button class="small-btn" type="button" id="changeCardButton" style="display:none;margin-top:10px">Update Payment Method</button>
+</div>
+
+<div id="feeAck" class="fee-ack">
+<label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55">
+<input type="checkbox" name="expedited_fee_acknowledged" value="yes" id="expeditedFeeAck" style="margin-top:3px">
+<span>I understand this is a last-minute/expedited request and an additional TRV service fee may apply. The applicable fee will be disclosed as part of the confirmed booking total before the authorized charge is processed.</span>
+</label>
+</div>
+
+<div class="field"><label>Electronic Signature — Full Legal Name *</label><input type="text" name="authorization_signer_name" id="authorizationSigner" required placeholder="Type your full legal name"></div>
 <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:13px;line-height:1.55">
 <input type="checkbox" name="supplier_confirmation_acknowledged" value="yes" required style="margin-top:3px">
 <span>I understand my request is <strong>awaiting supplier confirmation</strong> until TRV confirms availability and final pricing with the applicable airline, hotel/resort, rental-car company, cruise line, attraction, or other supplier.</span>
 </label>
 <label style="display:flex;gap:10px;align-items:flex-start;margin:18px 0;font-size:13px;line-height:1.55">
 <input type="checkbox" name="payment_authorization_acknowledged" value="yes" required style="margin-top:3px">
-<span>I authorize TRV to contact me with the confirmed total and applicable service fee before payment is processed. If I have a secure payment method on file and separately authorize its use for this request, TRV may use that approved payment method after supplier confirmation.</span>
+<span>I authorize The Real Vacations to use my saved payment method for the supplier-confirmed booking total and any disclosed TRV service fee after availability is confirmed. I understand the charge is not processed merely because I submitted this request.</span>
 </label>
 <div id="formError" class="error"></div>
 <button class="submit" type="submit">Secure My Travel Request →</button>
@@ -175,8 +211,122 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 
 <footer><p>© 2026 The Real Vacations</p><a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></footer>
 
-<script>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+
+const stripe=Stripe('pk_live_51RO9vyAiAouGxd2D2KxJ1zbORbYd2Ig2EjdJ2TtV9XGKfS8TmyzuTNh0JE6qLPlUtXi0HA4TVARWQIE6VKkb0rMj00Ugps7rS0');
+const elements=stripe.elements();
+const cardElement=elements.create('card',{hidePostalCode:false});
+cardElement.mount('#card-element');
+
 const form=document.getElementById('travelRequestForm');
+const accountGate=document.getElementById('accountGate');
+const requestWrap=document.getElementById('requestWrap');
+const paymentStatus=document.getElementById('paymentStatus');
+const savedCardSummary=document.getElementById('savedCardSummary');
+const cardSetup=document.getElementById('cardSetup');
+const changeCardButton=document.getElementById('changeCardButton');
+const saveCardButton=document.getElementById('saveCardButton');
+const cardholderName=document.getElementById('cardholderName');
+const urgency=document.getElementById('urgency');
+const feeAck=document.getElementById('feeAck');
+const expeditedFeeAck=document.getElementById('expeditedFeeAck');
+const submitButton=form.querySelector('.submit');
+let activeSession=null;
+let savedMethod=null;
+
+function showError(message){
+  const error=document.getElementById('formError');
+  error.textContent=message;
+  error.classList.add('show');
+  error.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function clearError(){document.getElementById('formError').classList.remove('show');}
+
+async function loadSavedMethod(){
+  const {data,error}=await supabase.from('user_payment_methods')
+    .select('method_id,last4,brand,exp_month,exp_year,is_default')
+    .eq('is_default',true).limit(1).maybeSingle();
+  if(error){paymentStatus.textContent='Payment method could not be checked.';cardSetup.style.display='block';return;}
+  savedMethod=data||null;
+  if(savedMethod){
+    paymentStatus.textContent='Secure payment method on file ✓';
+    savedCardSummary.textContent=(savedMethod.brand?String(savedMethod.brand).toUpperCase()+' ':'Card ')+'•••• '+savedMethod.last4+
+      (savedMethod.exp_month&&savedMethod.exp_year?' · Expires '+String(savedMethod.exp_month).padStart(2,'0')+'/'+String(savedMethod.exp_year).slice(-2):'');
+    cardSetup.style.display='none';
+    changeCardButton.style.display='inline-block';
+  }else{
+    paymentStatus.textContent='Add a payment method to secure this booking request.';
+    savedCardSummary.textContent='';
+    cardSetup.style.display='block';
+    changeCardButton.style.display='none';
+  }
+}
+
+async function initializeAccount(){
+  const {data:{session}}=await supabase.auth.getSession();
+  activeSession=session;
+  if(!session){
+    accountGate.style.display='block';
+    requestWrap.style.display='none';
+    return;
+  }
+  accountGate.style.display='none';
+  requestWrap.style.display='block';
+  const emailInput=form.elements['email'];
+  if(emailInput){emailInput.value=session.user.email||'';emailInput.readOnly=true;}
+  const meta=session.user.user_metadata||{};
+  if(!form.elements['full_name'].value){
+    form.elements['full_name'].value=[meta.first_name,meta.last_name].filter(Boolean).join(' ')||meta.full_name||'';
+  }
+  if(!form.elements['phone'].value && meta.phone) form.elements['phone'].value=meta.phone;
+  await loadSavedMethod();
+}
+changeCardButton.addEventListener('click',()=>{
+  cardSetup.style.display='block';
+  changeCardButton.style.display='none';
+  cardholderName.focus();
+});
+saveCardButton.addEventListener('click',async()=>{
+  clearError();
+  if(!activeSession){showError('Sign in to your TRV account first.');return;}
+  const name=cardholderName.value.trim();
+  if(name.length<2){showError('Enter the name on the card.');return;}
+  saveCardButton.disabled=true;saveCardButton.textContent='Securing card…';
+  try{
+    const setupRes=await fetch('/api/create-payment-method-setup',{
+      method:'POST',
+      headers:{authorization:'Bearer '+activeSession.access_token,'content-type':'application/json'},
+      body:'{}'
+    });
+    const setup=await setupRes.json();
+    if(!setupRes.ok) throw new Error(setup.error||'Unable to start secure card setup.');
+    const result=await stripe.confirmCardSetup(setup.client_secret,{
+      payment_method:{card:cardElement,billing_details:{name,email:activeSession.user.email}}
+    });
+    if(result.error) throw new Error(result.error.message);
+    const saveRes=await fetch('/api/save-payment-method',{
+      method:'POST',
+      headers:{authorization:'Bearer '+activeSession.access_token,'content-type':'application/json'},
+      body:JSON.stringify({setup_intent_id:result.setupIntent.id,cardholder_name:name})
+    });
+    const saved=await saveRes.json();
+    if(!saveRes.ok) throw new Error(saved.error||'Unable to save payment method.');
+    cardholderName.value='';
+    cardElement.clear();
+    await loadSavedMethod();
+  }catch(error){showError(error.message||'Unable to save payment method.');}
+  finally{saveCardButton.disabled=false;saveCardButton.textContent='Save Secure Payment Method';}
+});
+
+function syncUrgency(){
+  const expedited=['within-5-days','within-72-hours'].includes(urgency.value);
+  feeAck.classList.toggle('show',expedited);
+  expeditedFeeAck.required=expedited;
+  if(!expedited) expeditedFeeAck.checked=false;
+}
+urgency.addEventListener('change',syncUrgency);syncUrgency();
+
 const choices=[...document.querySelectorAll('[data-section]')];
 function sync(){
   choices.forEach(box=>{
@@ -188,8 +338,7 @@ function sync(){
     section.querySelectorAll('[data-required]').forEach(input=>input.required=box.checked);
   });
 }
-choices.forEach(box=>box.addEventListener('change',sync));
-sync();
+choices.forEach(box=>box.addEventListener('change',sync));sync();
 
 const customLodgingType=document.getElementById('customLodgingType');
 const customHotelBlock=document.getElementById('customHotelBlock');
@@ -214,36 +363,57 @@ customLodgingType?.addEventListener('change',syncCustomLodging);
 choices.find(x=>x.dataset.section==='customSection')?.addEventListener('change',syncCustomLodging);
 syncCustomLodging();
 
-form.addEventListener('submit',e=>{
+form.addEventListener('submit',async e=>{
+  e.preventDefault();clearError();
   const selected=choices.filter(x=>x.checked);
-  const error=document.getElementById('formError');
-  if(!selected.length){
-    e.preventDefault(); error.textContent='Choose at least one travel service so we know what you need.'; error.classList.add('show'); return;
-  }
-  error.classList.remove('show');
+  if(!selected.length){showError('Choose at least one travel service so we know what you need.');return;}
+  if(!activeSession){showError('Sign in to your TRV account before securing this request.');return;}
+  if(!savedMethod){showError('Add a secure payment method before securing this booking request.');return;}
 
   const val=n=>form.elements[n]?.value?.trim()||'';
   const invalidDate=(startName,endName)=>val(startName)&&val(endName)&&val(endName)<val(startName);
   if(invalidDate('flight_depart_date','flight_return_date')||invalidDate('hotel_check_in','hotel_check_out')||invalidDate('car_pickup_date','car_return_date')){
-    e.preventDefault(); error.textContent='One of your return/check-out dates is before the start date. Please correct it.'; error.classList.add('show'); return;
+    showError('One of your return/check-out dates is before the start date. Please correct it.');return;
   }
-  if(customLodgingType?.value==='either'){
-    const hr=val('custom_hotel_rooms_either'), br=val('custom_bedrooms_either'), ba=val('custom_bathrooms_either');
-    if(hr) form.elements['custom_hotel_rooms'].value=hr;
-    if(br) form.elements['custom_bedrooms'].value=br;
-    if(ba) form.elements['custom_bathrooms'].value=ba;
-  }
+
   document.getElementById('summaryDestination').value=
     val('flight_destination')||val('hotel_destination')||val('cruise_destination')||val('custom_destination')||val('car_pickup_location')||val('ticket_attraction');
   const parts=[];
   if(val('flight_depart_date')) parts.push(val('flight_depart_date')+(val('flight_return_date')?' to '+val('flight_return_date'):''));
-  else if(val('hotel_check_in')) parts.push(val('hotel_check_in')+' to '+val('hotel_check_out'));
-  else if(val('cruise_dates')) parts.push(val('cruise_dates'));
-  else if(val('custom_dates')) parts.push(val('custom_dates'));
-  else if(val('ticket_dates')) parts.push(val('ticket_dates'));
+  if(val('hotel_check_in')) parts.push(val('hotel_check_in')+' to '+val('hotel_check_out'));
+  if(val('cruise_dates')) parts.push(val('cruise_dates'));
+  if(val('custom_dates')) parts.push(val('custom_dates'));
+  if(val('ticket_dates')) parts.push(val('ticket_dates'));
   document.getElementById('summaryDates').value=parts.join(', ');
   document.getElementById('summaryTripType').value=selected.map(x=>x.value).join(' + ');
+
+  const fd=new FormData(form);
+  const payload={};
+  for(const [key,value] of fd.entries()){
+    if(Object.prototype.hasOwnProperty.call(payload,key)){
+      payload[key]=Array.isArray(payload[key])?[...payload[key],value]:[payload[key],value];
+    }else payload[key]=value;
+  }
+  payload.services_needed=selected.map(x=>x.value);
+  payload.response_mode='json';
+
+  submitButton.disabled=true;submitButton.textContent='Securing Your Request…';
+  try{
+    const response=await fetch('/api/submit-service-request',{
+      method:'POST',
+      headers:{authorization:'Bearer '+activeSession.access_token,'content-type':'application/json','accept':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(result.error||'Unable to secure your travel request.');
+    location.assign(result.redirect||'/request-received');
+  }catch(error){
+    showError(error.message||'Unable to secure your travel request.');
+    submitButton.disabled=false;submitButton.textContent='Secure My Travel Request →';
+  }
 });
+
+initializeAccount();
 </script>
 </body>
 </html>
