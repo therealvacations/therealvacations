@@ -15,7 +15,7 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 <body>
 <nav><a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"/></a><div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="https://flights.therealvacations.com">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a></div><div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div></nav>
 
-<header class="hero"><h1>Plan a Custom Trip</h1><p>Tell us what you want the trip to feel like and what you need included. We’ll build the quote around your group instead of making you fit a generic package.</p></header>
+<header class="hero"><h1>Build Your Custom Vacation</h1><p>Tell us what you want the trip to feel like and what you need included. When you submit, your request is secured with TRV and moves into live supplier confirmation so we can turn the vision into real reservations.</p></header>
 
 <main class="wrap">
 <form action="/api/submit-service-request" method="POST" id="customTripForm">
@@ -62,7 +62,11 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 <section class="card"><h2>What should we include?</h2>
 <div class="field"><label>Services / experiences you want</label><textarea name="preferences" placeholder="Flights, transfers, rental cars, theme-park tickets, excursions, dining, private chef, celebration setup, tours, etc."></textarea></div>
 <div class="field"><label>Anything else we should know?</label><textarea name="group_details" placeholder="Children's ages, celebrations, accessibility, rooming setup, military tickets already owned, must-have activities, etc."></textarea></div>
-<button class="submit" type="submit">Send My Custom Trip Request →</button>
+<div style="margin:18px 0;padding:16px;background:#f8f4fc;border-radius:12px">
+<label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55"><input type="checkbox" name="supplier_confirmation_acknowledged" value="yes" required style="margin-top:3px"><span>I understand my TRV request is secured for planning and supplier confirmation, but airline, hotel/resort, villa, transportation, ticket, and other supplier reservations are not confirmed until TRV sends written confirmation.</span></label>
+<label style="display:flex;gap:10px;align-items:flex-start;font-size:13px;line-height:1.55;margin-top:12px"><input type="checkbox" name="payment_authorization_acknowledged" value="yes" required style="margin-top:3px"><span>I understand TRV will confirm availability, final pricing, and any applicable service fee before payment is processed.</span></label>
+</div>
+<button class="submit" type="submit">Secure My Custom Trip Request →</button>
 </section>
 </form>
 </main>
