@@ -173,6 +173,30 @@
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "destination": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027.html"
+    },
+    {
+      "source": "/request-received",
+      "destination": "/request-received.html"
+    },
+    {
+      "source": "/services/custom-trips",
+      "destination": "/forms-custom-trips.html"
+    },
+    {
+      "source": "/services/corporate-travel",
+      "destination": "/forms-corporate-travel.html"
+    },
+    {
+      "source": "/services/destination-weddings",
+      "destination": "/forms-destination-weddings.html"
+    },
+    {
+      "source": "/services/on-tour-travel-management",
+      "destination": "/forms-on-tour-travel-management.html"
+    },
+    {
+      "source": "/services/travel-consulting",
+      "destination": "/forms-travel-consulting.html"
     }
   ]
 }
