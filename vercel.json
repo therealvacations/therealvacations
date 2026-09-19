@@ -197,6 +197,14 @@
     {
       "source": "/services/travel-consulting",
       "destination": "/forms-travel-consulting.html"
+    },
+    {
+      "source": "/quote-checkout",
+      "destination": "/quote-checkout.html"
+    },
+    {
+      "source": "/custom-payment-result",
+      "destination": "/custom-payment-result.html"
     }
   ]
 }
