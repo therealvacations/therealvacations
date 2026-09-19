@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Email Confirmed | The Real Vacations</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:'DM Sans',sans-serif;background:#0f0620;color:#fff;min-height:100vh;display:grid;place-items:center;padding:24px}.card{width:min(620px,100%);background:#fff;color:#2f2540;border-radius:24px;padding:38px;box-shadow:0 28px 80px rgba(0,0,0,.45);text-align:center}.logo{height:72px;margin-bottom:18px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#7c3aed;margin-bottom:10px}h1{margin:0 0 12px;color:#1a0533;font-size:32px}.lead{font-size:16px;line-height:1.6;color:#62576e;margin:0 auto 22px;max-width:500px}.status{background:#f3e8ff;color:#5b217b;border-radius:12px;padding:14px 16px;margin:18px 0;font-size:14px}.button{display:inline-block;background:#7c3aed;color:#fff;text-decoration:none;font-weight:800;padding:14px 24px;border-radius:999px}.small{font-size:12px;color:#8a8192;margin-top:18px;line-height:1.5}
+</style>
+</head>
+<body>
+<main class="card">
+<img class="logo" src="/logo.jpeg" alt="The Real Vacations">
+<div class="eyebrow">The Real Vacations</div>
+<h1>Your email is confirmed.</h1>
+<p class="lead">Your TRV account is ready. You can continue where you left off and manage your trips, payments, and travel details from your account.</p>
+<div class="status" id="status">Finishing your account setup…</div>
+<a class="button" id="continueButton" href="/my-trips">Continue to My Trips</a>
+<p class="small">If you opened this link on a different device, you may be asked to sign in again.</p>
+</main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+import { safePortalPath } from '/js/auth.js';
+
+const params=new URLSearchParams(location.search);
+const next=safePortalPath(params.get('next'));
+const btn=document.getElementById('continueButton');
+const status=document.getElementById('status');
+
+const { data: { session } } = await supabase.auth.getSession();
+if (session) {
+  status.textContent='Account confirmed successfully. You are signed in and ready to continue.';
+  btn.href=next;
+  btn.textContent=next.startsWith('/book-trip')?'Continue Booking':'Continue to My Trips';
+} else {
+  status.textContent='Account confirmed successfully. Sign in to continue to your TRV account.';
+  btn.href='/login?next='+encodeURIComponent(next);
+  btn.textContent='Sign In to Continue';
+}
+</script>
+</body>
+</html>
