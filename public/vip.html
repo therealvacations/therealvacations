@@ -25,12 +25,35 @@ if(user){
   const active=membership && ((membership.status==='trialing'&&membership.trial_ends_at&&new Date(membership.trial_ends_at)>new Date()) || (membership.status==='active'&&(!membership.paid_through||new Date(membership.paid_through)>new Date())));
   if(!active){
     statusEl.textContent='Choose your VIP plan';
-    content.innerHTML='<div class="grid">'+
-      '<article class="card"><small>MONTHLY</small><h3>TRV VIP Monthly</h3><div class="price">$15.99/month</div><p>Private travel offers, member-only perks, popup opportunities, VIP travel content, and your TRV welcome travel/lifestyle item when your paid membership begins.</p><button class="btn join-vip" data-plan="monthly" type="button" style="border:0;cursor:pointer">Join Monthly →</button></article>'+
-      '<article class="card"><small>ANNUAL</small><h3>TRV VIP Annual</h3><div class="price">$129.99/year</div><p>Everything in TRV VIP for a full year, plus your TRV welcome travel/lifestyle item when your paid membership begins.</p><button class="btn join-vip" data-plan="annual" type="button" style="border:0;cursor:pointer">Join Annual →</button></article>'+
-      '<article class="card"><small>WELCOME GIFT</small><h3>A little TRV for the road.</h3><p>Every new paid VIP member receives a branded TRV / The Real Vacations travel or lifestyle item. Your welcome item may be a T-shirt, hat, cup or tumbler, or another nice TRV-branded item. The item varies.</p></article>'+
+    content.innerHTML=
+      '<div class="card" style="margin-bottom:18px"><small>WELCOME GIFT DETAILS</small><h3>Tell us where to send your TRV welcome item.</h3><p>Every VIP member receives a TRV / The Real Vacations branded travel or lifestyle item. Your item may be a T-shirt, hat, cup/tumbler, or another nice branded item. The exact item varies.</p>'+
+      '<form id="vipJoinForm"><input name="name" placeholder="Full name" required style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><input name="address1" placeholder="Street address" required style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><input name="address2" placeholder="Apt / suite (optional)" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px"><input name="city" placeholder="City" required style="padding:10px;border:1px solid #ddd;border-radius:8px"><input name="state" placeholder="State" required style="padding:10px;border:1px solid #ddd;border-radius:8px"><input name="postal_code" placeholder="ZIP" required style="padding:10px;border:1px solid #ddd;border-radius:8px"></div><select name="size" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><option value="">T-shirt size — used if your welcome gift is apparel</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option></select><textarea name="note" placeholder="Delivery note (optional)" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"></textarea></form></div>'+
+      '<div class="grid">'+
+      '<article class="card"><small>MONTHLY · 7-DAY FREE TRIAL</small><h3>TRV VIP Monthly</h3><div class="price">7 days free, then $15.99/month</div><p>Private travel offers, member-only perks, popup opportunities, VIP travel content, and your TRV welcome travel/lifestyle item.</p><button class="btn join-vip" data-plan="monthly" type="button" style="border:0;cursor:pointer">Start My 7-Day Trial →</button></article>'+
+      '<article class="card"><small>ANNUAL · 2 MONTHS FREE</small><h3>TRV VIP Annual</h3><div class="price">2 months free, then $129.99/year</div><p>Everything in TRV VIP for a full year after your two-month free trial, plus your TRV welcome travel/lifestyle item.</p><button class="btn join-vip" data-plan="annual" type="button" style="border:0;cursor:pointer">Start My 2-Month Trial →</button></article>'+
+      '<article class="card"><small>WELCOME GIFT</small><h3>A little TRV for the road.</h3><p>Both Monthly and Annual VIP members receive a branded welcome item. If your item is apparel, we’ll use the T-shirt size you entered above.</p></article>'+
       '</div>';
-    document.querySelectorAll('.join-vip').forEach(button=>button.addEventListener('click',async()=>{button.disabled=true;button.textContent='Opening Stripe…';const {data:{session}}=await supabase.auth.getSession();const response=await fetch('/api/create-vip-checkout',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},body:JSON.stringify({plan:button.dataset.plan})});const data=await response.json().catch(()=>({}));if(!response.ok||!data.url){button.disabled=false;button.textContent=button.dataset.plan==='monthly'?'Join Monthly →':'Join Annual →';alert(data.error||'VIP checkout could not be started.');return}location.assign(data.url);}));
+    document.querySelectorAll('.join-vip').forEach(button=>button.addEventListener('click',async()=>{
+      const form=document.getElementById('vipJoinForm');
+      if(!form.reportValidity()) return;
+      button.disabled=true;
+      button.textContent='Opening Stripe…';
+      const values=Object.fromEntries(new FormData(form).entries());
+      const {data:{session}}=await supabase.auth.getSession();
+      const response=await fetch('/api/create-vip-checkout',{
+        method:'POST',
+        headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+        body:JSON.stringify({...values,plan:button.dataset.plan})
+      });
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.url){
+        button.disabled=false;
+        button.textContent=button.dataset.plan==='monthly'?'Start My 7-Day Trial →':'Start My 2-Month Trial →';
+        alert(data.error||'VIP checkout could not be started.');
+        return;
+      }
+      location.assign(data.url);
+    }));
   }else{
     statusEl.textContent=membership.status==='trialing'?'VIP trial active':'VIP active';
     const {data:offers,error}=await supabase.from('vip_offers').select('offer_id,title,category,description,display_price,image_url,starts_at,ends_at,sort_order').order('sort_order');
