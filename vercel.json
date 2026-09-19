@@ -5,6 +5,11 @@
   "outputDirectory": "public",
   "redirects": [
     {
+      "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
+      "destination": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "permanent": true
+    },
+    {
       "source": "/terms",
       "destination": "/terms-of-service",
       "permanent": true
