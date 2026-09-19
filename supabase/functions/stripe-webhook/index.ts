@@ -245,8 +245,8 @@ Deno.serve(async (request) => {
             .maybeSingle()
           if (codeRow) {
             const currentUsed = Number(codeRow.used_count ?? 0)
-            const maxUses = Number(codeRow.max_uses ?? 1)
-            if (currentUsed < maxUses) {
+            const maxUses = codeRow.max_uses == null ? null : Number(codeRow.max_uses)
+            if (maxUses == null || currentUsed < maxUses) {
               await admin.from('discount_codes')
                 .update({ used_count: currentUsed + 1 })
                 .eq('code', promoCode)
