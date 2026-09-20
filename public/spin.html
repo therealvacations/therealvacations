@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spin & Save | The Real Vacations</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f8f5fb;color:#251b30}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
+.hero{background:linear-gradient(135deg,#1a0533,#441678);color:#fff;text-align:center;padding:54px 22px}.hero h1{font-size:clamp(32px,6vw,52px);margin:0 0 10px}.hero p{max-width:680px;margin:auto;opacity:.86;line-height:1.6}
+.wrap{max-width:720px;margin:0 auto;padding:48px 22px}.card{background:#fff;border:1px solid #e8dfef;border-radius:26px;padding:34px;text-align:center;box-shadow:0 18px 50px rgba(55,26,78,.10)}
+.wheel-wrap{position:relative;width:280px;height:280px;margin:28px auto}.wheel-wrap canvas{border-radius:50%;border:5px solid #7c3aed;width:280px;height:280px}.arrow{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:34px}
+button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:14px 30px;font-size:15px;font-weight:800;cursor:pointer}button:disabled{opacity:.55}
+.result{display:none;margin-top:24px;padding-top:24px;border-top:1px solid #eee}.result.show{display:block}.claim{display:grid;gap:12px;max-width:430px;margin:18px auto 0}.claim input{padding:13px 15px;border:1px solid #d8cfdf;border-radius:10px;font:inherit}.opt{display:flex;gap:9px;text-align:left;font-size:12px;color:#665c6f}
+.note{font-size:12px;color:#776e80;line-height:1.6;margin-top:18px}footer{background:#1a0533;color:#d8cce5;text-align:center;padding:28px 20px;margin-top:30px}footer a{color:#c4b5fd;margin:0 8px}
+@media(max-width:700px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}}
+</style>
+</head><body>
+<nav>
+<a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"></a>
+<div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/flights">Flights</a><a href="/spin">Spin &amp; Save</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a></div>
+<div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div>
+</nav>
+<header class="hero"><h1>Spin & Save</h1><p>Spin for a promotional travel offer. Subscribe to receive an eligible prize code by email. Prize-code availability and restrictions apply.</p></header>
+<main class="wrap"><section class="card">
+<h2>Ready? Give It a Spin.</h2>
+<div class="wheel-wrap"><div class="arrow">▼</div><canvas id="spinCanvas" width="280" height="280"></canvas></div>
+<button id="spinBtn">SPIN</button>
+<div class="result" id="spinResult">
+<h2>🎉 You landed on <span id="prizeText"></span></h2>
+<p>Enter your details to receive your eligible TRV prize code.</p>
+<div class="claim">
+<input id="claimName" placeholder="Your name" autocomplete="name">
+<input id="claimEmail" type="email" placeholder="Your email" autocomplete="email">
+<label class="opt"><input type="checkbox" id="claimOptIn"> <span>I want to receive TRV trip announcements, special offers, and my prize code by email.</span></label>
+<button id="claimBtn">Subscribe & Claim My Code</button>
+</div>
+</div>
+<p class="note">Codes are issued through The Real Vacations and are subject to eligibility, expiration, trip restrictions, and availability. A code does not reserve travel inventory.</p>
+</section></main>
+<footer>© 2026 The Real Vacations · <a href="/privacy-policy">Privacy</a><a href="/terms-of-service">Terms</a></footer>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+let segments=[
+{label:'$50 Off',color:'#7c3aed'},{label:'$100 Off',color:'#9f67f5'},{label:'$200 Off',color:'#1a0533'},{label:'Free Upgrade',color:'#c084fc'},
+{label:'$500 Off',color:'#3b1066'},{label:'$75 Off',color:'#7c3aed'},{label:'$150 Off',color:'#9f67f5'},{label:'$250 Off',color:'#1a0533'}];
+const canvas=document.getElementById('spinCanvas'),ctx=canvas.getContext('2d');let angle=0,spinning=false;
+function draw(rot){const cx=140,cy=140,r=134,arc=2*Math.PI/segments.length;ctx.clearRect(0,0,280,280);segments.forEach((s,i)=>{ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,rot+i*arc,rot+(i+1)*arc);ctx.closePath();ctx.fillStyle=s.color;ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.save();ctx.translate(cx,cy);ctx.rotate(rot+(i+.5)*arc);ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 14px Segoe UI,Arial';ctx.fillText(s.label,r-12,5);ctx.restore();});ctx.beginPath();ctx.arc(cx,cy,20,0,2*Math.PI);ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#7c3aed';ctx.lineWidth=3;ctx.stroke();}
+async function settings(){const {data}=await supabase.from('wheel_settings').select('prize_1,prize_2,prize_3,prize_4,prize_5,prize_6,prize_7,prize_8,wheel_color_1,wheel_color_2,wheel_color_3').eq('is_active',true).limit(1).maybeSingle();if(data){const colors=[data.wheel_color_1||'#7c3aed',data.wheel_color_2||'#c084fc',data.wheel_color_3||'#a855f7'];segments=Array.from({length:8},(_,i)=>({label:data['prize_'+(i+1)]||segments[i].label,color:colors[i%3]}));draw(0);}}
+document.getElementById('spinBtn').onclick=()=>{if(spinning)return;spinning=true;const btn=document.getElementById('spinBtn');btn.disabled=true;const total=10*2*Math.PI+Math.random()*2*Math.PI,start=performance.now(),startAngle=angle;function anim(now){const t=Math.min((now-start)/4000,1),ease=1-Math.pow(1-t,4);angle=startAngle+total*ease;draw(angle);if(t<1)requestAnimationFrame(anim);else{spinning=false;const arc=2*Math.PI/segments.length,norm=(((-angle%(2*Math.PI))+2*Math.PI)%(2*Math.PI)),idx=Math.floor(norm/arc)%segments.length;document.getElementById('prizeText').textContent=segments[idx].label;document.getElementById('spinResult').classList.add('show');btn.disabled=false;}}requestAnimationFrame(anim);};
+document.getElementById('claimBtn').onclick=async()=>{const name=document.getElementById('claimName').value.trim(),email=document.getElementById('claimEmail').value.trim(),opted=document.getElementById('claimOptIn').checked,prize=document.getElementById('prizeText').textContent.trim();if(!name||!email)return alert('Please enter your name and email.');if(!opted)return alert('Please check the subscription box to receive a prize code.');const btn=document.getElementById('claimBtn');btn.disabled=true;btn.textContent='Sending…';const {data,error}=await supabase.functions.invoke('vip-signup',{body:{name,email,source:'spin_wheel',trip_interest:'All TRV Group Trips',spin_prize:prize,opted_in:true}});if(error||!data?.ok){alert(data?.error||'Something went wrong. Please try again.');btn.disabled=false;btn.textContent='Subscribe & Claim My Code';return;}document.getElementById('spinResult').innerHTML='<h2>🎊 Your TRV code is on the way.</h2><p>'+(data.code?'Your code is <strong>'+data.code+'</strong>. Check your email for the same code and expiration details.':'You are subscribed. This spin did not issue a code.')+'</p><p><a href="/trips" style="color:#7c3aed;font-weight:800">Browse trips →</a></p>';};
+draw(0);settings();
+</script></body></html>
