@@ -68,7 +68,8 @@
   <div class="nav-links">
     <a href="/" class="hide-mobile">Home</a>
     <a href="/trips" class="hide-mobile">Trips</a>
-    <a href="/deals" class="hide-mobile">Deals</a>
+    <a href="/flights" class="hide-mobile">Flights</a>
+    <a href="/spin" class="hide-mobile">Spin &amp; Save</a>
     <a href="/contact" class="hide-mobile">Contact</a>
     <a href="/login" class="nav-login">Log In</a>
   </div>
@@ -151,15 +152,13 @@
         <input type="password" id="password" placeholder="At least 8 characters" autocomplete="new-password">
       </div>
       <div class="form-group">
-        <label for="trip-interest">Which trip are you interested in?</label>
-        <select id="trip-interest">
-          <option value="">Select a trip...</option>
-          <option value="essence">🎵 Essence Festival — July 3–5, New Orleans</option>
-          <option value="maryj">🎤 Mary J. Blige — Oct 22–24, Las Vegas</option>
-          <option value="keith">🎷 Keith Sweat R&B Lovers Tour — Aug 29, Atlanta</option>
-          <option value="napa">🍷 Napa Juneteenth — June 18–21, Napa Valley</option>
-          <option value="all">I'm interested in all of them!</option>
-          <option value="future">Notify me about future trips</option>
+        <label for="travel-interest">What can we help you plan? <span style="font-weight:400;color:#777">(optional)</span></label>
+        <select id="travel-interest">
+          <option value="">No selection needed</option>
+          <option value="custom vacation">A custom vacation</option>
+          <option value="group trip">A group trip</option>
+          <option value="flight hotel car">Flight, hotel or rental car</option>
+          <option value="future trips">Notify me about future TRV trips</option>
         </select>
       </div>
       <div class="checkbox-group">
@@ -195,7 +194,7 @@ window.handleSignup = async function() {
   var lastName  = document.getElementById('lastName').value.trim();
   var email     = document.getElementById('email').value.trim();
   var phone     = document.getElementById('phone').value.trim();
-  var tripInterest = document.getElementById('trip-interest').value;
+  var tripInterest = document.getElementById('travel-interest')?.value || '';
   var password  = document.getElementById('password').value.trim();
   var terms     = document.getElementById('terms').checked;
   var subscribe = document.getElementById('spin-promo').checked;
@@ -237,7 +236,7 @@ window.handleSignup = async function() {
     status.style.display = 'block';
     status.style.background = '#ecfdf5';
     status.style.color = '#065f46';
-    status.textContent = 'Your account was created. Check your email to confirm it, then sign in to My TRV Trips.';
+    status.textContent = 'Your account was created. Check your email for a message from The Real Vacations, confirm your account, then continue to My TRV Trips.';
     btn.textContent = 'Account Created ✓';
   } catch (error) {
     alert('Signup failed: ' + error.message);
