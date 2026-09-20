@@ -118,7 +118,7 @@
                 <h2>📸 Real Vacationer Gallery</h2>
                 <p>Real moments from curated and group trips — including photos our travelers sent back after their vacations. This is what The Real Vacations experience looks like through the people who lived it.</p>
             </div>
-            <div class="gallery-grid">
+            <div class="gallery-grid" id="galleryGrid">
                 <div class="gallery-item">
                     <div class="gallery-item-inner"><img src="trv_collage_820x1000.png" alt="Creating Real Moments — The Real Vacations group travel collage" loading="lazy"></div>
                     <p class="gallery-caption">Creating Real Moments ✨</p>
@@ -163,7 +163,7 @@
                 <h2>💬 What Travelers Are Saying</h2>
                 <p>Don't just take our word for it—hear from people who've traveled with us</p>
             </div>
-            <div class="reviews-grid">
+            <div class="reviews-grid" id="reviewsGrid">
                 <div class="review-card">
                     <div class="review-stars">★★★★★</div>
                     <p class="review-text">"Tokyo was absolutely magical! From the incredible food to exploring Disney Tokyo, every single detail was planned perfectly. We never had to worry about a thing—transportation, reservations, park tickets—it was all handled. The group energy made it even better. Already counting down to the next trip!"</p>
@@ -247,5 +247,27 @@
         </div>
         <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
     </footer>
+
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const [galleryResult,reviewsResult]=await Promise.all([
+  supabase.from('gallery_items').select('id,image_url,alt_text,caption,sort_order').eq('is_active',true).order('sort_order').order('id'),
+  supabase.from('testimonials').select('id,author_name,author_initials,trip_location,trip_date,review_text,rating').order('created_at',{ascending:false})
+]);
+if(!galleryResult.error && galleryResult.data?.length){
+  document.getElementById('galleryGrid').innerHTML=galleryResult.data.map(item =>
+    '<div class="gallery-item"><div class="gallery-item-inner"><img src="'+esc(item.image_url)+'" alt="'+esc(item.alt_text||item.caption||'Real Vacations travel photo')+'" loading="lazy"></div><p class="gallery-caption">'+esc(item.caption||'')+'</p></div>'
+  ).join('');
+}
+if(!reviewsResult.error && reviewsResult.data?.length){
+  document.getElementById('reviewsGrid').innerHTML=reviewsResult.data.map(item => {
+    const stars='★'.repeat(Math.max(1,Math.min(5,Number(item.rating)||5)));
+    const trip=[item.trip_location,item.trip_date].filter(Boolean).join(' – ');
+    return '<div class="review-card"><div class="review-stars">'+stars+'</div><p class="review-text">“'+esc(item.review_text||'')+'”</p><div class="review-author"><div class="author-avatar">'+esc(item.author_initials||String(item.author_name||'TRV').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase())+'</div><div class="author-info"><h4>'+esc(item.author_name||'Real Vacationer')+'</h4><p>'+esc(trip)+'</p></div></div></div>';
+  }).join('');
+}
+</script>
+
 </body>
 </html>
