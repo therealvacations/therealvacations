@@ -25,6 +25,10 @@ function processHTML(filePath) {
   content = content.replace('<!-- NAV_PLACEHOLDER -->', navFile);
   // Replace footer placeholder
   content = content.replace('<!-- FOOTER_PLACEHOLDER -->', footerFile);
+
+  // Keep branding consistent across every deployed HTML page, including
+  // older templates that still hard-code the legacy logo filename.
+  content = content.replace(/(?:\/)?logo\.jpeg/g, '/newtrv180x180no bckgrd logo favi.jpg');
   
   fs.writeFileSync(filePath, content);
   console.log(`✓ Updated ${path.basename(filePath)}`);
