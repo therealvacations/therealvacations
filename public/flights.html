@@ -1,175 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Flight Tickets | The Real Vacations</title>
-  <meta name="description" content="Book cheap flights for your group trip with The Real Vacations. Search hundreds of airlines and find the best fares."/>
-  <link rel="icon" href="/favicon.ico"/>
-  <meta property="og:title" content="Flight Tickets - The Real Vacations"/>
-  <meta property="og:description" content="Book cheap flights for your group trip. Search and compare flights instantly."/>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Segoe UI',Arial,sans-serif;color:#222;background:#fff}
-    a{color:inherit;text-decoration:none}
-    nav{background:#1a0533;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100}
-    nav a{color:#fff;font-size:14px;font-weight:500}
-    nav a:hover{color:#c084fc}
-    .nav-logo img{height:40px}
-    .nav-links{display:flex;gap:20px;flex-wrap:wrap}
-    .nav-auth a{background:#7c3aed;color:#fff;padding:7px 16px;border-radius:20px;font-size:13px;margin-left:8px}
-    .flights-hero{background:linear-gradient(135deg,#1a0533 0%,#3b1066 60%,#7c3aed 100%);color:#fff;padding:48px 24px 32px;text-align:center}
-    .flights-hero h1{font-size:clamp(28px,4vw,44px);font-weight:800;margin-bottom:12px}
-    .flights-hero p{font-size:16px;opacity:.85;max-width:600px;margin:0 auto}
-    .flights-container{max-width:1200px;margin:0 auto;padding:40px 24px}
-    footer{background:#1a0533;color:#fff;padding:48px 24px 24px}
-    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;max-width:960px;margin:0 auto 32px}
-    @media(max-width:640px){.footer-grid{grid-template-columns:1fr}}
-    footer h4{font-size:14px;font-weight:700;margin-bottom:14px;color:#c084fc}
-    footer a{color:rgba(255,255,255,.7);font-size:13px;display:block;margin-bottom:8px}
-    footer a:hover{color:#fff}
-    .footer-bottom{text-align:center;font-size:12px;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.1);padding-top:20px;max-width:960px;margin:0 auto}
-    .tpwl-logo-header{background:#f5f5f5;padding:24px;text-align:center}
-    .tpwl-search-header{background:#f5f5f5;padding:24px;position:sticky;top:65px;z-index:99}
-    .tpwl-main{background:#fff}
-    .tpwl-tickets__wrapper, .tpwl-widgets__wrapper, .tpwl-footer__wrapper{padding:0}
-    .tpwl__content{max-width:1200px;margin:0 auto;padding:0 24px}
-    .tpwl-widget-weedles{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;padding:40px 24px}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Search Flights | The Real Vacations</title>
+<meta name="description" content="Search flights without leaving The Real Vacations.">
+<link rel="icon" href="/favicon.ico">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#251b30}a{text-decoration:none;color:inherit}
+nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:100}.nav-logo img{height:42px}.nav-links{display:flex;gap:18px;flex-wrap:wrap}.nav-links a{color:#fff;font-size:14px}.nav-auth a{display:inline-block;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;margin-left:7px}
+.hero{background:linear-gradient(135deg,#1a0533,#441678);color:#fff;text-align:center;padding:48px 22px 34px}.hero h1{font-size:clamp(30px,5vw,48px);margin:0 0 10px}.hero p{max-width:720px;margin:auto;line-height:1.6;opacity:.9}
+.wrap{max-width:1280px;margin:0 auto;padding:26px 18px 50px}.notice{background:#fff;border:1px solid #eadff3;border-radius:16px;padding:18px 20px;margin-bottom:18px;box-shadow:0 8px 24px rgba(45,20,70,.06)}.notice strong{color:#1a0533}
+.frame-shell{background:#fff;border:1px solid #ddd0e7;border-radius:18px;overflow:hidden;box-shadow:0 14px 38px rgba(45,20,70,.09)}iframe{width:100%;height:1050px;border:0;display:block;background:#fff}
+.fallback{padding:16px 20px;font-size:13px;color:#665c70;text-align:center}.fallback a{color:#6d28d9;font-weight:700}
+footer{background:#1a0533;color:#d8cce5;text-align:center;padding:28px 20px}footer a{color:#c4b5fd;margin:0 8px}
+@media(max-width:700px){.nav-links{width:100%;justify-content:center}.nav-auth{width:100%;text-align:center}iframe{height:1200px}}
+</style>
 </head>
 <body>
-
 <nav>
-  <a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"/></a>
+  <a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"></a>
   <div class="nav-links">
-    <a href="/">Home</a>
-    <a href="/trips">Trips</a>
-    <a href="/flights">Flights</a>
-    <a href="/#spinwheel">Spin &amp; Save</a>
-    <a href="/real-stories">Real Stories</a>
-    <a href="/about">About</a>
-    <a href="/how-it-works">How It Works</a>
-    <a href="/resources">Resources</a>
-    <a href="/blog">Blog</a>
-    <a href="/contact">Contact</a>
+    <a href="/">Home</a><a href="/trips">Trips</a><a href="/flights">Flights</a><a href="/#spinwheel">Spin &amp; Save</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a>
   </div>
-  <div class="nav-auth">
-    <a href="/login">Login</a>
-    <a href="/signup">Sign Up</a>
-  </div>
+  <div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div>
 </nav>
-
-
-
-<div class="flights-hero">
-  <h1>Find Your Flight</h1>
-  <p>Search hundreds of airlines and book the best fares for your group trip</p>
-</div>
-
-<div class="flights-container">
-  <header class="tpwl-logo-header">
-    <div style="font-size:24px;font-weight:600;color:#1a0533">✈️ Flight Tickets</div>
-  </header>
-
-  <header class="tpwl-search-header">
-    <div class="tpwl__content">
-      <div id="tpwl-search"></div>
-    </div>
-  </header>
-
-  <main class="tpwl-main">
-    <div class="tpwl-tickets__wrapper">
-      <div class="tpwl__content">
-        <div id="tpwl-tickets"></div>
-      </div>
-    </div>
-
-    <div class="tpwl-widgets__wrapper">
-      <div class="tpwl__content">
-        <h3 style="text-align:center;font-size:28px;margin-bottom:32px;color:#1a0533">Popular Destinations</h3>
-        <div id="tpwl-widget-weedles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px">
-          <div class="tpwl-widget-weedle" data-destination="ORD" is="weedle"></div>
-          <div class="tpwl-widget-weedle" data-destination="LAX" is="weedle"></div>
-          <div class="tpwl-widget-weedle" data-destination="LAS" is="weedle"></div>
-          <div class="tpwl-widget-weedle" data-destination="NYC" is="weedle"></div>
-          <div class="tpwl-widget-weedle" data-destination="MIA" is="weedle"></div>
-          <div class="tpwl-widget-weedle" data-destination="DEN" is="weedle"></div>
-        </div>
-      </div>
-    </div>
-  </main>
-
-  <div id="tpwl-cookie-banner"></div>
-</div>
-
-<footer>
-  <div class="footer-grid">
-    <div>
-      <img src="/logo.jpeg" alt="The Real Vacations" style="height:40px;margin-bottom:14px"/>
-      <p style="font-size:13px;color:rgba(255,255,255,.6);line-height:1.6">Creating unforgettable group travel experiences for over 20 years.</p>
-      <div style="margin-top:16px;display:flex;gap:12px">
-        <a href="https://www.instagram.com/therealvacations/">📸 Instagram</a>
-        <a href="https://www.facebook.com/therealvacations/">👥 Facebook</a>
-        <a href="https://www.youtube.com/@TheRealVacations" target="_blank" rel="noopener" aria-label="The Real Vacations on YouTube">▶️ YouTube</a>
-      </div>
-    </div>
-    <div>
-      <h4>Quick Links</h4>
-      <a href="/trips">Upcoming Trips</a>
-      <a href="/flights">Flights</a>
-      <a href="/about">About Us</a>
-      <a href="/how-it-works">How It Works</a>
-      <a href="/real-stories">Real Stories</a>
-      <a href="/blog">Blog</a>
-    </div>
-    <div>
-      <h4>Contact Us</h4>
-      <a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a>
-
-      <a href="/contact">Send a Message</a>
-      <a href="/privacy-policy">Privacy Policy</a>
-      <a href="/terms-of-service">Terms of Service</a>
-    </div>
+<header class="hero"><h1>Search Flights Without Leaving TRV</h1><p>Compare flight options right here inside The Real Vacations. Your search is powered by our flight-search partner, but you stay in the TRV experience while you browse.</p></header>
+<main class="wrap">
+  <div class="notice"><strong>Need us to handle the flight too?</strong> You can also use <a href="/request-travel" style="color:#6d28d9;font-weight:700">Request Travel</a> and include flights with the rest of your trip.</div>
+  <div class="frame-shell">
+    <iframe src="https://flights.therealvacations.com" title="The Real Vacations flight search" loading="eager" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    <div class="fallback">If the embedded flight search does not load on your device, <a href="https://flights.therealvacations.com" target="_blank" rel="noopener sponsored">open the flight search in a new tab</a>.</div>
   </div>
-  <div class="footer-bottom">© 2026 The Real Vacations. All rights reserved.</div>
-</footer>
-
-
-
-<!-- Travelpayouts Scripts -->
-<script>
-  (function () {
-    const container = document.getElementById('tpwl-widget-weedles');
-    if (!container) return;
-    const weedleElements = container.querySelectorAll('div[is="weedle"]');
-
-    weedleElements.forEach(element => {
-      if (!TPWL_EXTRA) return;
-      const destination = (element.getAttribute('data-destination') || '').toUpperCase();
-      const allowedDestinations = new Set(['ORD', 'LAX', 'LAS', 'NYC', 'MIA', 'DEN']);
-      if (!/^[A-Z]{3}$/.test(destination) || !allowedDestinations.has(destination)) return;
-      const scriptElement = document.createElement('script');
-      scriptElement.async = 1;
-      const params = new URLSearchParams({
-        currency: String(TPWL_EXTRA.currency).toLowerCase(),
-        trs: String(TPWL_EXTRA.trs),
-        shmarker: String(TPWL_EXTRA.marker),
-        destination,
-        target_host: String(TPWL_EXTRA.domain),
-        locale: String(TPWL_EXTRA.locale),
-        limit: '6',
-        powered_by: 'false',
-        primary: `#${String(TPWL_EXTRA.link_color)}`,
-        promo_id: '4044',
-        campaign_id: '100'
-      });
-      scriptElement.src = `https://[:widget_domain:]/content?${params.toString()}`;
-      element.appendChild(scriptElement);
-    });
-  })();
-</script>
-[:embed_script:]
-[:cookie_policy_script:]
-
-</body>
-</html>
+</main>
+<footer>© 2026 The Real Vacations · <a href="/privacy-policy">Privacy</a> · <a href="/terms-of-service">Terms</a></footer>
+</body></html>
