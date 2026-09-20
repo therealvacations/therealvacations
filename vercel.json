@@ -38,6 +38,41 @@
       "source": "/services/last-minute-travel",
       "destination": "/request-travel",
       "permanent": false
+    },
+    {
+      "source": "/napa-juneteenth-june-18-21-2026",
+      "destination": "/real-stories",
+      "permanent": true
+    },
+    {
+      "source": "/napa-juneteenth-june-18-21-2026.html",
+      "destination": "/real-stories",
+      "permanent": true
+    },
+    {
+      "source": "/essence-festival-new-orleans-july-3-5-2026",
+      "destination": "/real-stories",
+      "permanent": true
+    },
+    {
+      "source": "/essence-festival-new-orleans-july-3-5-2026.html",
+      "destination": "/real-stories",
+      "permanent": true
+    },
+    {
+      "source": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026",
+      "destination": "/real-stories",
+      "permanent": true
+    },
+    {
+      "source": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026.html",
+      "destination": "/real-stories",
+      "permanent": true
+    },
+    {
+      "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html",
+      "destination": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "permanent": true
     }
   ],
   "headers": [
@@ -177,18 +212,6 @@
       "destination": "/custom-trip-form.html"
     },
     {
-      "source": "/napa-juneteenth-june-18-21-2026",
-      "destination": "/napa-juneteenth-june-18-21-2026.html"
-    },
-    {
-      "source": "/essence-festival-new-orleans-july-3-5-2026",
-      "destination": "/essence-festival-new-orleans-july-3-5-2026.html"
-    },
-    {
-      "source": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026",
-      "destination": "/keith-sweat-r-and-b-tour-atlanta-august-29-2026.html"
-    },
-    {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "destination": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027.html"
     },
@@ -227,6 +250,10 @@
     {
       "source": "/request-travel",
       "destination": "/request-travel.html"
+    },
+    {
+      "source": "/spin",
+      "destination": "/spin.html"
     }
   ]
 }
