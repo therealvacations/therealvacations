@@ -36,6 +36,24 @@ Deno.serve(async (request) => {
   const admin = createClient(supabaseUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   })
+  const stripeAccountId = (event.account ?? ((event.data.object as any)?.customer_account ?? null)) as string | null
+  const retrievePaymentIntent = async (paymentIntentId: string) => {
+    try {
+      return await stripe.paymentIntents.retrieve(
+        paymentIntentId,
+        stripeAccountId ? { stripeAccount: stripeAccountId } : undefined,
+      )
+    } catch (error) {
+      // A successful Checkout payment must still reconcile even if optional
+      // PaymentIntent enrichment is unavailable in the current account context.
+      console.error(
+        'Unable to enrich Stripe PaymentIntent',
+        paymentIntentId,
+        error instanceof Error ? error.message : 'Unknown error',
+      )
+      return null
+    }
+  }
   const sendPaymentEmail = async (paymentId: string) => {
     const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
       method: 'POST',
@@ -180,7 +198,7 @@ Deno.serve(async (request) => {
         if (session.payment_status !== 'paid') return jsonResponse({ received: true })
 
         const paymentIntent = typeof session.payment_intent === 'string'
-          ? await stripe.paymentIntents.retrieve(session.payment_intent)
+          ? await retrievePaymentIntent(session.payment_intent)
           : session.payment_intent
         const customerId = typeof session.customer === 'string'
           ? session.customer
@@ -203,7 +221,7 @@ Deno.serve(async (request) => {
       if (session.payment_status !== 'paid') return jsonResponse({ received: true })
 
       const paymentIntent = typeof session.payment_intent === 'string'
-        ? await stripe.paymentIntents.retrieve(session.payment_intent)
+        ? await retrievePaymentIntent(session.payment_intent)
         : session.payment_intent
       const paymentMethodId = typeof paymentIntent?.payment_method === 'string'
         ? paymentIntent.payment_method
@@ -222,6 +240,7 @@ Deno.serve(async (request) => {
           ? session.customer
           : typeof paymentIntent?.customer === 'string' ? paymentIntent.customer : null,
         p_payment_method_id: paymentMethodId,
+        p_stripe_account_id: stripeAccountId,
       })
       if (error) throw error
 
@@ -331,8 +350,8 @@ Deno.serve(async (request) => {
       const charge = event.data.object as Stripe.Charge
       let paymentId = charge.metadata?.payment_id
       if (!paymentId && typeof charge.payment_intent === 'string') {
-        const paymentIntent = await stripe.paymentIntents.retrieve(charge.payment_intent)
-        paymentId = paymentIntent.metadata?.payment_id
+        const paymentIntent = await retrievePaymentIntent(charge.payment_intent)
+        paymentId = paymentIntent?.metadata?.payment_id
       }
       if (paymentId && charge.refunded) {
         const { error } = await admin.rpc('sync_stripe_booking_payment_status', {
