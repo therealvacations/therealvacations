@@ -8,6 +8,7 @@ type DuePayment = {
   currency: string
   stripe_customer_id: string
   stripe_payment_method_id: string
+  stripe_account_id: string | null
   trip_title: string
   checkout_attempt: number
 }
@@ -50,7 +51,10 @@ Deno.serve(async (request) => {
         off_session: true,
         description: `${payment.trip_title} — automatic monthly installment`,
         metadata: { payment_id: payment.payment_id, booking_id: payment.booking_id, payment_type: 'automatic_installment' },
-      }, { idempotencyKey: `autopay-${payment.payment_id}-${payment.checkout_attempt}` })
+      }, {
+        idempotencyKey: `autopay-${payment.payment_id}-${payment.checkout_attempt}`,
+        ...(payment.stripe_account_id ? { stripeAccount: payment.stripe_account_id } : {}),
+      })
 
       if (intent.status !== 'succeeded') throw new Error(`payment_intent_${intent.status}`)
       chargeSucceeded = true
@@ -65,6 +69,7 @@ Deno.serve(async (request) => {
         p_currency: intent.currency,
         p_customer_id: typeof intent.customer === 'string' ? intent.customer : payment.stripe_customer_id,
         p_payment_method_id: typeof intent.payment_method === 'string' ? intent.payment_method : payment.stripe_payment_method_id,
+        p_stripe_account_id: payment.stripe_account_id,
       })
       if (completeError) throw completeError
       await fetch(`${supabaseUrl}/functions/v1/send-email`, {
