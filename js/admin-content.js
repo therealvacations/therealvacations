@@ -430,7 +430,7 @@ async function loadAll() {
 async function initialize() {
   const { data: { session } } = await supabase.auth.getSession()
   if (!session) return location.replace('/admin-login')
-  const { data: permissions, error } = await supabase.from('admin_users').select('role,can_edit_trips,can_edit_blog,can_edit_resources,can_edit_wheel').eq('id', session.user.id).maybeSingle()
+  const { data: permissions, error } = await supabase.from('admin_users').select('role,can_edit_trips,can_edit_blog,can_edit_resources,can_edit_wheel,can_edit_stories').eq('id', session.user.id).maybeSingle()
   if (error || !permissions) { await supabase.auth.signOut(); return location.replace('/admin-login?denied=1') }
   state.user = session.user; state.permissions = permissions
   $('#adminIdentity').textContent = session.user.email || 'Authorized administrator'
@@ -438,6 +438,7 @@ async function initialize() {
   if (!permissions.can_edit_resources) $('[data-tab="resources"]').hidden = true
   if (!permissions.can_edit_blog) $('[data-tab="blog"]').hidden = true
   if (!permissions.can_edit_wheel) $('[data-tab="wheel"]').hidden = true
+  if (!permissions.can_edit_stories) { $('[data-tab="stories"]').hidden = true; $('[data-tab="gallery"]').hidden = true }
   const firstTab = $$('.admin-tab').find((button) => !button.hidden)
   if (!firstTab) return showMessage('This admin account has no content permissions.', 'error')
   setTab(firstTab.dataset.tab); await loadAll(); $('#adminLoading').hidden = true; $('#adminApp').hidden = false
