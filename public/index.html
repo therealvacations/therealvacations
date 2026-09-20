@@ -351,10 +351,10 @@ async function loadWheelSettings(){
     .eq('is_active',true).limit(1).maybeSingle();
   if(data){
     const colors=[data.wheel_color_1||'#7c3aed',data.wheel_color_2||'#c084fc',data.wheel_color_3||'#a855f7'];
-    segments=Array.from({length:8},(_,i)=>({
-      label:data['prize_'+(i+1)]||segments[i].label,
-      color:colors[i%colors.length]
-    }));
+    const configured=Array.from({length:8},(_,i)=>String(data['prize_'+(i+1)]||'').trim()).filter(Boolean);
+    if(configured.length>=2){
+      segments=configured.map((label,i)=>({label,color:colors[i%colors.length]}));
+    }
     drawWheel(0);
   }
 }
