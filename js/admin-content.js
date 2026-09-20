@@ -7,7 +7,7 @@ const HOME_DEFAULTS = {
   trust_items: ['20+ Years of Group Travel', 'Flexible Payment Plans', '24/7 Trip Support'], cta_label: 'Explore Our Trips →', cta_url: '/trips',
   perks_heading: 'Real Vacationers Get It First', perks_subheading: "We don't just plan your trip — we make sure you get the best deals on everything around it.",
   perks: [
-    { icon: '✈️', title: 'Flight Deals', description: 'Book your flight for less — compare hundreds of airlines and find the best fares to any destination.', label: 'Find My Flight →', url: 'https://www.kiwi.com' },
+    { icon: '✈️', title: 'Flight Deals', description: 'Book your flight for less — compare hundreds of airlines and find the best fares to any destination.', label: 'Find My Flight →', url: '/flights' },
     { icon: '🏨', title: 'Hotels & Stays', description: 'Extend your trip? Compare prices and book the perfect spot near every experience.', label: 'Browse Hotels →', url: 'https://www.hotels.com' },
     { icon: '🎒', title: 'Travel Essentials', description: 'Luggage, travel pillows, packing cubes — gear we actually use, handpicked to make your journey smoother.', label: 'Shop Gear →', url: '/resources' },
     { icon: '🎟️', title: 'Add-On Experiences', description: 'Museums, food tours, wine tastings — extend your adventure with curated local experiences.', label: 'Explore More →', url: 'https://www.klook.com' },
