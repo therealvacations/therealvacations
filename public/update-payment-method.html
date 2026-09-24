@@ -1,62 +1,157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Update Payment Method | The Real Vacations</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://js.stripe.com/v3/"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DM Sans', sans-serif; background: #f5f5f5; }
-        nav { background: #1a0533; padding: 14px 40px; display: flex; justify-content: space-between; align-items: center; }
-        nav img { height: 52px; }
-        nav a { color: #fff; text-decoration: none; }
-        .container { max-width: 500px; margin: 40px auto; padding: 40px; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
-        h2 { margin-bottom: 24px; color: #1a0533; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; }
-        #card-element { padding: 12px; border: 1px solid #ddd; border-radius: 8px; }
-        button { background-color: #7c3aed; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
-        button:hover { background-color: #6d28d9; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Update Payment Method | The Real Vacations</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://js.stripe.com/v3/"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}body{font-family:'DM Sans',sans-serif;background:#f7f3fb;color:#251b30;min-height:100vh}
+    nav{background:#1a0533;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap}
+    nav img{height:50px}nav a{color:#fff;text-decoration:none;font-weight:700}.nav-links{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+    .wrap{max-width:620px;margin:48px auto;padding:0 20px}.card{background:#fff;border:1px solid #e8dff0;border-radius:22px;padding:34px;box-shadow:0 18px 50px rgba(45,20,70,.10)}
+    h1{color:#1a0533;font-size:30px;margin-bottom:8px}.lead{color:#6b6272;line-height:1.6;margin-bottom:26px}.field{margin-bottom:18px}
+    label{display:block;font-weight:700;color:#1a0533;margin-bottom:7px}.field input{width:100%;padding:13px 14px;border:1px solid #cec3d8;border-radius:10px;font:inherit}
+    #card-element{background:#fff;border:1px solid #cec3d8;border-radius:10px;padding:14px}.button{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:14px 20px;font:inherit;font-weight:800;cursor:pointer}.button:disabled{opacity:.55;cursor:not-allowed}
+    .message{display:none;margin-top:18px;padding:13px 15px;border-radius:10px;font-size:14px;line-height:1.5}.message.show{display:block}.message.error{background:#fef2f2;color:#991b1b;border:1px solid #fecaca}.message.success{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+    .current{background:#f8f4fc;border:1px solid #e4d7ef;border-radius:12px;padding:14px 16px;margin-bottom:20px;color:#4b3f55}.muted{font-size:12px;color:#8a8192;margin-top:14px;line-height:1.5;text-align:center}
+  </style>
 </head>
 <body>
-    <nav>
-        <a href="/"><img src="/logo.jpeg" alt="The Real Vacations"></a>
-    </nav>
+<nav>
+  <a href="/"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"></a>
+  <div class="nav-links"><a href="/my-trips">My Trips</a><a href="/request-travel">Request Travel</a><a href="/">Home</a></div>
+</nav>
+<main class="wrap">
+  <section class="card">
+    <h1>Update Payment Method</h1>
+    <p class="lead">Replace the default card securely. Your card details are entered directly into Stripe and are not stored by The Real Vacations.</p>
+    <div id="currentMethod" class="current">Checking your saved payment method…</div>
+    <form id="paymentForm">
+      <div class="field">
+        <label for="cardholderName">Name on Card</label>
+        <input id="cardholderName" type="text" autocomplete="cc-name" required>
+      </div>
+      <div class="field">
+        <label>New Card</label>
+        <div id="card-element"></div>
+      </div>
+      <button id="submitButton" class="button" type="submit">Save New Payment Method</button>
+      <div id="message" class="message" role="status" aria-live="polite"></div>
+      <p class="muted">This card becomes your default saved payment method for future authorized TRV charges.</p>
+    </form>
+  </section>
+</main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
 
-    <div class="container">
-        <h2>Update Payment Method</h2>
-        <form id="payment-form">
-            <div id="card-element"><!-- A Stripe Element will be inserted here. --></div>
-            <button id="submit">Update</button>
-            <div id="payment-message" class="hidden"></div>
-        </form>
-    </div>
-    <script>
-        const stripe = Stripe('YOUR_PUBLIC_KEY'); // Replace with your actual public key
-        const elements = stripe.elements();
-        const cardElement = elements.create('card');
-        cardElement.mount('#card-element');
+const stripe = Stripe('pk_live_51RO9vyAiAouGxd2D2KxJ1zbORbYd2Ig2EjdJ2TtV9XGKfS8TmyzuTNh0JE6qLPlUtXi0HA4TVARWQIE6VKkb0rMj00Ugps7rS0');
+const elements = stripe.elements();
+const cardElement = elements.create('card');
+cardElement.mount('#card-element');
 
-        const form = document.getElementById('payment-form');
-        form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const {paymentMethod, error} = await stripe.createPaymentMethod({
-                type: 'card',
-                card: cardElement,
-            });
-            if (error) {
-                // Display error.message in your UI.
-                document.getElementById('payment-message').textContent = error.message;
-            } else {
-                // Send paymentMethod.id to your server (for example, using fetch).
-                console.log('PaymentMethod ID: ', paymentMethod.id);
-                document.getElementById('payment-message').textContent = 'Payment method updated successfully!';
-            }
-        });
-    </script>
+const current = document.getElementById('currentMethod');
+const form = document.getElementById('paymentForm');
+const button = document.getElementById('submitButton');
+const message = document.getElementById('message');
+
+function showMessage(text, type) {
+  message.textContent = text;
+  message.className = 'message show ' + type;
+}
+
+const { data: { session } } = await supabase.auth.getSession();
+if (!session) {
+  window.location.replace('/login?next=' + encodeURIComponent('/update-payment-method'));
+} else {
+  const { data, error } = await supabase
+    .from('user_payment_methods')
+    .select('brand,last4,exp_month,exp_year')
+    .eq('user_id', session.user.id)
+    .eq('is_default', true)
+    .maybeSingle();
+
+  if (error) {
+    current.textContent = 'Your saved payment method could not be loaded, but you can still add a new one.';
+  } else if (data?.last4) {
+    const brand = data.brand ? data.brand.charAt(0).toUpperCase() + data.brand.slice(1) : 'Card';
+    current.textContent = brand + ' ending in ' + data.last4 + ' · expires ' + String(data.exp_month).padStart(2,'0') + '/' + data.exp_year;
+  } else {
+    current.textContent = 'No default payment method is currently saved.';
+  }
+}
+
+form.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  message.className = 'message';
+  const cardholderName = document.getElementById('cardholderName').value.trim();
+  if (cardholderName.length < 2) {
+    showMessage('Enter the name on the card.', 'error');
+    return;
+  }
+
+  const { data: { session: activeSession } } = await supabase.auth.getSession();
+  if (!activeSession) {
+    window.location.replace('/login?next=' + encodeURIComponent('/update-payment-method'));
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = 'Saving…';
+
+  try {
+    const setupRes = await fetch('/api/create-payment-method-setup', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer ' + activeSession.access_token,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({})
+    });
+    const setup = await setupRes.json().catch(() => ({}));
+    if (!setupRes.ok || !setup.client_secret || !setup.setup_intent_id) {
+      throw new Error(setup.error || 'Unable to start secure card setup.');
+    }
+
+    const result = await stripe.confirmCardSetup(setup.client_secret, {
+      payment_method: {
+        card: cardElement,
+        billing_details: { name: cardholderName }
+      }
+    });
+    if (result.error) throw new Error(result.error.message);
+
+    const saveRes = await fetch('/api/save-payment-method', {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer ' + activeSession.access_token,
+        'content-type': 'application/json'
+      },
+      body: JSON.stringify({
+        setup_intent_id: setup.setup_intent_id,
+        cardholder_name: cardholderName
+      })
+    });
+    const saved = await saveRes.json().catch(() => ({}));
+    if (!saveRes.ok || !saved.saved) {
+      throw new Error(saved.error || 'Unable to save the payment method.');
+    }
+
+    const method = saved.method || {};
+    const brand = method.brand ? method.brand.charAt(0).toUpperCase() + method.brand.slice(1) : 'Card';
+    current.textContent = brand + ' ending in ' + (method.last4 || '••••') + ' · expires ' + String(method.exp_month || '').padStart(2,'0') + '/' + (method.exp_year || '');
+    cardElement.clear();
+    form.reset();
+    showMessage('Your payment method was updated successfully.', 'success');
+  } catch (error) {
+    showMessage(error.message || 'Payment method could not be updated.', 'error');
+  } finally {
+    button.disabled = false;
+    button.textContent = 'Save New Payment Method';
+  }
+});
+</script>
 </body>
 </html>
