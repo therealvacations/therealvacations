@@ -7,7 +7,7 @@ function encodeForm(obj){
 }
 export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
-  const supabaseUrl=process.env.SUPABASE_URL;
+  const supabaseUrl=(process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL||'https://lqdflvnkiskzmvvknmmh.supabase.co');
   const serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
   const stripeKey=process.env.STRIPE_SECRET_KEY;
   const siteUrl=(process.env.PUBLIC_SITE_URL||'https://therealvacations.com').replace(/\/$/,'');
