@@ -236,7 +236,6 @@ $('#pdfQuoteButton')?.addEventListener('click',async()=>{
 
   const button=$('#pdfQuoteButton');
   button.disabled=true; button.textContent='Creating PDF…';
-  let root=null;
   try{
     const {data:q,error}=await supabase.from('travel_quotes')
       .select('quote_id,title,summary,status,valid_until,travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details))')
@@ -246,117 +245,77 @@ $('#pdfQuoteButton')?.addEventListener('click',async()=>{
     const opts=(q.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
     const safeName=String(q.title||'TRV-Travel-Proposal').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'TRV-Travel-Proposal';
 
-    root=document.createElement('div');
-    root.id='trvPdfRender';
-    root.style.cssText='position:fixed;left:-100000px;top:0;width:1100px;background:#f7f3fb;color:#30243e;font-family:"Segoe UI",Arial,sans-serif;margin:0;padding:0;z-index:-1';
+    const root=document.createElement('div');
+    root.style.cssText='width:8.5in;background:#fff;color:#30243e;font-family:Segoe UI,Arial,sans-serif;padding:0;margin:0';
 
-    const hero=document.createElement('section');
-    hero.style.cssText='background:linear-gradient(135deg,#1a0533,#4c1d6f);color:#fff;padding:54px 58px 48px';
-    hero.innerHTML=
-      '<div style="max-width:960px;margin:0 auto">'+
-        '<div style="text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:#d8b4fe;font-weight:800">Your Personalized TRV Proposal</div>'+
-        '<h1 style="font-size:52px;line-height:1.05;margin:12px 0 28px;font-weight:800;color:#fff">'+esc(q.title||'Your Travel Proposal')+'</h1>'+
-        '<div style="max-width:900px;line-height:1.7;color:#eee2f7;font-size:17px">'+esc(q.summary||'')+'</div>'+
-      '</div>';
+    const hero=document.createElement('div');
+    hero.style.cssText='background:#1a0533;color:#fff;padding:34px 38px';
+    hero.innerHTML='<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#d8b4fe;font-weight:800">Your Personalized TRV Proposal</div>'+
+      '<h1 style="font-size:30px;margin:8px 0 10px">'+esc(q.title||'Your Travel Proposal')+'</h1>'+
+      '<div style="font-size:14px;line-height:1.6;color:#eee2f7">'+esc(q.summary||'')+'</div>';
     root.appendChild(hero);
 
-    const shell=document.createElement('main');
-    shell.style.cssText='max-width:960px;margin:0 auto;padding:34px 0 54px';
-
-    const meta=document.createElement('div');
-    meta.style.cssText='display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px';
+    const body=document.createElement('div');
+    body.style.cssText='padding:26px 34px 38px';
     if(q.valid_until){
-      const pill=document.createElement('span');
-      pill.style.cssText='background:#eee5f7;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700';
-      pill.textContent='Valid through '+new Date(q.valid_until).toLocaleDateString();
-      meta.appendChild(pill);
+      const p=document.createElement('div');
+      p.style.cssText='display:inline-block;background:#eee5f7;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;margin-bottom:18px';
+      p.textContent='Valid through '+new Date(q.valid_until).toLocaleDateString();
+      body.appendChild(p);
     }
-    const status=document.createElement('span');
-    status.style.cssText='background:#eee5f7;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700';
-    status.textContent='Status: '+String(q.status||'ready').replaceAll('_',' ');
-    meta.appendChild(status);
-    shell.appendChild(meta);
 
     opts.forEach(o=>{
-      const wrap=document.createElement('article');
-      wrap.style.cssText='background:#fff;border:'+(o.is_recommended?'2px solid #7c3aed':'1px solid #e5dcec')+';border-radius:20px;padding:26px;margin:18px 0;box-shadow:0 10px 30px rgba(55,30,75,.06)';
-
-      const title=document.createElement('div');
-      title.innerHTML=
-        '<h2 style="color:#1a0533;margin:0 0 9px;font-size:26px">'+esc(o.name||'Travel Option')+(o.is_recommended?' · Recommended':'')+'</h2>'+
-        (o.description?'<div style="color:#6d6273;line-height:1.7;font-size:16px;margin-bottom:14px">'+esc(o.description)+'</div>':'');
-      wrap.appendChild(title);
+      const wrap=document.createElement('section');
+      wrap.style.cssText='border:1px solid #e5dcec;border-radius:16px;padding:20px;margin:0 0 18px;page-break-inside:avoid';
+      const head=document.createElement('div');
+      head.innerHTML='<h2 style="color:#1a0533;margin:0 0 7px;font-size:21px">'+esc(o.name||'Travel Option')+'</h2>'+
+        (o.description?'<div style="color:#6d6273;line-height:1.6;margin-bottom:14px">'+esc(o.description)+'</div>':'');
+      wrap.appendChild(head);
 
       const items=(o.travel_quote_items||[]).sort((a,b)=>a.sort_order-b.sort_order);
-      const itemsBox=document.createElement('div');
-      itemsBox.style.cssText='display:grid;gap:14px;margin:18px 0';
-
       items.forEach(i=>{
-        const card=document.createElement('section');
-        card.style.cssText='border:1px solid #eadff2;border-radius:14px;padding:17px;background:#fff;break-inside:avoid;page-break-inside:avoid';
-
+        const card=document.createElement('div');
+        card.style.cssText='border-top:1px solid #eadff2;padding:14px 0;page-break-inside:avoid';
         const details=i.details&&Object.keys(i.details).length
-          ? '<div style="margin-top:10px;background:#faf7fc;border-radius:10px;padding:11px;font-size:13px;line-height:1.7">'+
-              Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+
-            '</div>'
+          ? '<div style="margin-top:8px;background:#faf7fc;padding:9px 11px;border-radius:8px;font-size:12px;line-height:1.6">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>'
           :'';
-
-        card.innerHTML=
-          '<div style="display:flex;justify-content:space-between;gap:18px;align-items:flex-start">'+
-            '<div>'+
-              '<div style="text-transform:uppercase;letter-spacing:.08em;font-size:10px;font-weight:900;color:#7c3aed">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div>'+
-              '<h3 style="margin:4px 0 6px;color:#1a0533;font-size:18px">'+esc(i.title||'')+'</h3>'+
-            '</div>'+
-            '<div style="font-weight:900;color:#1a0533;white-space:nowrap;font-size:16px">'+(i.amount==null?'Price pending':money(i.amount))+'</div>'+
-          '</div>'+
-          (i.description?'<div style="color:#6d6273;margin:6px 0;font-size:14px;line-height:1.5">'+esc(i.description)+'</div>':'')+
-          details;
-        itemsBox.appendChild(card);
+        card.innerHTML='<div style="display:flex;justify-content:space-between;gap:18px"><div><div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;font-weight:900">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3 style="margin:4px 0 5px;color:#1a0533;font-size:16px">'+esc(i.title||'')+'</h3></div><div style="font-weight:900;color:#1a0533;white-space:nowrap">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div>'+
+          (i.description?'<div style="font-size:12px;color:#6d6273;line-height:1.5">'+esc(i.description)+'</div>':'')+details;
+        wrap.appendChild(card);
       });
 
-      wrap.appendChild(itemsBox);
-
       const total=document.createElement('div');
-      total.style.cssText='border-top:2px solid #ede4f3;margin-top:18px;padding-top:14px;display:flex;justify-content:space-between;align-items:center';
-      total.innerHTML='<strong style="color:#1a0533;font-size:16px">Proposal Total</strong><div style="font-size:30px;font-weight:900;color:#6d28d9;white-space:nowrap">'+money(o.total_amount)+'</div>';
+      total.style.cssText='border-top:2px solid #ede4f3;margin-top:8px;padding-top:12px;display:flex;justify-content:space-between;font-size:18px;font-weight:900;color:#1a0533';
+      total.innerHTML='<span>Proposal Total</span><span>'+money(o.total_amount)+'</span>';
       wrap.appendChild(total);
-
-      shell.appendChild(wrap);
+      body.appendChild(wrap);
     });
 
-    root.appendChild(shell);
+    const footer=document.createElement('div');
+    footer.style.cssText='margin-top:20px;padding-top:14px;border-top:1px solid #eadff2;font-size:10px;color:#776b82;line-height:1.5';
+    footer.textContent='The Real Vacations · therealvacations.com';
+    body.appendChild(footer);
+
+    root.appendChild(body);
     document.body.appendChild(root);
 
-    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-
     await window.html2pdf().set({
-      margin:[0.18,0.18,0.18,0.18],
+      margin:[0.25,0.25,0.25,0.25],
       filename:safeName+'.pdf',
-      image:{type:'jpeg',quality:0.99},
-      html2canvas:{
-        scale:1.6,
-        useCORS:true,
-        backgroundColor:'#f7f3fb',
-        scrollX:0,
-        scrollY:0,
-        windowWidth:1100
-      },
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
       jsPDF:{unit:'in',format:'letter',orientation:'portrait'},
-      pagebreak:{
-        mode:['css','legacy'],
-        avoid:['.proposal-item']
-      }
+      pagebreak:{mode:['css','legacy'],avoid:['section']}
     }).from(root).save();
 
+    root.remove();
     toast('PDF downloaded.');
   }catch(error){
     toast(error.message||'PDF could not be created.',true);
   }finally{
-    if(root) root.remove();
     button.disabled=false; button.textContent='Download PDF';
   }
 });
-
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
