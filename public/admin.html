@@ -87,6 +87,7 @@
           <div class="field"><label for="quoteItemQuantity">Quantity</label><input id="quoteItemQuantity" type="number" min="1" value="1"/></div>
         </div>
         <div class="field"><label for="quoteItemDescription">Client-facing description</label><textarea id="quoteItemDescription" placeholder="Flight times, ticket duration, vehicle type, what is included..."></textarea></div>
+        <div class="field"><label for="quoteItemAdminNotes">Admin-only notes</label><textarea id="quoteItemAdminNotes" placeholder="Supplier cost, internal markup, advisor notes..."></textarea><p class="hint"><strong>Private:</strong> never shown on the traveler proposal.</p></div>
         <div class="field"><label for="quoteItemDetails">Additional details</label><textarea id="quoteItemDetails" placeholder="One detail per line. Example: Outbound | DL1213 · 8:05 AM ATL → 9:37 AM MCO"></textarea><p class="hint">One per line: Label | Detail</p></div>
         <div class="form-actions"><button class="primary-button" id="saveQuoteItemButton" type="button">Add Proposal Item</button><button class="secondary-button" id="clearQuoteItemButton" type="button">Clear Item</button></div>
         <div id="quoteItemList" style="margin-top:16px"></div>
