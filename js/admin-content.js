@@ -262,7 +262,8 @@ function editResource(id) {
 
 async function saveResource(event) {
   event.preventDefault(); const id = $('#resourceId').value
-  const payload = { title: $('#resourceTitle').value.trim(), description: $('#resourceDescription').value.trim() || null, category: slugify($('#resourceCategory').value) || 'guide', icon: $('#resourceIcon').value.trim() || '🧭', link_url: $('#resourceUrl').value.trim() || null, link_label: $('#resourceLabel').value.trim() || 'Learn More →', sort_order: Number($('#resourceSort').value) || 0, is_featured: $('#resourceFeatured').checked, is_active: $('#resourceActive').checked, updated_by: state.user.id }
+  const payload = { title: $('#resourceTitle').value.trim(), description: $('#resourceDescription').value.trim() || null, category: slugify($('#resourceCategory').value) || 'guide', icon: $('#resourceIcon').value.trim() || '🧭', link_url: $('#resourceUrl').value.trim() || null,
+      image_url: $('#resourceImage').value.trim() || null, link_label: $('#resourceLabel').value.trim() || 'Learn More →', sort_order: Number($('#resourceSort').value) || 0, is_featured: $('#resourceFeatured').checked, is_active: $('#resourceActive').checked, updated_by: state.user.id }
   if (!payload.title) return showMessage('Resource title is required.', 'error')
   const query = id ? supabase.from('resources').update(payload).eq('resource_id', id) : supabase.from('resources').insert({ ...payload, created_by: state.user.id })
   const { error } = await query
@@ -507,6 +508,7 @@ $('#homeForm').addEventListener('submit', saveHomeSettings)
 $('#aboutForm').addEventListener('submit', saveAboutSettings)
 $('#contactForm').addEventListener('submit', saveContactSettings)
 $('#brandLogoUpload').addEventListener('change', (event) => uploadImage(event.target, '#brandLogoUrl', 'branding'))
+$('#resourceUpload').addEventListener('change', (event) => uploadImage(event.target, '#resourceImage', 'resources'))
 $('#tripUpload').addEventListener('change', (event) => uploadImage(event.target, '#tripImage', 'trips'))
 $('#blogUpload').addEventListener('change', (event) => uploadImage(event.target, '#blogImage', 'blog'))
 $('#logoutButton').addEventListener('click', async () => { await supabase.auth.signOut(); location.replace('/admin-login') })
