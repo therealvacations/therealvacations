@@ -214,7 +214,14 @@ async function saveQuote(publish=false){
   if(publish){
     const {data:{session}}=await supabase.auth.getSession();
     const resp=await fetch('/api/send-quote-ready',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+(session?.access_token||'')},body:JSON.stringify({quote_id:quoteId})});
-    if(!resp.ok) toast('Quote published, but the email could not be sent.',true); else toast('Quote published and emailed to the client.');
+    const emailResult=await resp.json().catch(()=>({}));
+    if(!resp.ok){
+      const detail=emailResult?.error||('Email route failed with status '+resp.status);
+      console.error('Quote email failed:',resp.status,emailResult);
+      toast('Quote published, but email failed: '+detail,true);
+    }else{
+      toast('Quote published and emailed to the client.');
+    }
   } else toast('Quote draft saved.');
   await loadRequests();
   if(currentRequest) {
