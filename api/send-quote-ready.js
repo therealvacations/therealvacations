@@ -36,7 +36,7 @@ export default async function handler(req,res){
   const options=(quote.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
   const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
   const optionHtml=options.map(o=>`<div style="padding:14px 0;border-bottom:1px solid #eee"><strong style="color:#1a0533">${esc(o.name)}</strong><div style="font-size:18px;font-weight:700;color:#7c3aed;margin-top:4px">${money(o.total_amount)}</div>${o.deposit_amount?'<div style="font-size:13px;color:#6b6270">Deposit: '+money(o.deposit_amount)+'</div>':''}</div>`).join('');
-  const next='/my-trips';
+  const next='/proposal?quote='+encodeURIComponent(quoteId);
   const loginUrl=siteUrl+'/login?next='+encodeURIComponent(next);
   const signupUrl=siteUrl+'/signup?next='+encodeURIComponent(next);
   const validText=quote.valid_until ? new Date(quote.valid_until).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : '';
