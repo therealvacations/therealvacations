@@ -4,7 +4,7 @@ const clean=v=>String(v??'').trim();
 
 export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
-  const supabaseUrl=process.env.SUPABASE_URL, serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl=(process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL||'https://lqdflvnkiskzmvvknmmh.supabase.co'), serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
   if(!supabaseUrl||!serviceKey) return res.status(500).json({error:'Server configuration error'});
   const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');
   if(!token) return res.status(401).json({error:'Unauthorized'});
