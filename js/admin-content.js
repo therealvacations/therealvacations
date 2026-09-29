@@ -365,6 +365,30 @@ async function saveBrandingSettings(event) {
   } catch (error) { showMessage(error.message || 'Site header could not be saved.', 'error') }
 }
 
+function renderPageHeadings() {
+  const pages = state.settings?.page_content || {}
+  $('#pageHeadings').value = Object.entries(pages).map(([path, item]) => [path, item?.heading || '', item?.subheading || ''].join(' | ')).join('\n')
+}
+
+async function savePageHeadings(event) {
+  event.preventDefault()
+  try {
+    const rows = String($('#pageHeadings').value || '').split('\n').map(line => line.trim()).filter(Boolean)
+    const page_content = {}
+    rows.forEach((line, index) => {
+      const parts = line.split('|').map(part => part.trim())
+      if (parts.length < 2 || !parts[0] || !parts[1]) throw new Error(`Line ${index + 1} must be: /page-path | Main heading | Subheading`)
+      const path = parts[0].startsWith('/') ? parts[0] : '/' + parts[0]
+      page_content[path] = { heading: parts[1], subheading: parts.slice(2).join(' | ') }
+    })
+    const { error } = await supabase.from('site_settings').upsert({ id: 1, page_content, updated_by: state.user.id, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    if (error) throw error
+    state.settings = { ...state.settings, page_content }
+    renderPageHeadings()
+    showMessage('Public page headings updated.')
+  } catch (error) { showMessage(error.message || 'Page headings could not be saved.', 'error') }
+}
+
 function renderHomeSettings() {
   const home = { ...HOME_DEFAULTS, ...(state.settings?.home_content || {}) }
   $('#homeAnnouncement').value = home.announcement
@@ -479,7 +503,7 @@ async function loadAll() {
   const failed = [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
   if (failed) return showMessage(failed.error.message, 'error')
   state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
-  renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings()
+  renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderPageHeadings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings()
 }
 
 async function initialize() {
@@ -504,6 +528,7 @@ $('#tripForm').addEventListener('submit', saveTrip); $('#tripReset').addEventLis
 $('#resourceForm').addEventListener('submit', saveResource); $('#resourceReset').addEventListener('click', resetResourceForm)
 $('#blogForm').addEventListener('submit', savePost); $('#blogReset').addEventListener('click', resetBlogForm)
 $('#brandingForm').addEventListener('submit', saveBrandingSettings)
+$('#pagesForm').addEventListener('submit', savePageHeadings)
 $('#homeForm').addEventListener('submit', saveHomeSettings)
 $('#aboutForm').addEventListener('submit', saveAboutSettings)
 $('#contactForm').addEventListener('submit', saveContactSettings)
