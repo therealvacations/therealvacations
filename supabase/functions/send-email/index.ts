@@ -34,10 +34,20 @@ Deno.serve(async (request) => {
   const replyTo = Deno.env.get('TRV_CONTACT_EMAIL') ?? fromEmail
   const siteUrl = (Deno.env.get('PUBLIC_SITE_URL') ?? 'https://therealvacations.com').replace(/\/$/, '')
   const bearer = (request.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '')
+  const apiKey = request.headers.get('apikey') ?? ''
   if (!supabaseUrl || !serviceRoleKey || !resendKey || !fromEmail) {
     return jsonResponse({ error: 'Server configuration error' }, 500)
   }
-  if (!bearer || bearer !== serviceRoleKey) return jsonResponse({ error: 'Forbidden' }, 403)
+
+  let authorized = Boolean(bearer && bearer === serviceRoleKey)
+  if (!authorized && apiKey) {
+    const caller = createClient(supabaseUrl, apiKey, {
+      auth: { autoRefreshToken: false, persistSession: false },
+    })
+    const { error: adminCheckError } = await caller.auth.admin.listUsers({ page: 1, perPage: 1 })
+    authorized = !adminCheckError
+  }
+  if (!authorized) return jsonResponse({ error: 'Forbidden' }, 403)
 
   let body: Record<string, unknown>
   try { body = await request.json() } catch { return jsonResponse({ error: 'Invalid JSON' }, 400) }
