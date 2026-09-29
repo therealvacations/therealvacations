@@ -224,6 +224,11 @@ async function saveQuote(publish=false){
   }
 }
 $('#saveQuoteButton')?.addEventListener('click',()=>saveQuote(false));
+$('#previewQuoteButton')?.addEventListener('click',()=>{
+  const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
+  if(!quoteId) return toast('Save the quote first, then preview the proposal.',true);
+  window.open('/proposal?quote='+encodeURIComponent(quoteId),'_blank','noopener');
+});
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
