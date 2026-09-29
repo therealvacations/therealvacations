@@ -56,7 +56,27 @@ Deno.serve(async (request) => {
   let relatedTable = ''
   let relatedId = ''
 
-  if (requestedType === 'request_received') {
+  if (requestedType === 'quote_ready') {
+    const quoteId = String(body.quote_id ?? '')
+    const { data: quote } = await admin.from('travel_quotes')
+      .select('quote_id,title,summary,status,valid_until,travel_quote_options(name,total_amount,deposit_amount,sort_order),travel_requests!inner(requester_email,primary_first_name,destination)')
+      .eq('quote_id', quoteId).maybeSingle()
+    if (!quote || quote.status !== 'ready') return jsonResponse({ error: 'Published quote not found' }, 404)
+
+    const travelRequest = quote.travel_requests
+    recipient = travelRequest.requester_email
+    subject = `Your TRV quote is ready: ${quote.title}`
+    relatedTable = 'travel_quotes'; relatedId = quote.quote_id
+
+    const options = (quote.travel_quote_options ?? []).sort((a: any,b: any) => a.sort_order-b.sort_order)
+    const optionHtml = options.map((o: any) => `<div style="padding:14px 0;border-bottom:1px solid #eee"><strong style="color:#1a0533">${escapeHtml(o.name)}</strong><div style="font-size:18px;font-weight:700;color:#7c3aed;margin-top:4px">${money(o.total_amount)}</div>${o.deposit_amount ? '<div style="font-size:13px;color:#6b6270">Deposit: '+money(o.deposit_amount)+'</div>' : ''}</div>`).join('')
+    const next = '/proposal?quote='+encodeURIComponent(quoteId)
+    const loginUrl = siteUrl+'/login?next='+encodeURIComponent(next)
+    const signupUrl = siteUrl+'/signup?next='+encodeURIComponent(next)
+    const validText = quote.valid_until ? new Date(quote.valid_until).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : ''
+
+    html = emailShell('Your TRV quote is ready', `<p>Hi ${escapeHtml(travelRequest.primary_first_name || 'Traveler')},</p><p>${escapeHtml(quote.summary || ('We created your personalized travel options'+(travelRequest.destination ? ' for '+travelRequest.destination : '')+'.'))}</p><div style="margin:22px 0">${optionHtml}</div>${validText ? '<p style="font-size:13px;color:#6b6270">Quote valid through <strong>'+escapeHtml(validText)+'</strong>.</p>' : ''}<p>Open your secure TRV account to review the full proposal and approve the option you want.</p><p><a href="${loginUrl}" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold;display:inline-block">Review My Quote →</a></p><p style="font-size:13px;color:#6b6270">New to TRV? <a href="${signupUrl}" style="color:#7c3aed;font-weight:bold">Create your account using this email address</a>.</p>`, siteUrl)
+  } else if (requestedType === 'request_received') {
     const submissionId = String(body.tally_submission_id ?? '')
     const { data: travelRequest } = await admin.from('travel_requests')
       .select('request_id,requester_email,primary_first_name,destination')
