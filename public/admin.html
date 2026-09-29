@@ -73,6 +73,25 @@
         <div class="form-actions"><button class="primary-button" id="saveQuoteButton" type="button">Save Draft</button><button class="secondary-button" id="publishQuoteButton" type="button">Publish & Email Client</button><button class="secondary-button" id="clearQuoteButton" type="button">Clear</button></div>
 
         <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
+        <h2 style="font-size:18px">Proposal Items</h2>
+        <p class="hint">Build the proposal the way Travefy does: add each flight, rental car, ticket, hotel, transfer, activity, or other component as its own item.</p>
+        <input id="quoteItemId" type="hidden"/>
+        <div class="field-grid">
+          <div class="field"><label for="quoteItemCategory">Item type</label><select id="quoteItemCategory">
+            <option value="flight">Flight</option><option value="rental_car">Rental Car</option><option value="hotel">Hotel / Resort</option>
+            <option value="ticket">Ticket / Theme Park</option><option value="transfer">Transfer</option><option value="activity">Activity / Excursion</option>
+            <option value="insurance">Travel Insurance</option><option value="other">Other</option>
+          </select></div>
+          <div class="field"><label for="quoteItemTitle">Item title</label><input id="quoteItemTitle" placeholder="Delta ATL → MCO"/></div>
+          <div class="field"><label for="quoteItemAmount">Amount ($)</label><input id="quoteItemAmount" type="number" min="0" step="0.01" placeholder="Leave blank if pending"/></div>
+          <div class="field"><label for="quoteItemQuantity">Quantity</label><input id="quoteItemQuantity" type="number" min="1" value="1"/></div>
+        </div>
+        <div class="field"><label for="quoteItemDescription">Client-facing description</label><textarea id="quoteItemDescription" placeholder="Flight times, ticket duration, vehicle type, what is included..."></textarea></div>
+        <div class="field"><label for="quoteItemDetails">Additional details</label><textarea id="quoteItemDetails" placeholder="One detail per line. Example: Outbound | DL1213 · 8:05 AM ATL → 9:37 AM MCO"></textarea><p class="hint">One per line: Label | Detail</p></div>
+        <div class="form-actions"><button class="primary-button" id="saveQuoteItemButton" type="button">Add Proposal Item</button><button class="secondary-button" id="clearQuoteItemButton" type="button">Clear Item</button></div>
+        <div id="quoteItemList" style="margin-top:16px"></div>
+
+        <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
         <h2 style="font-size:18px">Travelers</h2>
         <p class="hint">Add the legal traveler roster for this request. Date of birth stays in Admin and the traveler record.</p>
         <input id="travelerId" type="hidden"/>
