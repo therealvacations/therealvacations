@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
-  const supabaseUrl=process.env.SUPABASE_URL, serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY, stripeKey=process.env.STRIPE_SECRET_KEY;
+  const supabaseUrl=(process.env.SUPABASE_URL||process.env.NEXT_PUBLIC_SUPABASE_URL||'https://lqdflvnkiskzmvvknmmh.supabase.co'), serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY, stripeKey=process.env.STRIPE_SECRET_KEY;
   if(!supabaseUrl||!serviceKey||!stripeKey) return res.status(500).json({error:'Server configuration error'});
   const token=String(req.headers.authorization||'').replace(/^Bearer\s+/i,'');
   const sessionId=String(req.body?.session_id||'');
