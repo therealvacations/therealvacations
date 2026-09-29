@@ -26,9 +26,15 @@ function processHTML(filePath) {
   // Replace footer placeholder
   content = content.replace('<!-- FOOTER_PLACEHOLDER -->', footerFile);
 
-  // Keep branding consistent across every deployed HTML page, including
-  // older templates that still hard-code the legacy logo filename.
+  // Keep a safe default logo in older templates; live branding is then
+  // applied from site_settings by /js/site-settings.js.
   content = content.replace(/(?:\/)?logo\.jpeg/g, '/newtrv180x180no bckgrd logo favi.jpg');
+
+  // Make every deployed HTML page load the same site-wide branding/navigation
+  // settings, even if the page began as an older standalone template.
+  if (!content.includes('/js/site-settings.js')) {
+    content = content.replace('</body>', '<script type="module" src="/js/site-settings.js"></script>\n</body>');
+  }
   
   fs.writeFileSync(filePath, content);
   console.log(`✓ Updated ${path.basename(filePath)}`);
