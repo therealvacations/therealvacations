@@ -10,6 +10,82 @@ function toast(msg, error=false){
   box.textContent=msg; box.className='admin-message '+(error?'error':'success');
   setTimeout(()=>box.className='admin-message',3500);
 }
+
+function parseItemDetails(){
+  const out={};
+  ($('#quoteItemDetails')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{
+    const i=line.indexOf('|');
+    if(i>0) out[line.slice(0,i).trim()]=line.slice(i+1).trim();
+    else out['Note '+(Object.keys(out).length+1)]=line;
+  });
+  return out;
+}
+function clearQuoteItemForm(){
+  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  if($('#quoteItemCategory')) $('#quoteItemCategory').value='flight';
+  if($('#quoteItemQuantity')) $('#quoteItemQuantity').value='1';
+  if($('#saveQuoteItemButton')) $('#saveQuoteItemButton').textContent='Add Proposal Item';
+}
+function currentOptionId(){
+  return (currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order)[0]?.option_id || null;
+}
+async function loadQuoteItems(){
+  const list=$('#quoteItemList'); if(!list) return;
+  const optionId=currentOptionId();
+  if(!optionId){ list.innerHTML='<div class="empty-state">Save the quote first, then add proposal items.</div>'; return; }
+  const {data,error}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).order('sort_order',{ascending:true});
+  if(error){ list.innerHTML='<p class="hint">Proposal items could not be loaded.</p>'; return; }
+  list.innerHTML=(data||[]).map(i=>{
+    const amount=i.amount==null?'Price pending':money(i.amount);
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+'</p></div></div><p class="record-summary">'+esc(i.description||'')+'</p><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
+  }).join('')||'<div class="empty-state">No proposal items yet.</div>';
+  document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
+    const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
+    $('#quoteItemId').value=i.item_id; $('#quoteItemCategory').value=i.category||'other'; $('#quoteItemTitle').value=i.title||'';
+    $('#quoteItemAmount').value=i.amount==null?'':(i.amount/100).toFixed(2); $('#quoteItemQuantity').value=i.quantity||1;
+    $('#quoteItemDescription').value=i.description||'';
+    $('#quoteItemDetails').value=Object.entries(i.details||{}).map(([k,v])=>k+' | '+v).join('\n');
+    $('#saveQuoteItemButton').textContent='Update Proposal Item';
+  });
+  document.querySelectorAll('.delete-quote-item').forEach(btn=>btn.onclick=async()=>{
+    if(!confirm('Remove this proposal item?')) return;
+    const {error}=await supabase.from('travel_quote_items').delete().eq('item_id',btn.dataset.id);
+    if(error) return toast(error.message,true); toast('Proposal item removed.'); await loadQuoteItems();
+  });
+}
+async function saveQuoteItem(){
+  const optionId=currentOptionId();
+  if(!optionId) return toast('Save the quote first so the proposal item has an option to attach to.',true);
+  const title=$('#quoteItemTitle')?.value.trim();
+  if(!title) return toast('Enter an item title.',true);
+  const amountRaw=$('#quoteItemAmount')?.value;
+  const payload={
+    option_id:optionId,
+    category:$('#quoteItemCategory')?.value||'other',
+    title,
+    description:$('#quoteItemDescription')?.value.trim()||null,
+    amount:amountRaw===''?null:Math.round(Number(amountRaw)*100),
+    quantity:Math.max(1,Number($('#quoteItemQuantity')?.value||1)),
+    details:parseItemDetails(),
+    updated_at:new Date().toISOString()
+  };
+  const id=$('#quoteItemId')?.value;
+  if(id){
+    const {error}=await supabase.from('travel_quote_items').update(payload).eq('item_id',id);
+    if(error) return toast(error.message,true);
+    toast('Proposal item updated.');
+  }else{
+    const {data:maxRows}=await supabase.from('travel_quote_items').select('sort_order').eq('option_id',optionId).order('sort_order',{ascending:false}).limit(1);
+    payload.sort_order=(maxRows?.[0]?.sort_order||0)+1;
+    const {error}=await supabase.from('travel_quote_items').insert(payload);
+    if(error) return toast(error.message,true);
+    toast('Proposal item added.');
+  }
+  clearQuoteItemForm(); await loadQuoteItems();
+}
+$('#saveQuoteItemButton')?.addEventListener('click',saveQuoteItem);
+$('#clearQuoteItemButton')?.addEventListener('click',clearQuoteItemForm);
+
 function parseOptions(){
   return ($('#quoteOptions')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean).map((line,i)=>{
     const [name,total,deposit,...rest]=line.split('|').map(x=>x.trim());
@@ -100,6 +176,8 @@ function openRequest(r){
   link.style.display='none'; link.href='#';
   clearTravelerForm();
   loadTravelers(r.request_id);
+  clearQuoteItemForm();
+  loadQuoteItems();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function saveQuote(publish=false){
@@ -123,6 +201,11 @@ async function saveQuote(publish=false){
     if(!resp.ok) toast('Quote published, but the email could not be sent.',true); else toast('Quote published and emailed to the client.');
   } else toast('Quote draft saved.');
   await loadRequests();
+  if(currentRequest) {
+    const refreshed=(await supabase.from('travel_requests').select('request_id,travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,travel_quote_options(*))').eq('request_id',currentRequest.request_id).maybeSingle()).data;
+    if(refreshed?.travel_quotes){ currentQuote=(refreshed.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status))||currentQuote; }
+    await loadQuoteItems();
+  }
 }
 $('#saveQuoteButton')?.addEventListener('click',()=>saveQuote(false));
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
@@ -133,7 +216,9 @@ $('#clearQuoteButton')?.addEventListener('click',()=>{
   if($('#fulfillmentStatus')) $('#fulfillmentStatus').textContent='Select a request to view payment readiness.';
   if($('#openConfirmedPaymentLink')){$('#openConfirmedPaymentLink').style.display='none';$('#openConfirmedPaymentLink').href='#';}
   clearTravelerForm();
+  clearQuoteItemForm();
   if($('#travelerList')) $('#travelerList').innerHTML='<div class="empty-state">Select a request to manage travelers.</div>';
+  if($('#quoteItemList')) $('#quoteItemList').innerHTML='<div class="empty-state">Select a request to manage proposal items.</div>';
 });
 
 async function createConfirmedPayment(){
