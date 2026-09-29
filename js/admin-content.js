@@ -565,7 +565,7 @@ async function initialize() {
   setTab(firstTab.dataset.tab); await loadAll(); $('#adminLoading').hidden = true; $('#adminApp').hidden = false
 }
 
-$('.admin-tab').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)))
+Array.from(document.querySelectorAll('.admin-tab')).forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)))
 if ($('#verifyStripeButton')) $('#verifyStripeButton').addEventListener('click', verifyStripeConnection)
 $('#tripForm').addEventListener('submit', saveTrip); $('#tripReset').addEventListener('click', resetTripForm)
 $('#resourceForm').addEventListener('submit', saveResource); $('#resourceReset').addEventListener('click', resetResourceForm)
