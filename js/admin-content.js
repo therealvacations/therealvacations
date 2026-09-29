@@ -1,6 +1,26 @@
 import { supabase } from './supabase-client.js'
 
 const state = { user: null, permissions: null, trips: [], resources: [], posts: [], packages: [], settings: null }
+const BRANDING_DEFAULTS = {
+  logo_url: '/newtrv180x180no bckgrd logo favi.jpg',
+  site_name: 'The Real Vacations',
+  tagline: 'Born from Family · Built for Community',
+  nav: [
+    { label: 'Home', url: '/' },
+    { label: 'Trips', url: '/trips' },
+    { label: 'Flights', url: '/flights' },
+    { label: 'Spin & Save', url: '/spin' },
+    { label: 'Real Stories', url: '/real-stories' },
+    { label: 'About', url: '/about' },
+    { label: 'How It Works', url: '/how-it-works' },
+    { label: 'Resources', url: '/resources' },
+    { label: 'Blog', url: '/blog' },
+    { label: 'Contact', url: '/contact' },
+    { label: 'Request Travel', url: '/request-travel' },
+  ],
+  login_label: 'Login', login_url: '/login',
+  signup_label: 'Sign Up', signup_url: '/signup',
+}
 const HOME_DEFAULTS = {
   logo_url: '/newtrv180x180no bckgrd logo favi.jpg', announcement: '✨ New group experiences are added throughout the year.', announcement_url: '/trips',
   hero_tag: '✨ GROUP TRAVEL REIMAGINED', hero_title: 'You Bring Your People.\nWe Handle Everything Else.', hero_text: 'All-inclusive group trips to concerts, wine country, and cultural celebrations. No planning stress. No logistics headaches. Just unforgettable experiences.',
@@ -309,6 +329,41 @@ const parseLines = (value, keys) => String(value || '').split('\n').map((line) =
   return Object.fromEntries(keys.map((key, position) => [key, parts[position]]))
 })
 
+function renderBrandingSettings() {
+  const brand = { ...BRANDING_DEFAULTS, ...(state.settings?.branding_content || {}) }
+  $('#brandLogoUrl').value = brand.logo_url || BRANDING_DEFAULTS.logo_url
+  $('#brandSiteName').value = brand.site_name || BRANDING_DEFAULTS.site_name
+  $('#brandTagline').value = brand.tagline || ''
+  $('#brandNav').value = (Array.isArray(brand.nav) ? brand.nav : BRANDING_DEFAULTS.nav).map(item => `${item.label} | ${item.url}`).join('\n')
+  $('#brandLoginLabel').value = brand.login_label || 'Login'
+  $('#brandLoginUrl').value = brand.login_url || '/login'
+  $('#brandSignupLabel').value = brand.signup_label || 'Sign Up'
+  $('#brandSignupUrl').value = brand.signup_url || '/signup'
+}
+
+async function saveBrandingSettings(event) {
+  event.preventDefault()
+  try {
+    const nav = parseLines($('#brandNav').value, ['label', 'url'])
+    const branding_content = {
+      logo_url: $('#brandLogoUrl').value.trim(),
+      site_name: $('#brandSiteName').value.trim(),
+      tagline: $('#brandTagline').value.trim(),
+      nav,
+      login_label: $('#brandLoginLabel').value.trim() || 'Login',
+      login_url: $('#brandLoginUrl').value.trim() || '/login',
+      signup_label: $('#brandSignupLabel').value.trim() || 'Sign Up',
+      signup_url: $('#brandSignupUrl').value.trim() || '/signup',
+    }
+    if (!branding_content.logo_url || !branding_content.site_name || !branding_content.nav.length) throw new Error('Logo, site name, and at least one menu item are required.')
+    const { error } = await supabase.from('site_settings').upsert({ id: 1, branding_content, updated_by: state.user.id, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    if (error) throw error
+    state.settings = { ...state.settings, branding_content }
+    renderBrandingSettings()
+    showMessage('Site header and menu updated.')
+  } catch (error) { showMessage(error.message || 'Site header could not be saved.', 'error') }
+}
+
 function renderHomeSettings() {
   const home = { ...HOME_DEFAULTS, ...(state.settings?.home_content || {}) }
   $('#homeLogoUrl').value = home.logo_url
@@ -424,7 +479,7 @@ async function loadAll() {
   const failed = [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
   if (failed) return showMessage(failed.error.message, 'error')
   state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
-  renderTrips(); renderResources(); renderPosts(); renderHomeSettings(); renderAboutSettings(); renderContactSettings()
+  renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings()
 }
 
 async function initialize() {
@@ -448,9 +503,11 @@ $$('.admin-tab').forEach((button) => button.addEventListener('click', () => setT
 $('#tripForm').addEventListener('submit', saveTrip); $('#tripReset').addEventListener('click', resetTripForm)
 $('#resourceForm').addEventListener('submit', saveResource); $('#resourceReset').addEventListener('click', resetResourceForm)
 $('#blogForm').addEventListener('submit', savePost); $('#blogReset').addEventListener('click', resetBlogForm)
+$('#brandingForm').addEventListener('submit', saveBrandingSettings)
 $('#homeForm').addEventListener('submit', saveHomeSettings)
 $('#aboutForm').addEventListener('submit', saveAboutSettings)
 $('#contactForm').addEventListener('submit', saveContactSettings)
+$('#brandLogoUpload').addEventListener('change', (event) => uploadImage(event.target, '#brandLogoUrl', 'branding'))
 $('#tripUpload').addEventListener('change', (event) => uploadImage(event.target, '#tripImage', 'trips'))
 $('#blogUpload').addEventListener('change', (event) => uploadImage(event.target, '#blogImage', 'blog'))
 $('#logoutButton').addEventListener('click', async () => { await supabase.auth.signOut(); location.replace('/admin-login') })
