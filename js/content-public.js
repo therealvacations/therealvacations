@@ -87,7 +87,7 @@ async function loadResources() {
   if (!container) return
   showState(container, 'Loading travel resources…')
   const { data, error } = await supabase.from('resources')
-    .select('resource_id,title,description,category,icon,link_url,link_label,sort_order,is_featured')
+    .select('resource_id,title,description,category,icon,image_url,link_url,link_label,sort_order,is_featured')
     .eq('is_active', true).order('is_featured', { ascending: false }).order('category').order('sort_order')
 
   if (error) return showState(container, 'Resources could not be loaded. Please try again shortly.', 'error')
@@ -118,6 +118,12 @@ async function loadResources() {
       const grid = node('section', 'featured-grid')
       grid.append(...featured.map((item) => {
         const card = node('article', 'featured-resource')
+        const imageUrl = safeUrl(item.image_url, '')
+        if (imageUrl) {
+          const image = node('img', 'resource-image')
+          image.src = imageUrl; image.alt = item.title || ''; image.loading = 'lazy'
+          card.append(image)
+        }
         card.append(node('div', 'icon', item.icon || '🧭'), node('h2', '', item.title), node('p', '', item.description || ''), makeLink(item, ''))
         return card
       }))
@@ -129,6 +135,12 @@ async function loadResources() {
     const grid = node('div', 'card-grid')
     grid.append(...items.map((item) => {
       const card = node('article', 'card')
+      const imageUrl = safeUrl(item.image_url, '')
+      if (imageUrl) {
+        const image = node('img', 'resource-image')
+        image.src = imageUrl; image.alt = item.title || ''; image.loading = 'lazy'
+        card.append(image)
+      }
       card.append(node('div', 'icon', item.icon || '🧭'), node('h3', '', item.title), node('p', '', item.description || ''))
       card.append(makeLink(item, 'card-link'))
       return card
