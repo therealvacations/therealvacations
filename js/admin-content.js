@@ -562,7 +562,7 @@ async function initialize() {
   if (!permissions.can_edit_stories) { $('[data-tab="stories"]').hidden = true; $('[data-tab="gallery"]').hidden = true }
   const requestedTab = new URLSearchParams(location.search).get('tab')
   const requestedButton = requestedTab ? document.querySelector('.admin-tab[data-tab="' + CSS.escape(requestedTab) + '"]') : null
-  const firstTab = (requestedButton && !requestedButton.hidden) ? requestedButton : $('.admin-tab').find((button) => !button.hidden)
+  const firstTab = (requestedButton && !requestedButton.hidden) ? requestedButton : $$('.admin-tab').find((button) => !button.hidden)
   if (!firstTab) return showMessage('This admin account has no content permissions.', 'error')
   setTab(firstTab.dataset.tab); await loadAll(); $('#adminLoading').hidden = true; $('#adminApp').hidden = false
 }
