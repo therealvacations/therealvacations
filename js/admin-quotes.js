@@ -248,7 +248,7 @@ $('#pdfQuoteButton')?.addEventListener('click',async()=>{
 
     root=document.createElement('div');
     root.id='trvPdfRender';
-    root.style.cssText='position:fixed;left:-100000px;top:0;width:1100px;background:#f7f3fb;color:#30243e;font-family:"Segoe UI",Arial,sans-serif;margin:0;padding:0;z-index:-1';
+    root.style.cssText='position:absolute;left:0;top:0;width:1100px;background:#f7f3fb;color:#30243e;font-family:"Segoe UI",Arial,sans-serif;margin:0;padding:0;z-index:2147483647';
 
     const hero=document.createElement('section');
     hero.style.cssText='background:linear-gradient(135deg,#1a0533,#4c1d6f);color:#fff;padding:54px 58px 48px';
@@ -325,7 +325,13 @@ $('#pdfQuoteButton')?.addEventListener('click',async()=>{
     });
 
     root.appendChild(shell);
+
+    const previousBodyOverflow=document.body.style.overflow;
+    const previousScrollX=window.scrollX;
+    const previousScrollY=window.scrollY;
+    document.body.style.overflow='hidden';
     document.body.appendChild(root);
+    window.scrollTo(0,0);
 
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
 
@@ -353,6 +359,8 @@ $('#pdfQuoteButton')?.addEventListener('click',async()=>{
     toast(error.message||'PDF could not be created.',true);
   }finally{
     if(root) root.remove();
+    document.body.style.overflow=previousBodyOverflow||'';
+    window.scrollTo(previousScrollX||0,previousScrollY||0);
     button.disabled=false; button.textContent='Download PDF';
   }
 });
