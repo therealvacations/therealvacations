@@ -1,7 +1,7 @@
 import { supabase } from './supabase-client.js'
 
 const { data: settings } = await supabase.from('site_settings')
-  .select('contact_email,contact_phone,contact_heading,contact_intro,business_hours,home_content,about_content,branding_content')
+  .select('contact_email,contact_phone,contact_heading,contact_intro,business_hours,home_content,about_content,branding_content,page_content')
   .eq('id', 1).maybeSingle()
 
 const setText = (selector, value) => {
@@ -30,6 +30,15 @@ if (settings) {
     const signup = document.createElement('a'); signup.href = brand.signup_url || '/signup'; signup.textContent = brand.signup_label || 'Sign Up'
     container.replaceChildren(login, signup)
   })
+  const pathname = window.location.pathname.replace(/\/$/, '') || '/'
+  const page = settings.page_content?.[pathname]
+  if (page) {
+    const heading = document.querySelector('[data-page-heading], .hero h1, header.hero h1, main h1')
+    const subheading = document.querySelector('[data-page-subheading], .hero p, header.hero p, .hero .subtitle, .hero .sub')
+    if (heading && page.heading) heading.textContent = page.heading
+    if (subheading && page.subheading) subheading.textContent = page.subheading
+  }
+
   const email = settings.contact_email?.trim()
   const phone = settings.contact_phone?.trim()
   document.querySelectorAll('[data-site-email]').forEach((link) => { link.textContent = email || ''; link.href = email ? `mailto:${email}` : '#'; link.hidden = !email })
