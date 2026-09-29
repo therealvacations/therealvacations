@@ -73,6 +73,22 @@
         <div class="form-actions"><button class="primary-button" id="saveQuoteButton" type="button">Save Draft</button><button class="secondary-button" id="publishQuoteButton" type="button">Publish & Email Client</button><button class="secondary-button" id="clearQuoteButton" type="button">Clear</button></div>
 
         <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
+        <h2 style="font-size:18px">Travelers</h2>
+        <p class="hint">Add the legal traveler roster for this request. Date of birth stays in Admin and the traveler record.</p>
+        <input id="travelerId" type="hidden"/>
+        <div class="field-grid">
+          <div class="field"><label for="travelerFirstName">First name</label><input id="travelerFirstName"/></div>
+          <div class="field"><label for="travelerMiddleName">Middle name</label><input id="travelerMiddleName"/></div>
+          <div class="field"><label for="travelerLastName">Last name</label><input id="travelerLastName"/></div>
+          <div class="field"><label for="travelerDob">Date of birth</label><input id="travelerDob" type="date"/></div>
+          <div class="field"><label for="travelerType">Traveler type</label><select id="travelerType"><option value="">Select</option><option value="adult">Adult</option><option value="child">Child</option><option value="infant">Infant</option></select></div>
+          <div class="field"><label for="travelerGender">Gender / sex marker</label><input id="travelerGender" placeholder="Optional"/></div>
+        </div>
+        <div class="field"><label for="travelerNotes">Traveler notes</label><textarea id="travelerNotes" placeholder="Optional notes, accessibility, dietary needs, ticket notes..."></textarea></div>
+        <div class="form-actions"><button class="primary-button" id="saveTravelerButton" type="button">Save Traveler</button><button class="secondary-button" id="clearTravelerButton" type="button">Clear Traveler</button></div>
+        <div id="travelerList" style="margin-top:16px"></div>
+
+        <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
         <h2 style="font-size:18px">Supplier Confirmation & Payment</h2>
         <p class="hint">Use this after you have confirmed the supplier's live availability and final price. The system verifies that this request has a saved payment method and signed authorization before creating the secure payment step.</p>
         <div class="field"><label for="fulfillmentSupplier">Supplier / confirmed service</label><input id="fulfillmentSupplier" placeholder="Delta + National Car Rental, Universal tickets, Villa supplier..."/></div>
