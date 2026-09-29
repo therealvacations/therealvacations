@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Your Travel Proposal | The Real Vacations</title>
+<link rel="icon" href="/favicon.ico"/>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#30243e}
+nav{background:#1a0533;padding:14px 28px;display:flex;align-items:center;gap:24px}nav img{height:48px}.nav-logo{margin-right:auto}.nav-links,.nav-auth{display:flex;gap:14px;align-items:center}.nav-links a,.nav-auth a{color:#fff;text-decoration:none;font-size:13px}.nav-auth a:last-child{background:#7c3aed;padding:8px 14px;border-radius:999px}
+.hero{background:linear-gradient(135deg,#1a0533,#4c1d6f);color:#fff;padding:58px 22px}.hero-inner{max-width:960px;margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:#d8b4fe;font-weight:800}.hero h1{font-size:clamp(34px,6vw,58px);margin:10px 0}.hero p{max-width:760px;line-height:1.7;color:#eee2f7;font-size:17px}
+.wrap{max-width:960px;margin:auto;padding:36px 20px 70px}.meta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}.pill{background:#eee5f7;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700}
+.option{background:#fff;border:1px solid #e5dcec;border-radius:20px;padding:26px;margin:18px 0;box-shadow:0 10px 30px rgba(55,30,75,.06)}.option.recommended{border:2px solid #7c3aed}.option-top{display:flex;justify-content:space-between;gap:20px;align-items:start}.option h2{color:#1a0533;margin:0 0 9px}.price{font-size:30px;font-weight:900;color:#6d28d9;white-space:nowrap}.desc{color:#6d6273;line-height:1.7}.details{background:#faf7fc;border-radius:12px;padding:16px;margin:18px 0;white-space:pre-line}.deposit{font-weight:700;color:#4b3d56}
+button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 22px;font-size:15px;font-weight:800;cursor:pointer}button:disabled{opacity:.55}.message{margin-top:10px;color:#991b1b}.loading{text-align:center;padding:70px 20px;color:#6d6273}
+.expired{background:#fff3cd;border:1px solid #f4d98a;padding:14px;border-radius:12px;margin-bottom:18px}
+@media(max-width:720px){.nav-links{display:none}.option-top{display:block}.price{margin:12px 0}}
+</style>
+</head>
+<body>
+<nav>
+<a href="/" class="nav-logo"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"></a>
+<div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/resources">Resources</a><a href="/contact">Contact</a></div>
+<div class="nav-auth"><a href="/my-trips">My Trips</a><a href="/login">Login</a></div>
+</nav>
+<section class="hero"><div class="hero-inner"><div class="eyebrow">Your Personalized TRV Proposal</div><h1 id="title">Your travel proposal</h1><p id="summary">Loading your personalized travel options…</p></div></section>
+<main class="wrap">
+<div id="loading" class="loading">Loading your secure proposal…</div>
+<div id="content" hidden>
+<div class="meta" id="meta"></div>
+<div id="expired" class="expired" hidden>This proposal has expired. Contact The Real Vacations for refreshed pricing and availability.</div>
+<div id="options"></div>
+<p class="message" id="message" aria-live="polite"></p>
+</div>
+</main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const qs=new URLSearchParams(location.search), quoteId=qs.get('quote')||'';
+const loading=document.getElementById('loading'),content=document.getElementById('content'),optionsEl=document.getElementById('options'),message=document.getElementById('message');
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const {data:{user}}=await supabase.auth.getUser();
+if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
+if(user){
+  const {data:q,error}=await supabase.from('travel_quotes')
+    .select('quote_id,title,summary,status,valid_until,travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order)')
+    .eq('quote_id',quoteId).maybeSingle();
+  if(error||!q){loading.textContent='This proposal could not be found for your account.'}
+  else{
+    document.getElementById('title').textContent=q.title||'Your TRV Proposal';
+    document.getElementById('summary').textContent=q.summary||'Review your personalized travel options and select the experience you want to book.';
+    const expired=q.valid_until&&new Date(q.valid_until).getTime()<Date.now();
+    document.getElementById('expired').hidden=!expired;
+    const meta=[];
+    if(q.valid_until) meta.push('<span class="pill">Valid through '+new Date(q.valid_until).toLocaleDateString()+'</span>');
+    meta.push('<span class="pill">Status: '+esc(String(q.status||'ready').replaceAll('_',' '))+'</span>');
+    document.getElementById('meta').innerHTML=meta.join('');
+    const opts=(q.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
+    optionsEl.innerHTML=opts.map(o=>{
+      const details=o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
+      const canApprove=!expired&&['ready','viewed'].includes(q.status);
+      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div><div class="price">'+money(o.total_amount)+'</div></div>'+details+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+(canApprove?'<button class="choose" data-option="'+o.option_id+'">Select & Book This Option</button>':'')+'</article>';
+    }).join('');
+    loading.hidden=true;content.hidden=false;
+    document.querySelectorAll('.choose').forEach(btn=>btn.addEventListener('click',async()=>{
+      document.querySelectorAll('.choose').forEach(b=>b.disabled=true);
+      btn.textContent='Creating your itinerary…';message.textContent='';
+      const {data,error}=await supabase.functions.invoke('approve-custom-quote',{body:{quote_id:quoteId,option_id:btn.dataset.option}});
+      if(error||!data?.custom_booking_id){
+        message.textContent=data?.error||error?.message||'Your selection could not be completed. Please try again.';
+        document.querySelectorAll('.choose').forEach(b=>b.disabled=false);btn.textContent='Select & Book This Option';return;
+      }
+      location.assign('/quote-checkout?booking='+encodeURIComponent(data.custom_booking_id));
+    }));
+  }
+}
+</script>
+<script type="module" src="/js/site-settings.js"></script>
+</body></html>
