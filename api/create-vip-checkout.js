@@ -82,6 +82,7 @@ export default async function handler(req,res){
     mode:'subscription',
     customer_email:user.email,
     client_reference_id:user.id,
+    'consent_collection[terms_of_service]':'required',
     ...lineItem,
     'line_items[0][quantity]':1,
     'metadata[checkout_type]':'vip_membership',
