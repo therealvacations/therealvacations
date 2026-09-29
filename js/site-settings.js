@@ -1,7 +1,7 @@
 import { supabase } from './supabase-client.js'
 
 const { data: settings } = await supabase.from('site_settings')
-  .select('contact_email,contact_phone,contact_heading,contact_intro,business_hours,home_content,about_content')
+  .select('contact_email,contact_phone,contact_heading,contact_intro,business_hours,home_content,about_content,branding_content')
   .eq('id', 1).maybeSingle()
 
 const setText = (selector, value) => {
@@ -10,6 +10,26 @@ const setText = (selector, value) => {
 }
 
 if (settings) {
+  const brand = settings.branding_content || {}
+  const logoUrl = brand.logo_url || '/newtrv180x180no bckgrd logo favi.jpg'
+  document.querySelectorAll('nav img, .nav-logo img, a.logo img').forEach((img) => { img.src = logoUrl; img.alt = brand.site_name || 'The Real Vacations' })
+  document.querySelectorAll('nav .logo span').forEach((el) => { if (brand.site_name) el.textContent = brand.site_name })
+  document.querySelectorAll('nav .logo small').forEach((el) => { if (brand.tagline) el.textContent = brand.tagline })
+  if (Array.isArray(brand.nav)) {
+    document.querySelectorAll('nav .nav-links').forEach((container) => {
+      container.replaceChildren(...brand.nav.map((item) => {
+        const a = document.createElement('a')
+        a.textContent = item.label || ''
+        a.href = item.url || '#'
+        return a
+      }))
+    })
+  }
+  document.querySelectorAll('nav .nav-auth').forEach((container) => {
+    const login = document.createElement('a'); login.href = brand.login_url || '/login'; login.textContent = brand.login_label || 'Login'
+    const signup = document.createElement('a'); signup.href = brand.signup_url || '/signup'; signup.textContent = brand.signup_label || 'Sign Up'
+    container.replaceChildren(login, signup)
+  })
   const email = settings.contact_email?.trim()
   const phone = settings.contact_phone?.trim()
   document.querySelectorAll('[data-site-email]').forEach((link) => { link.textContent = email || ''; link.href = email ? `mailto:${email}` : '#'; link.hidden = !email })
