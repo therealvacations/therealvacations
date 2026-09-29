@@ -289,7 +289,7 @@ Deno.serve(async (request) => {
         ? { customer: billing.stripe_customer_id }
         : { customer_email: user.email, customer_creation: 'always' as const }),
       client_reference_id: payment.booking_id,
-      payment_method_types: ['card'],
+      ...(billing.payment_plan === 'installments' ? { payment_method_types: ['card'] as Stripe.Checkout.SessionCreateParams.PaymentMethodType[] } : {}),
       line_items: [{
         quantity: 1,
         price_data: {
