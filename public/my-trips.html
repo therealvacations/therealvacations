@@ -193,19 +193,20 @@ if (user) {
       button.addEventListener('click', async () => {
         button.disabled = true;
         button.textContent = 'Saving...';
-        const { error } = await supabase.from('travel_quote_responses').upsert({
-          quote_id: button.dataset.quoteId,
-          option_id: button.dataset.optionId,
-          user_id: user.id,
-          decision: 'approved'
-        }, { onConflict: 'quote_id,user_id' });
-        if (error) {
-          console.error('Unable to save quote response:', error.message);
+        const { data, error } = await supabase.functions.invoke('approve-custom-quote', {
+          body: {
+            quote_id: button.dataset.quoteId,
+            option_id: button.dataset.optionId
+          }
+        });
+        if (error || !data?.custom_booking_id) {
+          console.error('Unable to approve quote:', error?.message || data?.error || 'Unknown error');
           button.disabled = false;
           button.textContent = 'Try Again';
         } else {
-          button.textContent = 'Approved ✓';
+          button.textContent = 'Approved ✓ Opening booking…';
           document.querySelectorAll('[data-quote-id="' + button.dataset.quoteId + '"]').forEach(item => item.disabled = true);
+          location.assign('/quote-checkout?booking=' + encodeURIComponent(data.custom_booking_id));
         }
       });
     });
