@@ -35,6 +35,45 @@ async function loadRequests(){
   }).join('') || '<div class="empty-state">No travel requests yet.</div>';
   document.querySelectorAll('.open-request').forEach(btn=>btn.onclick=()=>openRequest(data.find(r=>r.request_id===btn.dataset.id)));
 }
+async function loadTravelers(requestId){
+  const list=$('#travelerList'); if(!list) return;
+  if(!requestId){ list.innerHTML='<div class="empty-state">Select a request to manage travelers.</div>'; return; }
+  const {data,error}=await supabase.from('request_travelers').select('*').eq('request_id',requestId).order('date_of_birth',{ascending:true});
+  if(error){ list.innerHTML='<p class="hint">Travelers could not be loaded.</p>'; return; }
+  list.innerHTML=(data||[]).map(t=>{
+    const full=[t.first_name,t.middle_name,t.last_name].filter(Boolean).join(' ');
+    const dob=t.date_of_birth?new Date(t.date_of_birth+'T00:00:00').toLocaleDateString():'DOB not entered';
+    return '<div class="admin-record compact"><div><h3>'+esc(full)+'</h3><p>'+esc(dob)+(t.traveler_type?' · '+esc(t.traveler_type):'')+'</p></div><div class="record-actions"><button class="secondary-button edit-traveler" data-id="'+t.traveler_id+'">Edit</button><button class="danger-button delete-traveler" data-id="'+t.traveler_id+'">Delete</button></div></div>';
+  }).join('')||'<div class="empty-state">No travelers added yet.</div>';
+  document.querySelectorAll('.edit-traveler').forEach(btn=>btn.onclick=()=>{
+    const t=(data||[]).find(x=>x.traveler_id===btn.dataset.id); if(!t)return;
+    $('#travelerId').value=t.traveler_id||''; $('#travelerFirstName').value=t.first_name||''; $('#travelerMiddleName').value=t.middle_name||'';
+    $('#travelerLastName').value=t.last_name||''; $('#travelerDob').value=t.date_of_birth||''; $('#travelerType').value=t.traveler_type||'';
+    $('#travelerGender').value=t.gender||''; $('#travelerNotes').value=t.notes||'';
+  });
+  document.querySelectorAll('.delete-traveler').forEach(btn=>btn.onclick=async()=>{
+    if(!confirm('Remove this traveler from the request?')) return;
+    const {error}=await supabase.from('request_travelers').delete().eq('traveler_id',btn.dataset.id);
+    if(error) return toast(error.message,true); toast('Traveler removed.'); await loadTravelers(requestId);
+  });
+}
+function clearTravelerForm(){
+  ['travelerId','travelerFirstName','travelerMiddleName','travelerLastName','travelerDob','travelerGender','travelerNotes'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  if($('#travelerType')) $('#travelerType').value='';
+}
+async function saveTraveler(){
+  if(!currentRequest) return toast('Select a travel request first.',true);
+  const first=$('#travelerFirstName')?.value.trim(), last=$('#travelerLastName')?.value.trim();
+  if(!first||!last) return toast('Traveler first and last name are required.',true);
+  const payload={request_id:currentRequest.request_id,first_name:first,middle_name:$('#travelerMiddleName')?.value.trim()||null,last_name:last,date_of_birth:$('#travelerDob')?.value||null,traveler_type:$('#travelerType')?.value||null,gender:$('#travelerGender')?.value.trim()||null,notes:$('#travelerNotes')?.value.trim()||null,updated_at:new Date().toISOString()};
+  const id=$('#travelerId')?.value;
+  const q=id?supabase.from('request_travelers').update(payload).eq('traveler_id',id):supabase.from('request_travelers').insert(payload);
+  const {error}=await q; if(error) return toast(error.message,true);
+  toast(id?'Traveler updated.':'Traveler added.'); clearTravelerForm(); await loadTravelers(currentRequest.request_id);
+}
+$('#saveTravelerButton')?.addEventListener('click',saveTraveler);
+$('#clearTravelerButton')?.addEventListener('click',clearTravelerForm);
+
 function openRequest(r){
   currentRequest=r; currentQuote=(r.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status)) || null;
   $('#quoteRequestId').value=r.request_id; $('#quoteId').value=currentQuote?.quote_id||'';
@@ -59,6 +98,8 @@ function openRequest(r){
   $('#fulfillmentStatus').textContent=statusText;
   const link=$('#openConfirmedPaymentLink');
   link.style.display='none'; link.href='#';
+  clearTravelerForm();
+  loadTravelers(r.request_id);
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function saveQuote(publish=false){
@@ -91,6 +132,8 @@ $('#clearQuoteButton')?.addEventListener('click',()=>{
   if($('#fulfillmentFee')) $('#fulfillmentFee').value='0.00';
   if($('#fulfillmentStatus')) $('#fulfillmentStatus').textContent='Select a request to view payment readiness.';
   if($('#openConfirmedPaymentLink')){$('#openConfirmedPaymentLink').style.display='none';$('#openConfirmedPaymentLink').href='#';}
+  clearTravelerForm();
+  if($('#travelerList')) $('#travelerList').innerHTML='<div class="empty-state">Select a request to manage travelers.</div>';
 });
 
 async function createConfirmedPayment(){
