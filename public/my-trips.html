@@ -51,7 +51,7 @@ nav{background:#1a0533;padding:14px 40px;display:flex;justify-content:space-betw
 </nav>
 <div class="container">
     <div class="welcome"><h1 id="welcomeMsg">Welcome back!</h1><p>Your trips, payments, and travel details — all in one place.</p></div>
-    <section class="portal-section"><h2>My Travel Requests & Quotes</h2><div id="requestsContainer"><p>Loading your requests...</p></div></section>
+    <section class="portal-section"><h2>My VIP Membership</h2><div id="vipMembershipContainer"><p>Loading membership...</p></div></section><section class="portal-section"><h2>My Travel Requests & Quotes</h2><div id="requestsContainer"><p>Loading your requests...</p></div></section>
     <section class="portal-section" id="travel-groups"><h2>My Travel Groups</h2><div id="groupsContainer"><p>Loading your groups...</p></div></section>
     <section class="portal-section"><h2>My Approved Custom Bookings</h2><div id="customBookingsContainer"><p>Loading approved bookings...</p></div></section><section class="portal-section"><h2>My Confirmed Trips</h2><div id="tripsContainer"><p>Loading your trips...</p></div></section>
 </div>
@@ -74,6 +74,31 @@ if (user) {
 
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[character]));
   const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(value) || 0) / 100);
+
+  const vipContainer=document.getElementById('vipMembershipContainer');
+  const {data:vipMembership,error:vipMembershipError}=await supabase.from('vip_memberships').select('status,billing_plan,trial_ends_at,paid_through,stripe_customer_id,stripe_subscription_id').eq('user_id',user.id).maybeSingle();
+  if(vipMembershipError){
+    vipContainer.innerHTML='<div class="request-card"><p>Your VIP membership status is temporarily unavailable.</p></div>';
+  }else if(!vipMembership||!['active','trialing'].includes(vipMembership.status)){
+    vipContainer.innerHTML='<div class="request-card"><div class="trip-header"><div><h3>TRV Vacationers VIP</h3><p>Private travel perks, member-only offers, and VIP experiences.</p></div><span class="status status-pending">Not active</span></div><a class="btn" href="/vip">View VIP Membership →</a></div>';
+  }else{
+    const plan=vipMembership.billing_plan==='annual'?'Annual · $129.99/year':'Monthly · $15.99/month';
+    const status=vipMembership.status==='trialing'?'7-day trial active':'VIP active';
+    const date=vipMembership.status==='trialing'&&vipMembership.trial_ends_at
+      ? 'Trial ends '+new Date(vipMembership.trial_ends_at).toLocaleDateString()
+      : vipMembership.paid_through ? 'Current period through '+new Date(vipMembership.paid_through).toLocaleDateString() : '';
+    const billingButton=vipMembership.stripe_customer_id?'<button class="btn" id="portalBillingButton" type="button" style="border:0;cursor:pointer;margin-right:8px">Manage Membership & Billing →</button>':'';
+    vipContainer.innerHTML='<div class="request-card"><div class="trip-header"><div><h3>TRV Vacationers VIP</h3><p>'+escapeHtml(plan)+(date?' · '+escapeHtml(date):'')+'</p></div><span class="status status-confirmed">'+escapeHtml(status)+'</span></div>'+billingButton+'<a class="btn" href="/vip">Open VIP Area →</a><p class="payment-message" id="portalBillingMsg" aria-live="polite"></p></div>';
+    document.getElementById('portalBillingButton')?.addEventListener('click',async()=>{
+      const button=document.getElementById('portalBillingButton'),msg=document.getElementById('portalBillingMsg');
+      button.disabled=true;button.textContent='Opening billing…';msg.textContent='';
+      const {data:{session}}=await supabase.auth.getSession();
+      const response=await fetch('/api/create-customer-portal',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token}});
+      const data=await response.json().catch(()=>({}));
+      if(!response.ok||!data.url){msg.textContent=data.error||'Billing portal could not be opened.';button.disabled=false;button.textContent='Manage Membership & Billing →';return;}
+      location.assign(data.url);
+    });
+  }
 
   const { data: customBookings, error: customBookingsError } = await supabase
     .from('custom_bookings')
