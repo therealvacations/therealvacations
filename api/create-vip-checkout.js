@@ -43,6 +43,18 @@ export default async function handler(req,res){
   const monthly=1599, annual=12999;
   const amount=plan==='monthly'?monthly:annual;
   const interval=plan==='monthly'?'month':'year';
+  const lookupKey=plan==='monthly'?'trv_vip_monthly':'trv_vip_annual';
+
+  let stripePriceId=null;
+  try{
+    const priceLookup=await fetch('https://api.stripe.com/v1/prices?active=true&limit=1&lookup_keys[]='+encodeURIComponent(lookupKey),{
+      headers:{authorization:'Bearer '+stripeKey}
+    });
+    const priceData=await priceLookup.json().catch(()=>({}));
+    if(priceLookup.ok&&Array.isArray(priceData.data)&&priceData.data[0]?.id){
+      stripePriceId=priceData.data[0].id;
+    }
+  }catch{}
 
   const {error:membershipError}=await admin.from('vip_memberships').upsert({
     user_id:user.id,
@@ -56,19 +68,21 @@ export default async function handler(req,res){
   },{onConflict:'user_id'});
   if(membershipError) return res.status(500).json({error:'VIP enrollment details could not be saved'});
 
-  const now=new Date();
-  const annualTrialEnd=new Date(now);
-  annualTrialEnd.setMonth(annualTrialEnd.getMonth()+2);
+  const lineItem = stripePriceId
+    ? {'line_items[0][price]':stripePriceId}
+    : {
+        'line_items[0][price_data][currency]':'usd',
+        'line_items[0][price_data][product_data][name]':plan==='monthly'?'TRV VIP Membership — Monthly':'TRV VIP Membership — Annual',
+        'line_items[0][price_data][product_data][description]':'Member-only travel offers, perks, and a TRV welcome travel/lifestyle item upon joining.',
+        'line_items[0][price_data][unit_amount]':amount,
+        'line_items[0][price_data][recurring][interval]':interval
+      };
 
   const form=formEncode({
     mode:'subscription',
     customer_email:user.email,
     client_reference_id:user.id,
-    'line_items[0][price_data][currency]':'usd',
-    'line_items[0][price_data][product_data][name]':'TRV VIP Membership',
-    'line_items[0][price_data][product_data][description]':'Member-only travel offers, perks, and a TRV welcome travel/lifestyle item upon joining.',
-    'line_items[0][price_data][unit_amount]':amount,
-    'line_items[0][price_data][recurring][interval]':interval,
+    ...lineItem,
     'line_items[0][quantity]':1,
     'metadata[checkout_type]':'vip_membership',
     'metadata[user_id]':user.id,
@@ -76,9 +90,7 @@ export default async function handler(req,res){
     'subscription_data[metadata][checkout_type]':'vip_membership',
     'subscription_data[metadata][user_id]':user.id,
     'subscription_data[metadata][billing_plan]':plan,
-    ...(plan==='monthly'
-      ? {'subscription_data[trial_period_days]':7}
-      : {'subscription_data[trial_end]':Math.floor(annualTrialEnd.getTime()/1000)}),
+    ...(plan==='monthly' ? {'subscription_data[trial_period_days]':7} : {}),
     success_url:siteUrl+'/vip?joined=1',
     cancel_url:siteUrl+'/vip?cancelled=1'
   });
