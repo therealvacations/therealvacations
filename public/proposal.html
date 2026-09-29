@@ -43,13 +43,15 @@ const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
 if(user){
   const {data:q,error}=await supabase.from('travel_quotes')
-    .select('quote_id,title,summary,status,valid_until,travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details))')
+    .select('quote_id,title,summary,status,valid_until,travel_requests!inner(user_id),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details))')
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
     document.getElementById('title').textContent=q.title||'Your TRV Proposal';
     document.getElementById('summary').textContent=q.summary||'Review your personalized travel options and select the experience you want to book.';
     const expired=q.valid_until&&new Date(q.valid_until).getTime()<Date.now();
+    const requestRow=Array.isArray(q.travel_requests)?q.travel_requests[0]:q.travel_requests;
+    const ownsQuote=Boolean(requestRow?.user_id&&requestRow.user_id===user.id);
     document.getElementById('expired').hidden=!expired;
     const meta=[];
     if(q.valid_until) meta.push('<span class="pill">Valid through '+new Date(q.valid_until).toLocaleDateString()+'</span>');
@@ -63,8 +65,9 @@ if(user){
         return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div><p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+'</section>';
       }).join('')+'</div>':'';
       const legacyDetails=!items.length&&o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
-      const canApprove=!expired&&['ready','viewed'].includes(q.status);
-      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+(canApprove?'<button class="choose" data-option="'+o.option_id+'">Select & Book This Option</button>':'')+'</article>';
+      const canApprove=ownsQuote&&!expired&&['ready','viewed'].includes(q.status);
+      const previewOnly=!ownsQuote?'<p class="deposit" style="margin-top:14px">Preview only — booking must be completed while signed in to the traveler account that owns this proposal.</p>':'';
+      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+previewOnly+(canApprove?'<button class="choose" data-option="'+o.option_id+'">Select & Book This Option</button>':'')+'</article>';
     }).join('');
     loading.hidden=true;content.hidden=false;
     document.querySelectorAll('.choose').forEach(btn=>btn.addEventListener('click',async()=>{
