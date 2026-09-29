@@ -366,7 +366,6 @@ async function saveBrandingSettings(event) {
 
 function renderHomeSettings() {
   const home = { ...HOME_DEFAULTS, ...(state.settings?.home_content || {}) }
-  $('#homeLogoUrl').value = home.logo_url
   $('#homeAnnouncement').value = home.announcement
   $('#homeAnnouncementUrl').value = home.announcement_url
   $('#homeHeroTag').value = home.hero_tag
@@ -392,7 +391,7 @@ async function saveHomeSettings(event) {
   event.preventDefault()
   try {
     const home_content = {
-      logo_url: $('#homeLogoUrl').value.trim(), announcement: $('#homeAnnouncement').value.trim(), announcement_url: $('#homeAnnouncementUrl').value.trim(),
+      announcement: $('#homeAnnouncement').value.trim(), announcement_url: $('#homeAnnouncementUrl').value.trim(),
       hero_tag: $('#homeHeroTag').value.trim(), hero_title: $('#homeHeroTitle').value.trim(), hero_text: $('#homeHeroText').value.trim(),
       trust_items: $('#homeTrustItems').value.split('\n').map((item) => item.trim()).filter(Boolean), cta_label: $('#homeCtaLabel').value.trim(), cta_url: $('#homeCtaUrl').value.trim(),
       perks_heading: $('#homePerksHeading').value.trim(), perks_subheading: $('#homePerksSubheading').value.trim(), perks: parseLines($('#homePerks').value, ['icon', 'title', 'description', 'label', 'url']),
