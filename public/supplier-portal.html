@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Supplier Portal | The Real Vacations</title><link rel="icon" href="/favicon.ico"/>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f6f4f8;color:#251b30}
+nav{background:#1a0533;color:#fff;padding:14px 24px;display:flex;justify-content:space-between;align-items:center}nav img{height:44px}nav button{background:transparent;color:#fff;border:1px solid #a78bfa;border-radius:999px;padding:8px 14px;cursor:pointer}
+.wrap{max-width:1100px;margin:32px auto;padding:0 20px 60px}.hero{background:#fff;border:1px solid #ded4ed;border-radius:18px;padding:24px;margin-bottom:20px}.hero h1{margin:0 0 8px;color:#1a0533}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.card{background:#fff;border:1px solid #ded4ed;border-radius:18px;padding:20px}.muted{color:#776b82}.record{border:1px solid #e8e1ef;border-radius:12px;padding:15px;margin-top:12px}.status{display:inline-block;padding:4px 8px;border-radius:999px;background:#eee8f6;font-size:12px;font-weight:700}
+@media(max-width:800px){.grid{grid-template-columns:1fr}}
+</style></head>
+<body><nav><a href="/"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"/></a><button id="logout" type="button">Sign out</button></nav>
+<main class="wrap">
+  <section class="hero"><h1>TRV Supplier Portal</h1><p id="welcome" class="muted">Checking your supplier access…</p></section>
+  <div class="grid">
+    <section class="card"><h2>Your Supplier Profile</h2><div id="profile"><p class="muted">Loading profile…</p></div></section>
+    <section class="card"><h2>Your TRV Assignments</h2><div id="assignments"><p class="muted">Loading assignments…</p></div></section>
+  </div>
+</main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(v)||0)/100);
+const {data:{user}}=await supabase.auth.getUser();
+if(!user){location.replace('/login?next='+encodeURIComponent('/supplier-portal'));} else {
+  const {data:supplier,error}=await supabase.from('suppliers').select('*').eq('auth_user_id',user.id).maybeSingle();
+  if(error||!supplier){
+    document.getElementById('welcome').textContent='This TRV account is not connected to a supplier profile.';
+    document.getElementById('profile').innerHTML='<p class="muted">Contact The Real Vacations if you believe you should have supplier access.</p>';
+    document.getElementById('assignments').innerHTML='';
+  } else {
+    document.getElementById('welcome').textContent='Welcome, '+(supplier.display_name||supplier.company_name)+'.';
+    document.getElementById('profile').innerHTML=
+      '<div class="record"><strong>'+esc(supplier.company_name)+'</strong><br>'+
+      (supplier.contact_name?esc(supplier.contact_name)+'<br>':'')+
+      (supplier.contact_email?esc(supplier.contact_email)+'<br>':'')+
+      (supplier.contact_phone?esc(supplier.contact_phone)+'<br>':'')+
+      (supplier.website_url?'<a href="'+esc(supplier.website_url)+'" target="_blank" rel="noopener">Website ↗</a><br>':'')+
+      '<span class="status">'+esc(supplier.status)+'</span></div>';
+
+    const {data:rows,error:rowsError}=await supabase.from('supplier_assignments')
+      .select('*').eq('supplier_id',supplier.supplier_id).eq('visible_to_supplier',true).order('created_at',{ascending:false});
+    if(rowsError){document.getElementById('assignments').innerHTML='<p class="muted">Assignments could not be loaded.</p>';}
+    else if(!rows?.length){document.getElementById('assignments').innerHTML='<p class="muted">No assignments have been shared with you yet.</p>';}
+    else {
+      document.getElementById('assignments').innerHTML=rows.map(r=>
+        '<div class="record"><strong>'+esc(r.service_type||'Supplier assignment')+'</strong><br>'+
+        (r.description?'<span>'+esc(r.description)+'</span><br>':'')+
+        '<span>Status: '+esc(r.status)+'</span><br>'+
+        '<span>Supplier amount: '+money(r.supplier_subtotal)+'</span>'+
+        (r.confirmation_details?'<br><span>Confirmation: '+esc(r.confirmation_details)+'</span>':'')+
+        (r.supplier_reference?'<br><span>Reference: '+esc(r.supplier_reference)+'</span>':'')+
+        '</div>'
+      ).join('');
+    }
+  }
+}
+document.getElementById('logout').addEventListener('click',async()=>{await supabase.auth.signOut();location.replace('/');});
+</script></body></html>
