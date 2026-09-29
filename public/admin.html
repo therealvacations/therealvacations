@@ -198,4 +198,27 @@
   <div class="records"><h2>Promo Codes</h2><div id="promoList"><p>Loading promo codes…</p></div></div>
 </section>
 
-    </main><div class="admin-message" id="adminMessage" role="status"></div><script type="module" src="/js/admin-content.js"></script><script type="module" src="/js/admin-quotes.js"></script><script type="module" src="/js/admin-stories.js"></script><script type="module" src="/js/admin-vip.js"></script><script type="module" src="/js/admin-operations.js"></script><script type="module" src="/js/admin-promos.js"></script></body></html>
+    </main><div class="admin-message" id="adminMessage" role="status"></div><script>
+(function(){
+  document.addEventListener('click', function(event){
+    const button=event.target.closest('.admin-tab');
+    if(!button) return;
+    const name=button.dataset.tab;
+    if(!name) return;
+    document.querySelectorAll('.admin-tab').forEach(function(tab){
+      tab.classList.toggle('active', tab===button);
+    });
+    document.querySelectorAll('.admin-panel').forEach(function(panel){
+      panel.hidden = panel.id !== name + 'Panel';
+    });
+    try { history.replaceState(null,'','#'+name); } catch(e) {}
+  });
+  window.addEventListener('DOMContentLoaded', function(){
+    const hash=(location.hash||'').replace(/^#/,'');
+    if(hash){
+      const button=document.querySelector('.admin-tab[data-tab="'+CSS.escape(hash)+'"]');
+      if(button && !button.hidden) button.click();
+    }
+  });
+})();
+</script><script type="module" src="/js/admin-content.js"></script><script type="module" src="/js/admin-quotes.js"></script><script type="module" src="/js/admin-stories.js"></script><script type="module" src="/js/admin-vip.js"></script><script type="module" src="/js/admin-operations.js"></script><script type="module" src="/js/admin-promos.js"></script></body></html>
