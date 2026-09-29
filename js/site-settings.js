@@ -41,7 +41,6 @@ if (settings) {
   if (hours && settings.business_hours) hours.replaceChildren(...settings.business_hours.split('\n').filter(Boolean).map((line) => { const p = document.createElement('p'); p.textContent = line; return p }))
 
   const home = settings.home_content || {}
-  const logo = document.querySelector('#homeLogo'); if (logo && home.logo_url) logo.src = home.logo_url
   const announcement = document.querySelector('#homeAnnouncement')
   if (announcement && home.announcement) {
     const span = announcement.querySelector('span'); const link = announcement.querySelector('a')
