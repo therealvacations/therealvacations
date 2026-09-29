@@ -11,6 +11,7 @@ nav{background:#1a0533;padding:14px 28px;display:flex;align-items:center;gap:24p
 .hero{background:linear-gradient(135deg,#1a0533,#4c1d6f);color:#fff;padding:58px 22px}.hero-inner{max-width:960px;margin:auto}.eyebrow{text-transform:uppercase;letter-spacing:.12em;font-size:12px;color:#d8b4fe;font-weight:800}.hero h1{font-size:clamp(34px,6vw,58px);margin:10px 0}.hero p{max-width:760px;line-height:1.7;color:#eee2f7;font-size:17px}
 .wrap{max-width:960px;margin:auto;padding:36px 20px 70px}.meta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}.pill{background:#eee5f7;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700}
 .option{background:#fff;border:1px solid #e5dcec;border-radius:20px;padding:26px;margin:18px 0;box-shadow:0 10px 30px rgba(55,30,75,.06)}.option.recommended{border:2px solid #7c3aed}.option-top{display:flex;justify-content:space-between;gap:20px;align-items:start}.option h2{color:#1a0533;margin:0 0 9px}.price{font-size:30px;font-weight:900;color:#6d28d9;white-space:nowrap}.desc{color:#6d6273;line-height:1.7}.details{background:#faf7fc;border-radius:12px;padding:16px;margin:18px 0;white-space:pre-line}.deposit{font-weight:700;color:#4b3d56}
+.items{display:grid;gap:14px;margin:18px 0}.proposal-item{border:1px solid #eadff2;border-radius:14px;padding:17px;background:#fff}.item-top{display:flex;justify-content:space-between;gap:18px;align-items:start}.item-type{text-transform:uppercase;letter-spacing:.08em;font-size:10px;font-weight:900;color:#7c3aed}.proposal-item h3{margin:4px 0 6px;color:#1a0533}.item-price{font-weight:900;color:#1a0533;white-space:nowrap}.item-desc{color:#6d6273;margin:6px 0}.item-details{margin-top:10px;background:#faf7fc;border-radius:10px;padding:11px;font-size:13px;line-height:1.7}.total-box{border-top:2px solid #ede4f3;margin-top:18px;padding-top:14px}
 button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 22px;font-size:15px;font-weight:800;cursor:pointer}button:disabled{opacity:.55}.message{margin-top:10px;color:#991b1b}.loading{text-align:center;padding:70px 20px;color:#6d6273}
 .expired{background:#fff3cd;border:1px solid #f4d98a;padding:14px;border-radius:12px;margin-bottom:18px}
 @media(max-width:720px){.nav-links{display:none}.option-top{display:block}.price{margin:12px 0}}
@@ -42,7 +43,7 @@ const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
 if(user){
   const {data:q,error}=await supabase.from('travel_quotes')
-    .select('quote_id,title,summary,status,valid_until,travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order)')
+    .select('quote_id,title,summary,status,valid_until,travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details))')
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
@@ -56,9 +57,14 @@ if(user){
     document.getElementById('meta').innerHTML=meta.join('');
     const opts=(q.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
     optionsEl.innerHTML=opts.map(o=>{
-      const details=o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
+      const items=(o.travel_quote_items||[]).sort((a,b)=>a.sort_order-b.sort_order);
+      const itemsHtml=items.length?'<div class="items">'+items.map(i=>{
+        const detailHtml=i.details&&Object.keys(i.details).length?'<div class="item-details">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>':'';
+        return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div><p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+'</section>';
+      }).join('')+'</div>':'';
+      const legacyDetails=!items.length&&o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
       const canApprove=!expired&&['ready','viewed'].includes(q.status);
-      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div><div class="price">'+money(o.total_amount)+'</div></div>'+details+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+(canApprove?'<button class="choose" data-option="'+o.option_id+'">Select & Book This Option</button>':'')+'</article>';
+      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+(canApprove?'<button class="choose" data-option="'+o.option_id+'">Select & Book This Option</button>':'')+'</article>';
     }).join('');
     loading.hidden=true;content.hidden=false;
     document.querySelectorAll('.choose').forEach(btn=>btn.addEventListener('click',async()=>{
