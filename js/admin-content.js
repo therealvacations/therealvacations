@@ -492,6 +492,48 @@ async function saveContactSettings(event) {
   state.settings = payload; renderContactSettings(); showMessage('Contact page updated.')
 }
 
+
+async function verifyStripeConnection() {
+  const button = $('#verifyStripeButton')
+  const box = $('#stripeConnectionStatus')
+  if (!button || !box) return
+  button.disabled = true
+  box.replaceChildren(
+    textNode('h3', '', 'Checking Stripe…'),
+    textNode('p', 'record-summary', 'Reading the account connected to the live TRV server.')
+  )
+  try {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) throw new Error('Admin session expired. Please sign in again.')
+    const response = await fetch('/api/admin-stripe-account', {
+      headers: { authorization: `Bearer ${session.access_token}` },
+      cache: 'no-store',
+    })
+    const data = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(data.error || 'Stripe connection could not be verified.')
+    const statusParts = [
+      data.livemode ? 'LIVE MODE' : 'TEST MODE',
+      data.charges_enabled ? 'Charges enabled' : 'Charges not enabled',
+      data.payouts_enabled ? 'Payouts enabled' : 'Payouts not enabled',
+    ]
+    box.replaceChildren(
+      textNode('h3', '', data.business_name || 'Connected Stripe account'),
+      textNode('p', '', `Account ID: ${data.account_id || 'Unavailable'}`),
+      textNode('p', '', `Country: ${data.country || '—'} · Currency: ${String(data.default_currency || '').toUpperCase() || '—'}`),
+      textNode('p', 'record-summary', statusParts.join(' · '))
+    )
+    showMessage('Stripe account verified.')
+  } catch (error) {
+    box.replaceChildren(
+      textNode('h3', '', 'Stripe verification failed'),
+      textNode('p', 'record-summary', error.message || 'Unable to verify Stripe connection.')
+    )
+    showMessage(error.message || 'Unable to verify Stripe connection.', 'error')
+  } finally {
+    button.disabled = false
+  }
+}
+
 async function loadAll() {
   const [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult] = await Promise.all([
     supabase.from('trips').select('*').order('dates_start', { ascending: false }),
@@ -523,7 +565,8 @@ async function initialize() {
   setTab(firstTab.dataset.tab); await loadAll(); $('#adminLoading').hidden = true; $('#adminApp').hidden = false
 }
 
-$$('.admin-tab').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)))
+$('.admin-tab').forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)))
+if ($('#verifyStripeButton')) $('#verifyStripeButton').addEventListener('click', verifyStripeConnection)
 $('#tripForm').addEventListener('submit', saveTrip); $('#tripReset').addEventListener('click', resetTripForm)
 $('#resourceForm').addEventListener('submit', saveResource); $('#resourceReset').addEventListener('click', resetResourceForm)
 $('#blogForm').addEventListener('submit', savePost); $('#blogReset').addEventListener('click', resetBlogForm)
