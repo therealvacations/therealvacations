@@ -21,7 +21,7 @@ function parseItemDetails(){
   return out;
 }
 function clearQuoteItemForm(){
-  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#quoteItemCategory')) $('#quoteItemCategory').value='flight';
   if($('#quoteItemQuantity')) $('#quoteItemQuantity').value='1';
   if($('#saveQuoteItemButton')) $('#saveQuoteItemButton').textContent='Add Proposal Item';
@@ -37,13 +37,14 @@ async function loadQuoteItems(){
   if(error){ list.innerHTML='<p class="hint">Proposal items could not be loaded.</p>'; return; }
   list.innerHTML=(data||[]).map(i=>{
     const amount=i.amount==null?'Price pending':money(i.amount);
-    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+'</p></div></div><p class="record-summary">'+esc(i.description||'')+'</p><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+'</p></div></div><p class="record-summary">'+esc(i.description||'')+'</p>'+(i.admin_notes?'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px"><strong>Admin only:</strong> '+esc(i.admin_notes)+'</div>':'')+'<div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
   }).join('')||'<div class="empty-state">No proposal items yet.</div>';
   document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
     const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
     $('#quoteItemId').value=i.item_id; $('#quoteItemCategory').value=i.category||'other'; $('#quoteItemTitle').value=i.title||'';
     $('#quoteItemAmount').value=i.amount==null?'':(i.amount/100).toFixed(2); $('#quoteItemQuantity').value=i.quantity||1;
     $('#quoteItemDescription').value=i.description||'';
+    $('#quoteItemAdminNotes').value=i.admin_notes||'';
     $('#quoteItemDetails').value=Object.entries(i.details||{}).map(([k,v])=>k+' | '+v).join('\n');
     $('#saveQuoteItemButton').textContent='Update Proposal Item';
   });
@@ -67,6 +68,7 @@ async function saveQuoteItem(){
     amount:amountRaw===''?null:Math.round(Number(amountRaw)*100),
     quantity:Math.max(1,Number($('#quoteItemQuantity')?.value||1)),
     details:parseItemDetails(),
+    admin_notes:$('#quoteItemAdminNotes')?.value.trim()||null,
     updated_at:new Date().toISOString()
   };
   const id=$('#quoteItemId')?.value;
@@ -186,14 +188,28 @@ async function saveQuote(publish=false){
   const valid=$('#quoteValidUntil').value ? new Date($('#quoteValidUntil').value+'T23:59:59').toISOString() : null;
   const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',valid_until:valid,ready_at:publish?new Date().toISOString():null,total_amount:Math.min(...options.map(o=>o.total_amount)),deposit_amount:Math.min(...options.map(o=>o.deposit_amount||o.total_amount))};
   let quoteId=$('#quoteId').value;
+  let existingOptions=[];
   if(quoteId){
     const {error}=await supabase.from('travel_quotes').update(qPayload).eq('quote_id',quoteId); if(error) return toast(error.message,true);
-    const {error:delErr}=await supabase.from('travel_quote_options').delete().eq('quote_id',quoteId); if(delErr) return toast(delErr.message,true);
+    existingOptions=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
   }else{
     const {data,error}=await supabase.from('travel_quotes').insert(qPayload).select('quote_id').single(); if(error) return toast(error.message,true);
     quoteId=data.quote_id; $('#quoteId').value=quoteId;
   }
-  const {error:optErr}=await supabase.from('travel_quote_options').insert(options.map(o=>({...o,quote_id:quoteId}))); if(optErr) return toast(optErr.message,true);
+  for(let i=0;i<options.length;i++){
+    const payload={...options[i],quote_id:quoteId};
+    if(existingOptions[i]?.option_id){
+      const {error}=await supabase.from('travel_quote_options').update(payload).eq('option_id',existingOptions[i].option_id);
+      if(error) return toast(error.message,true);
+    }else{
+      const {error}=await supabase.from('travel_quote_options').insert(payload);
+      if(error) return toast(error.message,true);
+    }
+  }
+  for(let i=options.length;i<existingOptions.length;i++){
+    const {error}=await supabase.from('travel_quote_options').delete().eq('option_id',existingOptions[i].option_id);
+    if(error) return toast(error.message,true);
+  }
   await supabase.from('travel_requests').update({status:publish?'quote_ready':'quote_in_progress'}).eq('request_id',currentRequest.request_id);
   if(publish){
     const {data:{session}}=await supabase.auth.getSession();
