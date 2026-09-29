@@ -258,6 +258,10 @@
     {
       "source": "/proposal",
       "destination": "/proposal.html"
+    },
+    {
+      "source": "/travel-trivia",
+      "destination": "/travel-trivia.html"
     }
   ]
 }
