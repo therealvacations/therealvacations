@@ -48,6 +48,7 @@ export default async function handler(req,res){
     mode:'payment',
     customer_email:user.email,
     client_reference_id:bookingId,
+    'consent_collection[terms_of_service]':'required',
     'line_items[0][price_data][currency]':booking.currency||'usd',
     'line_items[0][price_data][product_data][name]':title+' — '+(kind==='deposit'?'Deposit':kind==='balance'?'Remaining Balance':'Pay in Full'),
     'line_items[0][price_data][unit_amount]':amount,
