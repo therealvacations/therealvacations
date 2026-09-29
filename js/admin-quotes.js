@@ -229,10 +229,92 @@ $('#previewQuoteButton')?.addEventListener('click',()=>{
   if(!quoteId) return toast('Save the quote first, then preview the proposal.',true);
   window.open('/proposal?quote='+encodeURIComponent(quoteId),'_blank','noopener');
 });
-$('#pdfQuoteButton')?.addEventListener('click',()=>{
+$('#pdfQuoteButton')?.addEventListener('click',async()=>{
   const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
-  if(!quoteId) return toast('Save the quote first, then create the PDF.',true);
-  window.open('/proposal?quote='+encodeURIComponent(quoteId)+'&print=1','_blank','noopener');
+  if(!quoteId) return toast('Save the quote first, then download the PDF.',true);
+  if(typeof window.html2pdf!=='function') return toast('PDF generator is still loading. Refresh once and try again.',true);
+
+  const button=$('#pdfQuoteButton');
+  button.disabled=true; button.textContent='Creating PDF…';
+  try{
+    const {data:q,error}=await supabase.from('travel_quotes')
+      .select('quote_id,title,summary,status,valid_until,travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details))')
+      .eq('quote_id',quoteId).maybeSingle();
+    if(error||!q) throw new Error(error?.message||'Quote could not be loaded.');
+
+    const opts=(q.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
+    const safeName=String(q.title||'TRV-Travel-Proposal').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'TRV-Travel-Proposal';
+
+    const root=document.createElement('div');
+    root.style.cssText='width:8.5in;background:#fff;color:#30243e;font-family:Segoe UI,Arial,sans-serif;padding:0;margin:0';
+
+    const hero=document.createElement('div');
+    hero.style.cssText='background:#1a0533;color:#fff;padding:34px 38px';
+    hero.innerHTML='<div style="font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:#d8b4fe;font-weight:800">Your Personalized TRV Proposal</div>'+
+      '<h1 style="font-size:30px;margin:8px 0 10px">'+esc(q.title||'Your Travel Proposal')+'</h1>'+
+      '<div style="font-size:14px;line-height:1.6;color:#eee2f7">'+esc(q.summary||'')+'</div>';
+    root.appendChild(hero);
+
+    const body=document.createElement('div');
+    body.style.cssText='padding:26px 34px 38px';
+    if(q.valid_until){
+      const p=document.createElement('div');
+      p.style.cssText='display:inline-block;background:#eee5f7;border-radius:999px;padding:7px 12px;font-size:11px;font-weight:700;margin-bottom:18px';
+      p.textContent='Valid through '+new Date(q.valid_until).toLocaleDateString();
+      body.appendChild(p);
+    }
+
+    opts.forEach(o=>{
+      const wrap=document.createElement('section');
+      wrap.style.cssText='border:1px solid #e5dcec;border-radius:16px;padding:20px;margin:0 0 18px;page-break-inside:avoid';
+      const head=document.createElement('div');
+      head.innerHTML='<h2 style="color:#1a0533;margin:0 0 7px;font-size:21px">'+esc(o.name||'Travel Option')+'</h2>'+
+        (o.description?'<div style="color:#6d6273;line-height:1.6;margin-bottom:14px">'+esc(o.description)+'</div>':'');
+      wrap.appendChild(head);
+
+      const items=(o.travel_quote_items||[]).sort((a,b)=>a.sort_order-b.sort_order);
+      items.forEach(i=>{
+        const card=document.createElement('div');
+        card.style.cssText='border-top:1px solid #eadff2;padding:14px 0;page-break-inside:avoid';
+        const details=i.details&&Object.keys(i.details).length
+          ? '<div style="margin-top:8px;background:#faf7fc;padding:9px 11px;border-radius:8px;font-size:12px;line-height:1.6">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>'
+          :'';
+        card.innerHTML='<div style="display:flex;justify-content:space-between;gap:18px"><div><div style="font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:#7c3aed;font-weight:900">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3 style="margin:4px 0 5px;color:#1a0533;font-size:16px">'+esc(i.title||'')+'</h3></div><div style="font-weight:900;color:#1a0533;white-space:nowrap">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div>'+
+          (i.description?'<div style="font-size:12px;color:#6d6273;line-height:1.5">'+esc(i.description)+'</div>':'')+details;
+        wrap.appendChild(card);
+      });
+
+      const total=document.createElement('div');
+      total.style.cssText='border-top:2px solid #ede4f3;margin-top:8px;padding-top:12px;display:flex;justify-content:space-between;font-size:18px;font-weight:900;color:#1a0533';
+      total.innerHTML='<span>Proposal Total</span><span>'+money(o.total_amount)+'</span>';
+      wrap.appendChild(total);
+      body.appendChild(wrap);
+    });
+
+    const footer=document.createElement('div');
+    footer.style.cssText='margin-top:20px;padding-top:14px;border-top:1px solid #eadff2;font-size:10px;color:#776b82;line-height:1.5';
+    footer.textContent='The Real Vacations · therealvacations.com';
+    body.appendChild(footer);
+
+    root.appendChild(body);
+    document.body.appendChild(root);
+
+    await window.html2pdf().set({
+      margin:[0.25,0.25,0.25,0.25],
+      filename:safeName+'.pdf',
+      image:{type:'jpeg',quality:0.98},
+      html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'},
+      jsPDF:{unit:'in',format:'letter',orientation:'portrait'},
+      pagebreak:{mode:['css','legacy'],avoid:['section']}
+    }).from(root).save();
+
+    root.remove();
+    toast('PDF downloaded.');
+  }catch(error){
+    toast(error.message||'PDF could not be created.',true);
+  }finally{
+    button.disabled=false; button.textContent='Download PDF';
+  }
 });
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
 $('#clearQuoteButton')?.addEventListener('click',()=>{
