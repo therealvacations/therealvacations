@@ -23,9 +23,9 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 </head>
 <body>
 <nav>
-<a href="/" class="nav-logo"><img src="/logo.jpeg" alt="The Real Vacations"/></a>
-<div class="nav-links"><a href="/">Home</a><a href="/trips">Trips</a><a href="/flights">Flights</a><a href="/real-stories">Real Stories</a><a href="/about">About</a><a href="/how-it-works">How It Works</a><a href="/resources">Resources</a><a href="/blog">Blog</a><a href="/contact">Contact</a><a href="/request-travel">Request Travel</a></div>
-<div class="nav-auth"><a href="/login">Login</a><a href="/signup">Sign Up</a></div>
+<a href="/my-trips" class="nav-logo"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"/></a>
+<div class="nav-links"><a href="/my-trips">Member Home</a><a href="/my-trips#travel-groups">My Trips</a><a href="/member-book">Search & Book</a><a href="/member-profile">Profile</a><a href="/update-payment-method">Payment Method</a></div>
+<div class="nav-auth"><button id="memberLogout" type="button" style="border:0;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;font-weight:800;cursor:pointer">Logout</button></div>
 </nav>
 
 <header class="hero">
@@ -213,6 +213,8 @@ footer{background:#0f0620;color:#bbb;text-align:center;padding:28px}footer a{col
 
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
+import { handleLogout } from '/js/auth.js';
+document.getElementById('memberLogout')?.addEventListener('click',()=>handleLogout());
 
 const stripe=Stripe('pk_live_51RO9vyAiAouGxd2D2KxJ1zbORbYd2Ig2EjdJ2TtV9XGKfS8TmyzuTNh0JE6qLPlUtXi0HA4TVARWQIE6VKkb0rMj00Ugps7rS0');
 const elements=stripe.elements();
