@@ -3,7 +3,7 @@ import { supabase } from './supabase-client.js';
 const $ = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
 const esc = v => String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-let currentRequest=null, currentQuote=null, supplierCache=[];
+let currentRequest=null, currentQuote=null, supplierCache=[], currentItemAttachments=[];
 
 async function loadSupplierChoices(){
   const {data,error}=await supabase.from('suppliers').select('supplier_id,company_name,display_name,connection_mode,booking_portal_url,account_number,booking_instructions,required_traveler_information,status').neq('status','inactive').order('company_name');
@@ -43,16 +43,53 @@ function parseItemDetails(){
   });
   return out;
 }
+function renderItemAttachments(){
+  const box=$('#quoteItemAttachmentList'); if(!box) return;
+  box.innerHTML=currentItemAttachments.length
+    ? currentItemAttachments.map((a,i)=>'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border:1px solid #e8e1ef;border-radius:9px;margin:6px 0"><span>'+esc(a.name||a.url||'Attachment')+' · '+esc(a.type||'file')+'</span><button class="secondary-button remove-item-attachment" data-index="'+i+'" type="button">Remove</button></div>').join('')
+    : '<span class="hint">No files attached.</span>';
+  box.querySelectorAll('.remove-item-attachment').forEach(btn=>btn.onclick=()=>{currentItemAttachments.splice(Number(btn.dataset.index),1);renderItemAttachments();});
+}
+async function uploadQuoteItemFiles(input){
+  const files=[...(input.files||[])]; if(!files.length) return;
+  for(const file of files){
+    if(!(file.type.startsWith('image/')||file.type==='application/pdf')){toast('Only images and PDFs can be attached to a quote item.',true);continue;}
+    if(file.size>15*1024*1024){toast(file.name+' is over the 15 MB limit.',true);continue;}
+    const ext=(file.name.split('.').pop()||'file').toLowerCase().replace(/[^a-z0-9]/g,'');
+    const path='quotes/'+Date.now()+'-'+crypto.randomUUID()+'.'+ext;
+    toast('Uploading '+file.name+'…');
+    const {error}=await supabase.storage.from('content-media').upload(path,file,{cacheControl:'3600',upsert:false,contentType:file.type});
+    if(error){toast(error.message,true);continue;}
+    const {data}=supabase.storage.from('content-media').getPublicUrl(path);
+    currentItemAttachments.push({name:file.name,url:data.publicUrl,type:file.type==='application/pdf'?'pdf':'image'});
+  }
+  input.value='';
+  renderItemAttachments();
+  toast('Quote attachment uploaded. Save the proposal item to keep it.');
+}
+$('#quoteItemUpload')?.addEventListener('change',e=>uploadQuoteItemFiles(e.target));
+
 function clearQuoteItemForm(){
-  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemImage'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemImage','quoteItemSelectionGroup'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#quoteItemSupplier')) $('#quoteItemSupplier').value='';
   if($('#quoteItemCategory')) $('#quoteItemCategory').value='flight';
   if($('#quoteItemQuantity')) $('#quoteItemQuantity').value='1';
+  if($('#quoteItemSelectionRule')) $('#quoteItemSelectionRule').value='fixed';
+  if($('#quoteItemClientVisible')) $('#quoteItemClientVisible').checked=true;
+  currentItemAttachments=[]; renderItemAttachments();
   if($('#saveQuoteItemButton')) $('#saveQuoteItemButton').textContent='Add Proposal Item';
 }
-function currentOptionId(){
-  return (currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order)[0]?.option_id || null;
+function renderQuoteOptionChoices(){
+  const select=$('#quoteOptionSelect'); if(!select) return;
+  const current=select.value;
+  const opts=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
+  select.innerHTML=opts.map(o=>'<option value="'+esc(o.option_id)+'">'+esc(o.name)+'</option>').join('');
+  if(current&&opts.some(o=>o.option_id===current)) select.value=current;
 }
+function currentOptionId(){
+  return $('#quoteOptionSelect')?.value || (currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order)[0]?.option_id || null;
+}
+$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();loadQuoteItems();});
 async function loadQuoteItems(){
   const list=$('#quoteItemList'); if(!list) return;
   const optionId=currentOptionId();
@@ -73,6 +110,11 @@ async function loadQuoteItems(){
     $('#quoteItemImage').value=i.image_url||'';
     $('#quoteItemAdminNotes').value=i.admin_notes||'';
     $('#quoteItemDetails').value=Object.entries(i.details||{}).map(([k,v])=>k+' | '+v).join('\n');
+    if($('#quoteItemSelectionGroup')) $('#quoteItemSelectionGroup').value=i.selection_group||'';
+    if($('#quoteItemSelectionRule')) $('#quoteItemSelectionRule').value=i.selection_rule||'fixed';
+    if($('#quoteItemClientVisible')) $('#quoteItemClientVisible').checked=i.client_visible!==false;
+    currentItemAttachments=Array.isArray(i.attachments)?[...i.attachments]:[];
+    renderItemAttachments();
     $('#saveQuoteItemButton').textContent='Update Proposal Item';
   });
   document.querySelectorAll('.delete-quote-item').forEach(btn=>btn.onclick=async()=>{
@@ -128,6 +170,10 @@ async function saveQuoteItem(){
     supplier_id:$('#quoteItemSupplier')?.value||null,
     image_url:$('#quoteItemImage')?.value.trim()||null,
     admin_notes:$('#quoteItemAdminNotes')?.value.trim()||null,
+    selection_group:$('#quoteItemSelectionGroup')?.value.trim()||null,
+    selection_rule:$('#quoteItemSelectionRule')?.value||'fixed',
+    client_visible:$('#quoteItemClientVisible')?.checked!==false,
+    attachments:currentItemAttachments,
     updated_at:new Date().toISOString()
   };
   const id=$('#quoteItemId')?.value;
@@ -160,7 +206,7 @@ function parseOptions(){
 async function loadRequests(){
   if(!$('#requestQuoteList')) return;
   const {data,error}=await supabase.from('travel_requests')
-    .select('request_id,user_id,requester_email,primary_first_name,primary_last_name,destination,submitted_at,status,request_types,answers,travel_request_fulfillments(*),travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,travel_quote_options(*))')
+    .select('request_id,user_id,requester_email,primary_first_name,primary_last_name,destination,submitted_at,status,request_types,answers,travel_request_fulfillments(*),travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,quote_kind,workflow_status,source_quote_id,travel_quote_options(*))')
     .order('submitted_at',{ascending:false});
   if(error){ $('#requestQuoteList').innerHTML='<p>Requests could not be loaded.</p>'; return; }
   $('#requestQuoteList').innerHTML=(data||[]).map(r=>{
@@ -172,9 +218,10 @@ async function loadRequests(){
       ? 'Payment: '+String(fulfillment.status||'').replaceAll('_',' ')+(fulfillment.total_amount!=null?' · '+money(fulfillment.total_amount):'')
       : card?.last4 ? 'Payment method on file: '+String(card.brand||'card').toUpperCase()+' •••• '+esc(card.last4)
       : r.user_id ? 'Account linked · payment authorization not completed' : 'Legacy request · no linked TRV account';
-    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(r.destination||'Travel request')+' · '+new Date(r.submitted_at).toLocaleDateString()+'</p></div><span class="status-badge '+esc(r.status)+'">'+esc(r.status.replaceAll('_',' '))+'</span></div><p class="record-summary">'+esc((r.request_types||[]).join(', '))+'<br><strong>'+paymentLine+'</strong></p><div class="record-actions"><button class="secondary-button open-request" data-id="'+r.request_id+'">Create / Edit Quote</button></div>'+(quotes.length?quotes.map(q=>'<div class="quote-mini" style="margin-top:12px;padding:12px;background:#faf5ff;border-radius:10px"><strong>'+esc(q.title)+'</strong><br><small>'+esc(q.status)+' · '+(q.travel_quote_options||[]).length+' option(s)</small></div>').join(''):'')+'</div>';
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(r.destination||'Travel request')+' · '+new Date(r.submitted_at).toLocaleDateString()+'</p></div><span class="status-badge '+esc(r.status)+'">'+esc(r.status.replaceAll('_',' '))+'</span></div><p class="record-summary">'+esc((r.request_types||[]).join(', '))+'<br><strong>'+paymentLine+'</strong></p><div class="record-actions"><button class="secondary-button open-request" data-id="'+r.request_id+'">Create New / Open Latest Quote</button></div>'+(quotes.length?quotes.map(q=>'<div class="quote-mini" style="margin-top:12px;padding:12px;background:#faf5ff;border-radius:10px"><strong>'+esc(q.title)+'</strong><br><small>'+esc(q.status)+' · '+esc(q.workflow_status||'')+' · '+(q.travel_quote_options||[]).length+' option(s)</small><div class="record-actions" style="margin-top:8px"><button class="secondary-button open-specific-quote" data-request="'+r.request_id+'" data-quote="'+q.quote_id+'">'+(q.quote_kind==='custom_selection'?'Review Client-Built Quote':'Edit / Preview Quote')+'</button></div></div>').join(''):'')+'</div>';
   }).join('') || '<div class="empty-state">No travel requests yet.</div>';
   document.querySelectorAll('.open-request').forEach(btn=>btn.onclick=()=>openRequest(data.find(r=>r.request_id===btn.dataset.id)));
+  document.querySelectorAll('.open-specific-quote').forEach(btn=>btn.onclick=()=>openRequest(data.find(r=>r.request_id===btn.dataset.request),btn.dataset.quote));
 }
 async function loadTravelers(requestId){
   const list=$('#travelerList'); if(!list) return;
@@ -215,8 +262,11 @@ async function saveTraveler(){
 $('#saveTravelerButton')?.addEventListener('click',saveTraveler);
 $('#clearTravelerButton')?.addEventListener('click',clearTravelerForm);
 
-function openRequest(r){
-  currentRequest=r; currentQuote=(r.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status)) || null;
+function openRequest(r,quoteId=null){
+  currentRequest=r;
+  currentQuote=quoteId
+    ? (r.travel_quotes||[]).find(q=>q.quote_id===quoteId)||null
+    : (r.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status)) || null;
   $('#quoteRequestId').value=r.request_id; $('#quoteId').value=currentQuote?.quote_id||'';
   if($('#quoteRequesterEmail')) $('#quoteRequesterEmail').value=r.requester_email||'';
   if($('#memberAccountNewEmail')) $('#memberAccountNewEmail').value='';
@@ -230,6 +280,7 @@ function openRequest(r){
   $('#quoteSummary').value=currentQuote?.summary||'';
   $('#quoteValidUntil').value=currentQuote?.valid_until ? currentQuote.valid_until.slice(0,10) : '';
   $('#quoteOptions').value=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,(o.total_amount/100).toFixed(2),o.deposit_amount==null?'':(o.deposit_amount/100).toFixed(2),o.description||''].join(' | ')).join('\n');
+  renderQuoteOptionChoices();
 
   const fulfillment=Array.isArray(r.travel_request_fulfillments)?r.travel_request_fulfillments[0]:r.travel_request_fulfillments;
   $('#fulfillmentSupplierId').value=fulfillment?.supplier_id||'';
@@ -250,9 +301,46 @@ function openRequest(r){
   clearTravelerForm();
   loadTravelers(r.request_id);
   clearQuoteItemForm();
+  renderQuoteOptionChoices();
   loadQuoteItems();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+async function duplicateCurrentOption(){
+  if(!currentQuote) return toast('Open a quote first.',true);
+  const optionId=currentOptionId();
+  const source=(currentQuote.travel_quote_options||[]).find(o=>o.option_id===optionId);
+  if(!source) return toast('Choose an option to duplicate.',true);
+  const name=prompt('Name for the duplicated option:',source.name+' Copy');
+  if(!name) return;
+  const {data:newOption,error}=await supabase.from('travel_quote_options').insert({
+    quote_id:currentQuote.quote_id,
+    name:name.trim(),
+    description:source.description||null,
+    sort_order:Math.max(-1,...(currentQuote.travel_quote_options||[]).map(o=>Number(o.sort_order)||0))+1,
+    total_amount:source.total_amount,
+    deposit_amount:source.deposit_amount,
+    is_recommended:false,
+    details:source.details||{},
+    allow_mix_and_match:true
+  }).select('*').single();
+  if(error) return toast(error.message,true);
+  const {data:items,error:itemLoadError}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).order('sort_order');
+  if(itemLoadError) return toast('Option duplicated, but its items could not be copied: '+itemLoadError.message,true);
+  if(items?.length){
+    const copies=items.map(({item_id,created_at,updated_at,...i})=>({...i,option_id:newOption.option_id}));
+    const {error:copyError}=await supabase.from('travel_quote_items').insert(copies);
+    if(copyError) return toast('Option duplicated, but some items could not be copied: '+copyError.message,true);
+  }
+  currentQuote.travel_quote_options=[...(currentQuote.travel_quote_options||[]),newOption];
+  $('#quoteOptions').value=(currentQuote.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,(o.total_amount/100).toFixed(2),o.deposit_amount==null?'':(o.deposit_amount/100).toFixed(2),o.description||''].join(' | ')).join('\n');
+  renderQuoteOptionChoices();
+  $('#quoteOptionSelect').value=newOption.option_id;
+  clearQuoteItemForm();
+  await loadQuoteItems();
+  toast('Option duplicated. Edit its items and pricing as needed.');
+}
+$('#duplicateQuoteOptionButton')?.addEventListener('click',duplicateCurrentOption);
+
 async function saveRequesterEmail(showMessage=true){
   if(!currentRequest){
     if(showMessage) toast('Select a travel request first.',true);
@@ -311,7 +399,7 @@ async function saveQuote(publish=false){
   if(publish && !(await saveRequesterEmail(false))) return toast('Add a valid requester email before publishing and emailing this quote.',true);
   const options=parseOptions(); if(!$('#quoteTitle').value.trim()||!options.length) return toast('Add a quote title and at least one option.',true);
   const valid=$('#quoteValidUntil').value ? new Date($('#quoteValidUntil').value+'T23:59:59').toISOString() : null;
-  const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',valid_until:valid,ready_at:publish?new Date().toISOString():null,total_amount:Math.min(...options.map(o=>o.total_amount)),deposit_amount:Math.min(...options.map(o=>o.deposit_amount||o.total_amount))};
+  const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',workflow_status:publish?'published':(currentQuote?.workflow_status==='admin_review'?'admin_review':'draft'),valid_until:valid,ready_at:publish?new Date().toISOString():null,total_amount:Math.min(...options.map(o=>o.total_amount)),deposit_amount:Math.min(...options.map(o=>o.deposit_amount||o.total_amount))};
   let quoteId=$('#quoteId').value;
   let existingOptions=[];
   if(quoteId){
@@ -350,8 +438,9 @@ async function saveQuote(publish=false){
   } else toast('Quote draft saved.');
   await loadRequests();
   if(currentRequest) {
-    const refreshed=(await supabase.from('travel_requests').select('request_id,travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,travel_quote_options(*))').eq('request_id',currentRequest.request_id).maybeSingle()).data;
-    if(refreshed?.travel_quotes){ currentQuote=(refreshed.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status))||currentQuote; }
+    const refreshed=(await supabase.from('travel_requests').select('request_id,travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,quote_kind,workflow_status,source_quote_id,travel_quote_options(*))').eq('request_id',currentRequest.request_id).maybeSingle()).data;
+    if(refreshed?.travel_quotes){ currentQuote=(refreshed.travel_quotes||[]).find(q=>q.quote_id===quoteId)||(refreshed.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status))||currentQuote; }
+    renderQuoteOptionChoices();
     await loadQuoteItems();
   }
 }
@@ -362,6 +451,34 @@ $('#previewQuoteButton')?.addEventListener('click',()=>{
   window.open('/proposal?quote='+encodeURIComponent(quoteId),'_blank','noopener');
 });
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
+$('#resetQuoteResponseButton')?.addEventListener('click',async()=>{
+  const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
+  if(!currentRequest||!quoteId) return toast('Select a quote first.',true);
+  if(!confirm('Reset this client response and reopen the unpaid quote for review?')) return;
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session?.access_token) return toast('Your admin session expired. Sign in again.',true);
+  const button=$('#resetQuoteResponseButton');
+  button.disabled=true; button.textContent='Resetting…';
+  try{
+    const resp=await fetch('/api/admin-reset-quote-response',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({quote_id:quoteId})
+    });
+    const result=await resp.json().catch(()=>({}));
+    if(!resp.ok) throw new Error(result.error||'Unable to reset client response.');
+    toast('Client response reset. The quote is reopened for review and approval.');
+    await loadRequests();
+    const {data:refreshed}=await supabase.from('travel_requests')
+      .select('request_id,user_id,requester_email,primary_first_name,primary_last_name,destination,submitted_at,status,request_types,answers,travel_request_fulfillments(*),travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,travel_quote_options(*))')
+      .eq('request_id',currentRequest.request_id).maybeSingle();
+    if(refreshed) openRequest(refreshed);
+  }catch(error){
+    toast(error.message||'Unable to reset client response.',true);
+  }finally{
+    button.disabled=false; button.textContent='Reset Client Response';
+  }
+});
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
   ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','memberAccountNewEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
