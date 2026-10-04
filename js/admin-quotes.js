@@ -81,6 +81,32 @@ async function loadQuoteItems(){
     if(error) return toast(error.message,true); toast('Proposal item removed.'); await loadQuoteItems();
   });
 }
+async function syncSupplierAssignment(itemId,itemPayload){
+  if(!itemId) return;
+  if(!itemPayload.supplier_id){
+    await supabase.from('supplier_assignments').delete().eq('quote_item_id',itemId);
+    return;
+  }
+  const assignment={
+    supplier_id:itemPayload.supplier_id,
+    context_type:'travel_quote',
+    request_id:currentRequest?.request_id||null,
+    quote_id:currentQuote?.quote_id||$('#quoteId')?.value||null,
+    quote_item_id:itemId,
+    service_type:itemPayload.category||null,
+    description:[itemPayload.title,itemPayload.description].filter(Boolean).join(' — '),
+    supplier_subtotal:itemPayload.amount==null?0:itemPayload.amount*Math.max(1,itemPayload.quantity||1),
+    service_fee:0,
+    taxes_fees:0,
+    currency:'usd',
+    status:'quoted',
+    visible_to_supplier:true,
+    updated_at:new Date().toISOString()
+  };
+  const {error}=await supabase.from('supplier_assignments').upsert(assignment,{onConflict:'quote_item_id'});
+  if(error) toast('Proposal item saved, but supplier assignment could not be synced: '+error.message,true);
+}
+
 async function saveQuoteItem(){
   const optionId=currentOptionId();
   if(!optionId) return toast('Save the quote first so the proposal item has an option to attach to.',true);
@@ -101,17 +127,21 @@ async function saveQuoteItem(){
     updated_at:new Date().toISOString()
   };
   const id=$('#quoteItemId')?.value;
+  let savedItemId=id||null;
   if(id){
-    const {error}=await supabase.from('travel_quote_items').update(payload).eq('item_id',id);
+    const {data:saved,error}=await supabase.from('travel_quote_items').update(payload).eq('item_id',id).select('item_id').single();
     if(error) return toast(error.message,true);
+    savedItemId=saved.item_id;
     toast('Proposal item updated.');
   }else{
     const {data:maxRows}=await supabase.from('travel_quote_items').select('sort_order').eq('option_id',optionId).order('sort_order',{ascending:false}).limit(1);
     payload.sort_order=(maxRows?.[0]?.sort_order||0)+1;
-    const {error}=await supabase.from('travel_quote_items').insert(payload);
+    const {data:saved,error}=await supabase.from('travel_quote_items').insert(payload).select('item_id').single();
     if(error) return toast(error.message,true);
+    savedItemId=saved.item_id;
     toast('Proposal item added.');
   }
+  await syncSupplierAssignment(savedItemId,payload);
   clearQuoteItemForm(); await loadQuoteItems();
 }
 $('#saveQuoteItemButton')?.addEventListener('click',saveQuoteItem);
