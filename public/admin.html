@@ -66,6 +66,8 @@
         <input id="quoteRequestId" type="hidden"/>
         <input id="quoteId" type="hidden"/>
         <div class="field"><label for="quoteClient">Client / request</label><input id="quoteClient" readonly placeholder="Select a request on the right"/></div>
+        <div class="field"><label for="quoteRequesterEmail">Requester email</label><input id="quoteRequesterEmail" type="email" placeholder="traveler@example.com"/><p class="hint">This is the address used when Admin emails this quote. For an unlinked request, a traveler who signs up with this same email can be linked to the request.</p></div>
+        <div class="form-actions"><button class="secondary-button" id="saveRequesterEmailButton" type="button">Save Requester Email</button></div>
         <div class="field"><label for="quoteTitle">Quote title</label><input id="quoteTitle" placeholder="Your Turks & Caicos Escape"/></div>
         <div class="field"><label for="quoteSummary">Client-facing introduction</label><textarea id="quoteSummary" style="min-height:120px" placeholder="A warm TRV introduction to the experience..."></textarea></div>
         <div class="field"><label for="quoteValidUntil">Valid until</label><input id="quoteValidUntil" type="date"/></div>
