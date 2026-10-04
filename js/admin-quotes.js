@@ -362,6 +362,34 @@ $('#previewQuoteButton')?.addEventListener('click',()=>{
   window.open('/proposal?quote='+encodeURIComponent(quoteId),'_blank','noopener');
 });
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
+$('#resetQuoteResponseButton')?.addEventListener('click',async()=>{
+  const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
+  if(!currentRequest||!quoteId) return toast('Select a quote first.',true);
+  if(!confirm('Reset this client response and reopen the unpaid quote for review?')) return;
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session?.access_token) return toast('Your admin session expired. Sign in again.',true);
+  const button=$('#resetQuoteResponseButton');
+  button.disabled=true; button.textContent='Resetting…';
+  try{
+    const resp=await fetch('/api/admin-reset-quote-response',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({quote_id:quoteId})
+    });
+    const result=await resp.json().catch(()=>({}));
+    if(!resp.ok) throw new Error(result.error||'Unable to reset client response.');
+    toast('Client response reset. The quote is reopened for review and approval.');
+    await loadRequests();
+    const {data:refreshed}=await supabase.from('travel_requests')
+      .select('request_id,user_id,requester_email,primary_first_name,primary_last_name,destination,submitted_at,status,request_types,answers,travel_request_fulfillments(*),travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,travel_quote_options(*))')
+      .eq('request_id',currentRequest.request_id).maybeSingle();
+    if(refreshed) openRequest(refreshed);
+  }catch(error){
+    toast(error.message||'Unable to reset client response.',true);
+  }finally{
+    button.disabled=false; button.textContent='Reset Client Response';
+  }
+});
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
   ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','memberAccountNewEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
