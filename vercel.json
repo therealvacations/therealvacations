@@ -262,6 +262,14 @@
     {
       "source": "/travel-trivia",
       "destination": "/travel-trivia.html"
+    },
+    {
+      "source": "/supplier-portal",
+      "destination": "/supplier-portal.html"
+    },
+    {
+      "source": "/request-payment-result",
+      "destination": "/request-payment-result.html"
     }
   ]
 }
