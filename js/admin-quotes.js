@@ -218,6 +218,7 @@ $('#clearTravelerButton')?.addEventListener('click',clearTravelerForm);
 function openRequest(r){
   currentRequest=r; currentQuote=(r.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status)) || null;
   $('#quoteRequestId').value=r.request_id; $('#quoteId').value=currentQuote?.quote_id||'';
+  if($('#quoteRequesterEmail')) $('#quoteRequesterEmail').value=r.requester_email||'';
   const name=[r.primary_first_name,r.primary_last_name].filter(Boolean).join(' ')||r.requester_email;
   $('#quoteClient').value=name+' · '+(r.destination||'Travel request');
   $('#quoteTitle').value=currentQuote?.title || (r.destination ? r.destination+' — The Real Vacations Quote' : 'Your TRV Travel Quote');
