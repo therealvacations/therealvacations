@@ -219,6 +219,11 @@ function openRequest(r){
   currentRequest=r; currentQuote=(r.travel_quotes||[]).find(q=>!['declined','expired','withdrawn'].includes(q.status)) || null;
   $('#quoteRequestId').value=r.request_id; $('#quoteId').value=currentQuote?.quote_id||'';
   if($('#quoteRequesterEmail')) $('#quoteRequesterEmail').value=r.requester_email||'';
+  if($('#memberAccountNewEmail')) $('#memberAccountNewEmail').value='';
+  if($('#memberEmailChangeHint')) $('#memberEmailChangeHint').textContent=r.user_id
+    ? 'This request is linked to a member account. Admin can start a secure email-change request; the traveler must complete the confirmation.'
+    : 'This request is not linked to a member account. Use Requester email above instead.';
+  if($('#sendMemberEmailChangeButton')) $('#sendMemberEmailChangeButton').disabled=!r.user_id;
   const name=[r.primary_first_name,r.primary_last_name].filter(Boolean).join(' ')||r.requester_email;
   $('#quoteClient').value=name+' · '+(r.destination||'Travel request');
   $('#quoteTitle').value=currentQuote?.title || (r.destination ? r.destination+' — The Real Vacations Quote' : 'Your TRV Travel Quote');
@@ -272,6 +277,34 @@ async function saveRequesterEmail(showMessage=true){
   return true;
 }
 $('#saveRequesterEmailButton')?.addEventListener('click',()=>saveRequesterEmail(true));
+
+async function sendMemberEmailChange(){
+  if(!currentRequest) return toast('Select a travel request first.',true);
+  if(!currentRequest.user_id) return toast('This request is not linked to a member account.',true);
+  const input=$('#memberAccountNewEmail');
+  const newEmail=(input?.value||'').trim().toLowerCase();
+  if(!newEmail || !input?.checkValidity()) return toast('Enter a valid new member login email.',true);
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session?.access_token) return toast('Your admin session expired. Sign in again.',true);
+  const button=$('#sendMemberEmailChangeButton');
+  button.disabled=true; button.textContent='Sending secure instructions…';
+  try{
+    const resp=await fetch('/api/admin-request-email-change',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({request_id:currentRequest.request_id,new_email:newEmail})
+    });
+    const result=await resp.json().catch(()=>({}));
+    if(!resp.ok) throw new Error(result.error||'Unable to start member email change.');
+    toast('Secure email-change instructions sent to the member’s current login email.');
+    if($('#memberEmailChangeHint')) $('#memberEmailChangeHint').textContent='Instructions sent to '+result.current_email+'. Requested new login email: '+result.new_email+'.';
+  }catch(error){
+    toast(error.message||'Unable to start member email change.',true);
+  }finally{
+    button.disabled=false; button.textContent='Send Secure Email Change Instructions';
+  }
+}
+$('#sendMemberEmailChangeButton')?.addEventListener('click',sendMemberEmailChange);
 
 async function saveQuote(publish=false){
   if(!currentRequest) return toast('Select a travel request first.',true);
@@ -331,7 +364,7 @@ $('#previewQuoteButton')?.addEventListener('click',()=>{
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
-  ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','memberAccountNewEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#fulfillmentFee')) $('#fulfillmentFee').value='0.00';
   if($('#fulfillmentStatus')) $('#fulfillmentStatus').textContent='Select a request to view payment readiness.';
   if($('#openConfirmedPaymentLink')){$('#openConfirmedPaymentLink').style.display='none';$('#openConfirmedPaymentLink').href='#';}
