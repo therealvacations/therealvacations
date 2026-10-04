@@ -124,11 +124,7 @@
     <div class="signup-right">
       <h3>Create your free account</h3>
       <p class="sub">Already have one? <a href="/login">Sign in here →</a></p>
-      <div class="social-btns">
-        <button class="social-btn"><span>🔵</span> Sign up with Facebook</button>
-        <button class="social-btn"><span>🔴</span> Sign up with Google</button>
-      </div>
-      <div class="divider"><span>or create with email</span></div>
+      <div class="divider"><span>create with email</span></div>
       <div class="form-row-2">
         <div class="form-group">
           <label for="firstName">First Name</label>
@@ -180,7 +176,7 @@
   © 2026 The Real Vacations · <a href="mailto:kc@therealvacations.com">kc@therealvacations.com</a> ·
 </footer>
 <script type="module">
-import { handleSignup as supabaseSignup, handleGoogleLogin, handleFacebookLogin, safePortalPath } from './js/auth.js';
+import { handleSignup as supabaseSignup, safePortalPath } from './js/auth.js';
 
 const requestedNext = safePortalPath(new URLSearchParams(window.location.search).get('next'));
 if (requestedNext !== '/my-trips') {
@@ -245,17 +241,6 @@ window.handleSignup = async function() {
   }
 }
 
-var socialBtns = document.querySelectorAll('.social-btn');
-if (socialBtns[0]) {
-  socialBtns[0].addEventListener('click', async function() {
-    try { await handleFacebookLogin(requestedNext); } catch(e) { alert('Facebook signup error: ' + e.message); }
-  });
-}
-if (socialBtns[1]) {
-  socialBtns[1].addEventListener('click', async function() {
-    try { await handleGoogleLogin(requestedNext); } catch(e) { alert('Google signup error: ' + e.message); }
-  });
-}
 </script>
 </body>
 </html>
