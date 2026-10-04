@@ -248,6 +248,31 @@ function openRequest(r){
   loadQuoteItems();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+async function saveRequesterEmail(showMessage=true){
+  if(!currentRequest){
+    if(showMessage) toast('Select a travel request first.',true);
+    return false;
+  }
+  const input=$('#quoteRequesterEmail');
+  const email=(input?.value||'').trim().toLowerCase();
+  if(!email || !input?.checkValidity()){
+    if(showMessage) toast('Enter a valid requester email address.',true);
+    return false;
+  }
+  const {error}=await supabase.from('travel_requests')
+    .update({requester_email:email,updated_at:new Date().toISOString()})
+    .eq('request_id',currentRequest.request_id);
+  if(error){
+    if(showMessage) toast(error.message,true);
+    return false;
+  }
+  currentRequest.requester_email=email;
+  if(showMessage) toast('Requester email saved.');
+  await loadRequests();
+  return true;
+}
+$('#saveRequesterEmailButton')?.addEventListener('click',()=>saveRequesterEmail(true));
+
 async function saveQuote(publish=false){
   if(!currentRequest) return toast('Select a travel request first.',true);
   const options=parseOptions(); if(!$('#quoteTitle').value.trim()||!options.length) return toast('Add a quote title and at least one option.',true);
