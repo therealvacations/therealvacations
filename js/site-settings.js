@@ -1,5 +1,8 @@
 import { supabase } from './supabase-client.js'
 
+const { data: { session } } = await supabase.auth.getSession()
+const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
+
 const { data: settings } = await supabase.from('site_settings')
   .select('contact_email,contact_phone,contact_heading,contact_intro,business_hours,home_content,about_content,branding_content,page_content')
   .eq('id', 1).maybeSingle()
@@ -15,22 +18,55 @@ if (settings) {
   document.querySelectorAll('nav img, .nav-logo img, a.logo img').forEach((img) => { img.src = logoUrl; img.alt = brand.site_name || 'The Real Vacations' })
   document.querySelectorAll('nav .logo span').forEach((el) => { if (brand.site_name) el.textContent = brand.site_name })
   document.querySelectorAll('nav .logo small').forEach((el) => { if (brand.tagline) el.textContent = brand.tagline })
-  if (Array.isArray(brand.nav)) {
+  if (session) {
+    const memberItems = [
+      { label: 'Member Home', url: '/my-trips' },
+      { label: 'My Trips', url: '/my-trips#travel-groups' },
+      { label: 'Request a Trip', url: '/request-travel' },
+      { label: 'Search & Book', url: '/member-book' },
+      { label: 'Profile', url: '/member-profile' },
+      { label: 'Payment Method', url: '/update-payment-method' },
+    ]
     document.querySelectorAll('nav .nav-links').forEach((container) => {
-      container.replaceChildren(...brand.nav.map((item) => {
+      container.replaceChildren(...memberItems.map((item) => {
         const a = document.createElement('a')
-        a.textContent = item.label || ''
-        a.href = item.url || '#'
+        a.textContent = item.label
+        a.href = item.url
         return a
       }))
     })
+    document.querySelectorAll('nav .nav-auth').forEach((container) => {
+      const logout = document.createElement('button')
+      logout.type = 'button'
+      logout.textContent = 'Logout'
+      logout.style.cssText = 'border:0;background:#7c3aed;color:#fff;padding:8px 15px;border-radius:999px;font-weight:800;cursor:pointer'
+      logout.addEventListener('click', async () => {
+        await supabase.auth.signOut()
+        window.location.assign('/')
+      })
+      container.replaceChildren(logout)
+    })
+    document.querySelectorAll('nav > a.nav-logo, nav > a:first-child').forEach((link) => {
+      if (link.querySelector('img')) link.href = '/my-trips'
+    })
+  } else {
+    if (Array.isArray(brand.nav)) {
+      document.querySelectorAll('nav .nav-links').forEach((container) => {
+        container.replaceChildren(...brand.nav.map((item) => {
+          const a = document.createElement('a')
+          a.textContent = item.label || ''
+          a.href = item.url || '#'
+          return a
+        }))
+      })
+    }
+    document.querySelectorAll('nav .nav-auth').forEach((container) => {
+      const login = document.createElement('a'); login.href = brand.login_url || '/login'; login.textContent = brand.login_label || 'Login'
+      const signup = document.createElement('a'); signup.href = brand.signup_url || '/signup'; signup.textContent = brand.signup_label || 'Sign Up'
+      container.replaceChildren(login, signup)
+    })
   }
-  document.querySelectorAll('nav .nav-auth').forEach((container) => {
-    const login = document.createElement('a'); login.href = brand.login_url || '/login'; login.textContent = brand.login_label || 'Login'
-    const signup = document.createElement('a'); signup.href = brand.signup_url || '/signup'; signup.textContent = brand.signup_label || 'Sign Up'
-    container.replaceChildren(login, signup)
-  })
-  const pathname = window.location.pathname.replace(/\/$/, '') || '/'
+  const pathname = currentPath
   const page = settings.page_content?.[pathname]
   if (page) {
     const heading = document.querySelector('[data-page-heading], .hero h1, header.hero h1, main h1')
