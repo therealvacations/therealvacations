@@ -103,8 +103,12 @@ async function syncSupplierAssignment(itemId,itemPayload){
     visible_to_supplier:true,
     updated_at:new Date().toISOString()
   };
-  const {error}=await supabase.from('supplier_assignments').upsert(assignment,{onConflict:'quote_item_id'});
-  if(error) toast('Proposal item saved, but supplier assignment could not be synced: '+error.message,true);
+  const {data:existing,error:lookupError}=await supabase.from('supplier_assignments').select('assignment_id').eq('quote_item_id',itemId).maybeSingle();
+  if(lookupError){toast('Proposal item saved, but supplier assignment could not be checked: '+lookupError.message,true);return;}
+  const result=existing?.assignment_id
+    ? await supabase.from('supplier_assignments').update(assignment).eq('assignment_id',existing.assignment_id)
+    : await supabase.from('supplier_assignments').insert(assignment);
+  if(result.error) toast('Proposal item saved, but supplier assignment could not be synced: '+result.error.message,true);
 }
 
 async function saveQuoteItem(){
