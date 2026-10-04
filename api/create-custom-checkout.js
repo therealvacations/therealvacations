@@ -46,6 +46,7 @@ export default async function handler(req,res){
   const title=booking.travel_quotes?.title||booking.travel_quotes?.travel_requests?.destination||'The Real Vacations Custom Trip';
   const form=encodeForm({
     mode:'payment',
+    'automatic_payment_methods[enabled]':'true',
     customer_email:user.email,
     client_reference_id:bookingId,
     'consent_collection[terms_of_service]':'required',
