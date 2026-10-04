@@ -270,6 +270,14 @@
     {
       "source": "/request-payment-result",
       "destination": "/request-payment-result.html"
+    },
+    {
+      "source": "/member-profile",
+      "destination": "/member-profile.html"
+    },
+    {
+      "source": "/member-book",
+      "destination": "/member-book.html"
     }
   ]
 }
