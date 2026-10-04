@@ -70,7 +70,7 @@ if (!user) { window.location.replace('/login?next=/my-trips'); }
 if (user) {
   // Check if admin — redirect to admin dashboard
   const { data: adminCheck } = await supabase.from('admin_users').select('id').eq('id', user.id).maybeSingle();
-  if (adminCheck) { window.location.replace('/dashboard'); }
+  if (adminCheck) { window.location.replace('/admin'); }
 
   const { data: profile, error: profileError } = await supabase.from('users').select('*').eq('user_id', user.id).maybeSingle();
   if (profileError) console.error('Unable to load traveler profile:', profileError.message);
