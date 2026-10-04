@@ -207,34 +207,14 @@ if (user) {
       const quoteHtml = quotes.map(quote => {
         const existingResponse = (quote.travel_quote_responses || [])[0];
         const options = (quote.travel_quote_options || []).sort((a, b) => a.sort_order - b.sort_order);
-        const optionsHtml = options.map(option => '<div class="quote-option"><strong>' + escapeHtml(option.name) + '</strong><p>' + escapeHtml(option.description || '') + '</p><p><strong>' + money(option.total_amount) + '</strong>' + (option.deposit_amount ? ' · Deposit ' + money(option.deposit_amount) : '') + '</p>' + (!existingResponse && ['ready','viewed'].includes(quote.status) ? '<button data-quote-id="' + quote.quote_id + '" data-option-id="' + option.option_id + '" class="approve-quote">Approve This Option</button>' : '') + '</div>').join('');
-        return '<div class="quote-card"><strong>' + escapeHtml(quote.title) + '</strong><p>' + escapeHtml(quote.summary || '') + '</p>' + (existingResponse ? '<p class="request-pill">Response: ' + escapeHtml(existingResponse.decision.replaceAll('_', ' ')) + '</p>' : '') + optionsHtml + '</div>';
+        const optionsHtml = options.map(option => '<div class="quote-option"><strong>' + escapeHtml(option.name) + '</strong><p>' + escapeHtml(option.description || '') + '</p><p><strong>' + money(option.total_amount) + '</strong>' + (option.deposit_amount ? ' · Deposit ' + money(option.deposit_amount) : '') + '</p></div>').join('');
+        const reviewLink = '<a class="btn" style="margin-top:12px" href="/proposal?quote=' + quote.quote_id + '">View Full Proposal →</a>';
+        return '<div class="quote-card"><strong>' + escapeHtml(quote.title) + '</strong><p>' + escapeHtml(quote.summary || '') + '</p>' + (existingResponse ? '<p class="request-pill">Response: ' + escapeHtml(existingResponse.decision.replaceAll('_', ' ')) + '</p>' : '') + optionsHtml + reviewLink + '</div>';
       }).join('');
       const requestTypes = (request.request_types || []).map(type => '<span class="request-pill">' + escapeHtml(type) + '</span>').join('');
       return '<div class="request-card"><div class="trip-header"><div><h3>' + escapeHtml(request.destination || 'Travel Request') + '</h3><p>Submitted ' + new Date(request.submitted_at).toLocaleDateString() + '</p></div><span class="status status-pending">' + escapeHtml(request.status.replaceAll('_', ' ')) + '</span></div><div class="request-meta">' + requestTypes + '</div>' + quoteHtml + '</div>';
     }).join('');
 
-    document.querySelectorAll('.approve-quote').forEach(button => {
-      button.addEventListener('click', async () => {
-        button.disabled = true;
-        button.textContent = 'Saving...';
-        const { data, error } = await supabase.functions.invoke('approve-custom-quote', {
-          body: {
-            quote_id: button.dataset.quoteId,
-            option_id: button.dataset.optionId
-          }
-        });
-        if (error || !data?.custom_booking_id) {
-          console.error('Unable to approve quote:', error?.message || data?.error || 'Unknown error');
-          button.disabled = false;
-          button.textContent = 'Try Again';
-        } else {
-          button.textContent = 'Approved ✓ Opening booking…';
-          document.querySelectorAll('[data-quote-id="' + button.dataset.quoteId + '"]').forEach(item => item.disabled = true);
-          location.assign('/quote-checkout?booking=' + encodeURIComponent(data.custom_booking_id));
-        }
-      });
-    });
   }
 
   const { data: bookings, error: bookingsError } = await supabase.from('bookings').select('*, trips(*), booking_payments(*)').eq('user_id', user.id).order('created_at', { ascending: false });
