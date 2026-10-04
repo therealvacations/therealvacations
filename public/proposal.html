@@ -47,6 +47,9 @@ if(user){
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
+    const {data:approvedBooking}=await supabase.from('custom_bookings')
+      .select('custom_booking_id,balance_due,amount_paid')
+      .eq('quote_id',quoteId).maybeSingle();
     document.getElementById('title').textContent=q.title||'Your TRV Proposal';
     document.getElementById('summary').textContent=q.summary||'Review your personalized travel options and select the experience you want to book.';
     const expired=q.valid_until&&new Date(q.valid_until).getTime()<Date.now();
@@ -70,7 +73,7 @@ if(user){
       const legacyDetails=!items.length&&o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
       const canApprove=ownsQuote&&!expired&&['ready','viewed'].includes(q.status);
       const previewOnly=!ownsQuote?'<p class="deposit" style="margin-top:14px">Preview only — booking must be completed while signed in to the traveler account that owns this proposal.</p>':'';
-      const approvalBlock=canApprove?'<div style="margin-top:18px;padding:16px;border:1px solid #e7deef;border-radius:14px;background:#faf7fc"><label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45"><input class="review-confirm" type="checkbox" style="margin-top:3px"><span>I reviewed the full proposal details and understand that continuing will approve this option and create my booking.</span></label><button class="choose" data-option="'+o.option_id+'" disabled style="margin-top:12px">Approve & Continue to Booking</button></div>':'';
+      const approvalBlock=canApprove?'<div style="margin-top:18px;padding:16px;border:1px solid #e7deef;border-radius:14px;background:#faf7fc"><label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45"><input class="review-confirm" type="checkbox" style="margin-top:3px"><span>I reviewed the full proposal details and understand that continuing will approve this option and create my booking.</span></label><button class="choose" data-option="'+o.option_id+'" disabled style="margin-top:12px">Approve & Continue to Booking</button></div>':(approvedBooking&&approvedBooking.custom_booking_id&&approvedBooking.balance_due>0?'<div style="margin-top:18px;padding:16px;border:1px solid #e7deef;border-radius:14px;background:#faf7fc"><p class="deposit" style="margin:0 0 10px">This option is already approved. You can still review every detail here before paying.</p><a href="/quote-checkout?booking='+encodeURIComponent(approvedBooking.custom_booking_id)+'" style="display:inline-block;background:#7c3aed;color:#fff;text-decoration:none;padding:13px 22px;border-radius:999px;font-weight:800">Continue to Payment →</a></div>':'');
       return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+previewOnly+approvalBlock+'</article>';
     }).join('');
     loading.hidden=true;content.hidden=false;
