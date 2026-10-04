@@ -82,12 +82,32 @@ if(user){
     document.querySelectorAll('.choose').forEach(btn=>btn.addEventListener('click',async()=>{
       document.querySelectorAll('.choose').forEach(b=>b.disabled=true);
       btn.textContent='Creating your itinerary…';message.textContent='';
-      const {data,error}=await supabase.functions.invoke('approve-custom-quote',{body:{quote_id:quoteId,option_id:btn.dataset.option}});
-      if(error||!data?.custom_booking_id){
-        message.textContent=data?.error||error?.message||'Your selection could not be completed. Please try again.';
-        document.querySelectorAll('.choose').forEach(b=>b.disabled=false);btn.textContent='Select & Book This Option';return;
+      const {data:{user:activeUser}}=await supabase.auth.getUser();
+      if(!activeUser){
+        location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));
+        return;
       }
-      location.assign('/quote-checkout?booking='+encodeURIComponent(data.custom_booking_id));
+      const {error:responseError}=await supabase.from('travel_quote_responses').upsert({
+        quote_id:quoteId,
+        option_id:btn.dataset.option,
+        user_id:activeUser.id,
+        decision:'approved',
+        note:null
+      },{onConflict:'quote_id,user_id'});
+      if(responseError){
+        message.textContent=responseError.message||'Your selection could not be completed. Please try again.';
+        document.querySelectorAll('.choose').forEach(b=>b.disabled=false);btn.textContent='Approve & Continue to Booking';return;
+      }
+      const {data:booking,error:bookingError}=await supabase.from('custom_bookings')
+        .select('custom_booking_id')
+        .eq('quote_id',quoteId)
+        .eq('user_id',activeUser.id)
+        .maybeSingle();
+      if(bookingError||!booking?.custom_booking_id){
+        message.textContent=bookingError?.message||'Your approval was saved, but the booking record could not be opened. Refresh this page or open My Trips.';
+        document.querySelectorAll('.choose').forEach(b=>b.disabled=false);btn.textContent='Approve & Continue to Booking';return;
+      }
+      location.assign('/quote-checkout?booking='+encodeURIComponent(booking.custom_booking_id));
     }));
   }
 }
