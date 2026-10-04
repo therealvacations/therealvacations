@@ -43,7 +43,7 @@ const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
 if(user){
   const {data:q,error}=await supabase.from('travel_quotes')
-    .select('quote_id,title,summary,status,valid_until,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details))')
+    .select('quote_id,title,summary,status,valid_until,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url))')
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
@@ -68,7 +68,8 @@ if(user){
       const items=(o.travel_quote_items||[]).sort((a,b)=>a.sort_order-b.sort_order);
       const itemsHtml=items.length?'<div class="items">'+items.map(i=>{
         const detailHtml=i.details&&Object.keys(i.details).length?'<div class="item-details">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>':'';
-        return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div><p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+'</section>';
+        const imageHtml=i.image_url?'<img src="'+esc(i.image_url)+'" alt="'+esc(i.title||'Travel proposal item')+'" style="width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin:12px 0">':'';
+        return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div>'+imageHtml+'<p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+'</section>';
       }).join('')+'</div>':'';
       const legacyDetails=!items.length&&o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
       const canApprove=ownsQuote&&!expired&&['ready','viewed'].includes(q.status);
