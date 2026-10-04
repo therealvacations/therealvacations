@@ -5,7 +5,15 @@ import { supabase } from './supabase-client.js'
 // ==========================================
 export function safePortalPath(value) {
   if (typeof value !== 'string') return '/my-trips'
-  if (new Set(['/my-trips', '/dashboard', '/profile', '/settings']).has(value)) return value
+  if (new Set([
+    '/my-trips',
+    '/member-profile',
+    '/member-book',
+    '/request-travel',
+    '/update-payment-method',
+    '/supplier-portal',
+    '/admin'
+  ]).has(value)) return value
   try {
     const parsed = new URL(value, window.location.origin)
     const code = parsed.searchParams.get('code') || ''
