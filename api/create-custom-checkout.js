@@ -46,7 +46,10 @@ export default async function handler(req,res){
   const title=booking.travel_quotes?.title||booking.travel_quotes?.travel_requests?.destination||'The Real Vacations Custom Trip';
   const form=encodeForm({
     mode:'payment',
-    'automatic_payment_methods[enabled]':'true',
+    'payment_method_types[0]':'card',
+    'payment_method_types[1]':'klarna',
+    'payment_method_types[2]':'afterpay_clearpay',
+    'payment_method_types[3]':'affirm',
     customer_email:user.email,
     client_reference_id:bookingId,
     'consent_collection[terms_of_service]':'required',
