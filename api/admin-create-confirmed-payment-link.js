@@ -27,6 +27,7 @@ export default async function handler(req,res){
   if(!isAdmin) return res.status(403).json({error:'Administrator access required'});
 
   const requestId=String(req.body?.request_id||'');
+  const supplierId=req.body?.supplier_id?String(req.body.supplier_id):null;
   const supplierName=String(req.body?.supplier_name||'').trim();
   const confirmationDetails=String(req.body?.confirmation_details||'').trim();
   const supplierSubtotal=Number(req.body?.supplier_subtotal);
@@ -36,9 +37,16 @@ export default async function handler(req,res){
     return res.status(422).json({error:'Enter valid confirmed amounts'});
   }
 
+  let supplierRecord=null;
+  if(supplierId){
+    const {data:supplier,error:supplierError}=await admin.from('suppliers').select('supplier_id,company_name,display_name,status').eq('supplier_id',supplierId).maybeSingle();
+    if(supplierError||!supplier||supplier.status==='inactive') return res.status(422).json({error:'Choose an active supplier'});
+    supplierRecord=supplier;
+  }
+
   const {data:prepared,error:prepError}=await admin.rpc('prepare_travel_request_charge',{
     p_request_id:requestId,
-    p_supplier_name:supplierName,
+    p_supplier_name:supplierName||supplierRecord?.display_name||supplierRecord?.company_name||'',
     p_supplier_subtotal:supplierSubtotal,
     p_service_fee:serviceFee,
     p_confirmation_details:confirmationDetails,
@@ -46,6 +54,10 @@ export default async function handler(req,res){
   const row=Array.isArray(prepared)?prepared[0]:prepared;
   if(prepError||!row){
     return res.status(409).json({error:prepError?.message||'This request is not ready for confirmed payment'});
+  }
+
+  if(supplierId){
+    await admin.from('travel_request_fulfillments').update({supplier_id:supplierId,updated_at:new Date().toISOString()}).eq('fulfillment_id',row.fulfillment_id);
   }
 
   const {data:travelRequest}=await admin.from('travel_requests')
@@ -61,8 +73,11 @@ export default async function handler(req,res){
     customer:row.stripe_customer_id,
     client_reference_id:requestId,
     'payment_method_types[0]':'card',
+    'payment_method_types[1]':'klarna',
+    'payment_method_types[2]':'afterpay_clearpay',
+    'payment_method_types[3]':'affirm',
     'line_items[0][price_data][currency]':row.currency||'usd',
-    'line_items[0][price_data][product_data][name]':supplierName||'Confirmed travel arrangements',
+    'line_items[0][price_data][product_data][name]':supplierName||supplierRecord?.display_name||supplierRecord?.company_name||'Confirmed travel arrangements',
     'line_items[0][price_data][unit_amount]':supplierSubtotal,
     'line_items[0][quantity]':1,
     'metadata[checkout_type]':'travel_request_fulfillment',
@@ -95,7 +110,7 @@ export default async function handler(req,res){
       failure_message:String(session?.error?.message||'Stripe checkout could not be created').slice(0,500),
       updated_at:new Date().toISOString()
     }).eq('fulfillment_id',row.fulfillment_id);
-    return res.status(502).json({error:'Stripe payment completion could not be created'});
+    return res.status(502).json({error:String(session?.error?.message||'Stripe payment completion could not be created')});
   }
 
   await admin.from('travel_request_fulfillments').update({
