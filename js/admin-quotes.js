@@ -3,7 +3,30 @@ import { supabase } from './supabase-client.js';
 const $ = s => document.querySelector(s);
 const money = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
 const esc = v => String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-let currentRequest=null, currentQuote=null;
+let currentRequest=null, currentQuote=null, supplierCache=[];
+
+async function loadSupplierChoices(){
+  const {data,error}=await supabase.from('suppliers').select('supplier_id,company_name,display_name,connection_mode,booking_portal_url,account_number,booking_instructions,required_traveler_information,status').neq('status','inactive').order('company_name');
+  if(error) return;
+  supplierCache=data||[];
+  const options='<option value="">No supplier assigned</option>'+supplierCache.map(s=>'<option value="'+esc(s.supplier_id)+'">'+esc(s.display_name||s.company_name)+'</option>').join('');
+  if($('#quoteItemSupplier')) $('#quoteItemSupplier').innerHTML=options;
+  if($('#fulfillmentSupplierId')) $('#fulfillmentSupplierId').innerHTML=options.replace('No supplier assigned','Select supplier');
+}
+function selectedSupplier(id){
+  return supplierCache.find(s=>s.supplier_id===id)||null;
+}
+function renderFulfillmentSupplierActions(){
+  const id=$('#fulfillmentSupplierId')?.value||'';
+  const s=selectedSupplier(id), box=$('#fulfillmentSupplierActions');
+  if(!box) return;
+  if(!s){box.innerHTML='Select the supplier that will fulfill this request.';return;}
+  const mode=s.connection_mode==='portal_account'?'Supplier Portal Account':'Admin Managed';
+  const link=s.booking_portal_url?'<a href="'+esc(s.booking_portal_url)+'" target="_blank" rel="noopener">Open supplier booking/payment site ↗</a>':'No booking/payment URL saved.';
+  const req=s.required_traveler_information?'<br><strong>Required traveler info:</strong> '+esc(s.required_traveler_information):'';
+  box.innerHTML='<strong>'+mode+'</strong> · '+link+req;
+}
+$('#fulfillmentSupplierId')?.addEventListener('change',renderFulfillmentSupplierActions);
 
 function toast(msg, error=false){
   const box=$('#adminMessage'); if(!box) return;
@@ -21,7 +44,8 @@ function parseItemDetails(){
   return out;
 }
 function clearQuoteItemForm(){
-  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemImage'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  if($('#quoteItemSupplier')) $('#quoteItemSupplier').value='';
   if($('#quoteItemCategory')) $('#quoteItemCategory').value='flight';
   if($('#quoteItemQuantity')) $('#quoteItemQuantity').value='1';
   if($('#saveQuoteItemButton')) $('#saveQuoteItemButton').textContent='Add Proposal Item';
@@ -37,13 +61,16 @@ async function loadQuoteItems(){
   if(error){ list.innerHTML='<p class="hint">Proposal items could not be loaded.</p>'; return; }
   list.innerHTML=(data||[]).map(i=>{
     const amount=i.amount==null?'Price pending':money(i.amount);
-    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+'</p></div></div><p class="record-summary">'+esc(i.description||'')+'</p>'+(i.admin_notes?'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px"><strong>Admin only:</strong> '+esc(i.admin_notes)+'</div>':'')+'<div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
+    const supplier=selectedSupplier(i.supplier_id);
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p>'+(i.admin_notes?'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px"><strong>Admin only:</strong> '+esc(i.admin_notes)+'</div>':'')+'<div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
   }).join('')||'<div class="empty-state">No proposal items yet.</div>';
   document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
     const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
     $('#quoteItemId').value=i.item_id; $('#quoteItemCategory').value=i.category||'other'; $('#quoteItemTitle').value=i.title||'';
     $('#quoteItemAmount').value=i.amount==null?'':(i.amount/100).toFixed(2); $('#quoteItemQuantity').value=i.quantity||1;
     $('#quoteItemDescription').value=i.description||'';
+    $('#quoteItemSupplier').value=i.supplier_id||'';
+    $('#quoteItemImage').value=i.image_url||'';
     $('#quoteItemAdminNotes').value=i.admin_notes||'';
     $('#quoteItemDetails').value=Object.entries(i.details||{}).map(([k,v])=>k+' | '+v).join('\n');
     $('#saveQuoteItemButton').textContent='Update Proposal Item';
@@ -68,6 +95,8 @@ async function saveQuoteItem(){
     amount:amountRaw===''?null:Math.round(Number(amountRaw)*100),
     quantity:Math.max(1,Number($('#quoteItemQuantity')?.value||1)),
     details:parseItemDetails(),
+    supplier_id:$('#quoteItemSupplier')?.value||null,
+    image_url:$('#quoteItemImage')?.value.trim()||null,
     admin_notes:$('#quoteItemAdminNotes')?.value.trim()||null,
     updated_at:new Date().toISOString()
   };
@@ -163,7 +192,9 @@ function openRequest(r){
   $('#quoteOptions').value=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,(o.total_amount/100).toFixed(2),o.deposit_amount==null?'':(o.deposit_amount/100).toFixed(2),o.description||''].join(' | ')).join('\n');
 
   const fulfillment=Array.isArray(r.travel_request_fulfillments)?r.travel_request_fulfillments[0]:r.travel_request_fulfillments;
+  $('#fulfillmentSupplierId').value=fulfillment?.supplier_id||'';
   $('#fulfillmentSupplier').value=fulfillment?.supplier_name||'';
+  renderFulfillmentSupplierActions();
   $('#fulfillmentSubtotal').value=fulfillment?.supplier_subtotal!=null?(fulfillment.supplier_subtotal/100).toFixed(2):'';
   $('#fulfillmentFee').value=fulfillment?.service_fee!=null?(fulfillment.service_fee/100).toFixed(2):'0.00';
   $('#fulfillmentConfirmation').value=fulfillment?.confirmation_details||'';
@@ -267,7 +298,8 @@ async function createConfirmedPayment(){
       headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
       body:JSON.stringify({
         request_id:currentRequest.request_id,
-        supplier_name:$('#fulfillmentSupplier')?.value?.trim()||'',
+        supplier_id:$('#fulfillmentSupplierId')?.value||null,
+        supplier_name:$('#fulfillmentSupplier')?.value?.trim()||selectedSupplier($('#fulfillmentSupplierId')?.value||'')?.display_name||selectedSupplier($('#fulfillmentSupplierId')?.value||'')?.company_name||'',
         supplier_subtotal:subtotal,
         service_fee:fee,
         confirmation_details:$('#fulfillmentConfirmation')?.value?.trim()||''
@@ -288,5 +320,6 @@ async function createConfirmedPayment(){
 }
 $('#createConfirmedPaymentButton')?.addEventListener('click',createConfirmedPayment);
 
-document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{ if(btn.dataset.tab==='quotes') loadRequests(); }));
+document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',async()=>{ if(btn.dataset.tab==='quotes'){await loadSupplierChoices();loadRequests();} }));
+await loadSupplierChoices();
 loadRequests();
