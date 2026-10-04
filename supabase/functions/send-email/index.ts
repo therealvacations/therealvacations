@@ -29,13 +29,13 @@ Deno.serve(async (request) => {
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const resendKey = Deno.env.get('RESEND_API_KEY')
-  const fromEmail = Deno.env.get('RESEND_FROM_EMAIL')
+  const fromEmail = Deno.env.get('RESEND_FROM_EMAIL') ?? 'kc@therealvacations.com'
   const fromName = Deno.env.get('RESEND_FROM_NAME') ?? 'The Real Vacations'
   const replyTo = Deno.env.get('TRV_CONTACT_EMAIL') ?? fromEmail
   const siteUrl = (Deno.env.get('PUBLIC_SITE_URL') ?? 'https://therealvacations.com').replace(/\/$/, '')
   const bearer = (request.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '')
   const apiKey = request.headers.get('apikey') ?? ''
-  if (!supabaseUrl || !serviceRoleKey || !resendKey || !fromEmail) {
+  if (!supabaseUrl || !serviceRoleKey || !resendKey) {
     return jsonResponse({ error: 'Server configuration error' }, 500)
   }
 
