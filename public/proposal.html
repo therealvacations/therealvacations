@@ -90,7 +90,11 @@ if(user){
       const byId=new Map(allMixItems.map(i=>[i.item_id,i]));
       const updateMixTotal=()=>{
         const ids=[...document.querySelectorAll('.mix-choice:checked')].map(x=>x.value).filter(Boolean);
-        const total=ids.reduce((sum,id)=>sum+(Number(byId.get(id)?.amount)||0),0);
+        const chosen=ids.map(id=>byId.get(id)).filter(Boolean);
+        const subtotal=chosen
+          .filter(i=>String(i.category||'').toLowerCase()!=='processing_fee'&&!/processing convenience fee/i.test(String(i.title||'')))
+          .reduce((sum,i)=>sum+(Number(i.amount)||0),0);
+        const total=subtotal+Math.round(subtotal*0.035);
         const totalEl=document.getElementById('mixTotal'); if(totalEl)totalEl.textContent=money(total);
       };
       document.querySelectorAll('.mix-choice').forEach(x=>x.addEventListener('change',updateMixTotal));
