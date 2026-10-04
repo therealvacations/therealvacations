@@ -12,6 +12,7 @@ nav{background:#1a0533;padding:14px 28px;display:flex;align-items:center;gap:24p
 .wrap{max-width:960px;margin:auto;padding:36px 20px 70px}.meta{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:26px}.pill{background:#eee5f7;border-radius:999px;padding:8px 13px;font-size:12px;font-weight:700}
 .option{background:#fff;border:1px solid #e5dcec;border-radius:20px;padding:26px;margin:18px 0;box-shadow:0 10px 30px rgba(55,30,75,.06)}.option.recommended{border:2px solid #7c3aed}.option-top{display:flex;justify-content:space-between;gap:20px;align-items:start}.option h2{color:#1a0533;margin:0 0 9px}.price{font-size:30px;font-weight:900;color:#6d28d9;white-space:nowrap}.desc{color:#6d6273;line-height:1.7}.details{background:#faf7fc;border-radius:12px;padding:16px;margin:18px 0;white-space:pre-line}.deposit{font-weight:700;color:#4b3d56}
 .items{display:grid;gap:14px;margin:18px 0}.proposal-item{border:1px solid #eadff2;border-radius:14px;padding:17px;background:#fff}.item-top{display:flex;justify-content:space-between;gap:18px;align-items:start}.item-type{text-transform:uppercase;letter-spacing:.08em;font-size:10px;font-weight:900;color:#7c3aed}.proposal-item h3{margin:4px 0 6px;color:#1a0533}.item-price{font-weight:900;color:#1a0533;white-space:nowrap}.item-desc{color:#6d6273;margin:6px 0}.item-details{margin-top:10px;background:#faf7fc;border-radius:10px;padding:11px;font-size:13px;line-height:1.7}.total-box{border-top:2px solid #ede4f3;margin-top:18px;padding-top:14px}
+.builder{background:#fff;border:2px solid #7c3aed;border-radius:20px;padding:26px;margin:18px 0 28px;box-shadow:0 10px 30px rgba(55,30,75,.08)}.builder h2{margin:0 0 8px;color:#1a0533}.builder-group{border-top:1px solid #eadff2;padding:16px 0}.builder-group:first-of-type{border-top:0}.builder-choice{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid #eadff2;border-radius:11px;margin:8px 0}.builder-choice input{margin-top:4px}.builder-choice strong{color:#1a0533}.builder-total{font-size:26px;font-weight:900;color:#6d28d9}.attachment-grid{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}.attachment-link{display:inline-flex;align-items:center;gap:6px;padding:8px 11px;border:1px solid #ded4ed;border-radius:10px;text-decoration:none;color:#4c1d6f;font-weight:700;font-size:13px}.attachment-image{width:150px;height:100px;object-fit:cover;border-radius:10px;border:1px solid #eadff2}
 button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 22px;font-size:15px;font-weight:800;cursor:pointer}button:disabled{opacity:.55}.message{margin-top:10px;color:#991b1b}.loading{text-align:center;padding:70px 20px;color:#6d6273}
 .expired{background:#fff3cd;border:1px solid #f4d98a;padding:14px;border-radius:12px;margin-bottom:18px}
 @media(max-width:720px){.nav-links{display:none}.option-top{display:block}.price{margin:12px 0}}
@@ -29,6 +30,7 @@ button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 2
 <div id="content" hidden>
 <div class="meta" id="meta"></div>
 <div id="expired" class="expired" hidden>This proposal has expired. Contact The Real Vacations for refreshed pricing and availability.</div>
+<div id="builder"></div>
 <div id="options"></div>
 <p class="message" id="message" aria-live="polite"></p>
 </div>
@@ -36,14 +38,14 @@ button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 2
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
 const qs=new URLSearchParams(location.search), quoteId=qs.get('quote')||'';
-const loading=document.getElementById('loading'),content=document.getElementById('content'),optionsEl=document.getElementById('options'),message=document.getElementById('message');
+const loading=document.getElementById('loading'),content=document.getElementById('content'),optionsEl=document.getElementById('options'),builderEl=document.getElementById('builder'),message=document.getElementById('message');
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
 if(user){
   const {data:q,error}=await supabase.from('travel_quotes')
-    .select('quote_id,title,summary,status,valid_until,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url))')
+    .select('quote_id,title,summary,status,valid_until,quote_kind,workflow_status,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,allow_mix_and_match,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url,selection_group,selection_rule,client_visible,attachments))')
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
@@ -64,12 +66,63 @@ if(user){
     const travelerHtml=travelers.length?'<section class="option" style="margin-bottom:18px"><h2 style="margin-top:0">Travelers on this proposal</h2><div class="details">'+travelers.map((t,i)=>esc((i+1)+'. '+[t.first_name,t.middle_name,t.last_name].filter(Boolean).join(' ')+(t.traveler_type?' · '+t.traveler_type.replaceAll('_',' '):''))).join('<br>')+'</div></section>':'';
     document.getElementById('options').insertAdjacentHTML('beforebegin',travelerHtml);
     const opts=(q.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
+    const allMixItems=opts.flatMap(o=>(o.travel_quote_items||[]).filter(i=>i.client_visible!==false&&i.selection_group&&o.allow_mix_and_match!==false).map(i=>({...i,option_name:o.name})));
+    const groups=new Map();
+    allMixItems.forEach(i=>{
+      const key=String(i.selection_group||'').trim();
+      if(!key)return;
+      if(!groups.has(key))groups.set(key,{rule:i.selection_rule||'fixed',items:[]});
+      const g=groups.get(key);
+      if(!g.items.some(x=>x.title===i.title&&x.amount===i.amount&&x.description===i.description))g.items.push(i);
+    });
+    const canBuild=ownsQuote&&!expired&&['ready','viewed'].includes(q.status)&&q.quote_kind!=='custom_selection'&&groups.size>0;
+    if(canBuild){
+      const groupHtml=[...groups.entries()].map(([name,g])=>{
+        const safe='grp-'+name.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+        if(g.rule==='fixed'){
+          const i=g.items[0];
+          return '<div class="builder-group" data-group="'+esc(name)+'"><strong>'+esc(name.replaceAll('_',' '))+' · Required</strong><label class="builder-choice"><input class="mix-choice" type="radio" name="'+esc(safe)+'" value="'+i.item_id+'" checked><span><strong>'+esc(i.title)+'</strong><br><small>'+esc(i.option_name||'')+(i.amount!=null?' · '+money(i.amount):'')+'</small></span></label></div>';
+        }
+        const none=g.rule==='optional'?'<label class="builder-choice"><input class="mix-choice" type="radio" name="'+esc(safe)+'" value="" checked><span><strong>No extra</strong></span></label>':'';
+        return '<div class="builder-group" data-group="'+esc(name)+'"><strong>'+esc(name.replaceAll('_',' '))+(g.rule==='choose_one'?' · Choose one':' · Optional')+'</strong>'+none+g.items.map((i,idx)=>'<label class="builder-choice"><input class="mix-choice" type="radio" name="'+esc(safe)+'" value="'+i.item_id+'" '+(g.rule==='choose_one'&&idx===0?'checked':'')+'><span><strong>'+esc(i.title)+'</strong><br><small>'+esc(i.option_name||'')+(i.amount!=null?' · '+money(i.amount):'')+'</small></span></label>').join('')+'</div>';
+      }).join('');
+      builderEl.innerHTML='<section class="builder"><div class="eyebrow" style="color:#7c3aed">Build Your Trip</div><h2>Mix & match the choices you want</h2><p class="desc">Shared items stay locked. Choose one package where TRV has given you alternatives. Your selection creates a new quote for TRV to verify before you approve or pay.</p>'+groupHtml+'<div class="total-box"><div class="option-top"><strong>Your selected trip</strong><div class="builder-total" id="mixTotal">$0.00</div></div><div class="field" style="margin-top:12px"><label for="mixNote" style="display:block;font-size:12px;font-weight:800;margin-bottom:6px">Note for TRV (optional)</label><textarea id="mixNote" style="width:100%;min-height:70px;border:1px solid #ded4ed;border-radius:10px;padding:10px" placeholder="Anything you want us to verify or adjust?"></textarea></div><button id="submitMixSelection" type="button">Submit My Selection</button><p class="deposit" style="margin-bottom:0">TRV will verify live pricing and availability before this becomes your final quote.</p></div></section>';
+      const byId=new Map(allMixItems.map(i=>[i.item_id,i]));
+      const updateMixTotal=()=>{
+        const ids=[...document.querySelectorAll('.mix-choice:checked')].map(x=>x.value).filter(Boolean);
+        const total=ids.reduce((sum,id)=>sum+(Number(byId.get(id)?.amount)||0),0);
+        const totalEl=document.getElementById('mixTotal'); if(totalEl)totalEl.textContent=money(total);
+      };
+      document.querySelectorAll('.mix-choice').forEach(x=>x.addEventListener('change',updateMixTotal));
+      updateMixTotal();
+      document.getElementById('submitMixSelection')?.addEventListener('click',async()=>{
+        const button=document.getElementById('submitMixSelection');
+        const ids=[...document.querySelectorAll('.mix-choice:checked')].map(x=>x.value).filter(Boolean);
+        button.disabled=true;button.textContent='Submitting for TRV review…';message.textContent='';
+        const {data:{session}}=await supabase.auth.getSession();
+        if(!session?.access_token){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));return;}
+        try{
+          const resp=await fetch('/api/submit-quote-selection',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},body:JSON.stringify({quote_id:quoteId,selected_item_ids:ids,note:document.getElementById('mixNote')?.value||''})});
+          const result=await resp.json().catch(()=>({}));
+          if(!resp.ok)throw new Error(result.error||'Your selection could not be submitted.');
+          builderEl.innerHTML='<section class="builder"><h2>Selection received</h2><p class="desc">We’re confirming current availability and pricing. Your finalized TRV quote will appear here when ready.</p><p class="deposit">Submitted total: '+money(result.total_amount)+'</p><a class="attachment-link" href="/my-trips">Return to My Trips →</a></section>';
+        }catch(error){
+          message.textContent=error.message||'Your selection could not be submitted.';
+          button.disabled=false;button.textContent='Submit My Selection';
+        }
+      });
+    }else builderEl.innerHTML='';
+
     optionsEl.innerHTML=opts.map(o=>{
-      const items=(o.travel_quote_items||[]).sort((a,b)=>a.sort_order-b.sort_order);
+      const items=(o.travel_quote_items||[]).filter(i=>i.client_visible!==false).sort((a,b)=>a.sort_order-b.sort_order);
       const itemsHtml=items.length?'<div class="items">'+items.map(i=>{
         const detailHtml=i.details&&Object.keys(i.details).length?'<div class="item-details">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>':'';
         const imageHtml=i.image_url?'<img src="'+esc(i.image_url)+'" alt="'+esc(i.title||'Travel proposal item')+'" style="width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin:12px 0">':'';
-        return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div>'+imageHtml+'<p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+'</section>';
+        const attachments=(Array.isArray(i.attachments)?i.attachments:[]).map(a=>a.type==='image'
+          ? '<a href="'+esc(a.url)+'" target="_blank" rel="noopener"><img class="attachment-image" src="'+esc(a.url)+'" alt="'+esc(a.name||'Quote image')+'"></a>'
+          : '<a class="attachment-link" href="'+esc(a.url)+'" target="_blank" rel="noopener">📄 '+esc(a.name||'View PDF')+'</a>').join('');
+        const attachmentHtml=attachments?'<div class="attachment-grid">'+attachments+'</div>':'';
+        return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div>'+imageHtml+'<p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+attachmentHtml+'</section>';
       }).join('')+'</div>':'';
       const legacyDetails=!items.length&&o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
       const canApprove=ownsQuote&&!expired&&['ready','viewed'].includes(q.status);
