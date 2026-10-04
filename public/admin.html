@@ -85,6 +85,8 @@
           <div class="field"><label for="quoteItemTitle">Item title</label><input id="quoteItemTitle" placeholder="Delta ATL → MCO"/></div>
           <div class="field"><label for="quoteItemAmount">Amount ($)</label><input id="quoteItemAmount" type="number" min="0" step="0.01" placeholder="Leave blank if pending"/></div>
           <div class="field"><label for="quoteItemQuantity">Quantity</label><input id="quoteItemQuantity" type="number" min="1" value="1"/></div>
+          <div class="field"><label for="quoteItemSupplier">Supplier</label><select id="quoteItemSupplier"><option value="">No supplier assigned</option></select></div>
+          <div class="field"><label for="quoteItemImage">Optional image URL</label><input id="quoteItemImage" type="url" placeholder="https://..."/></div>
         </div>
         <div class="field"><label for="quoteItemDescription">Client-facing description</label><textarea id="quoteItemDescription" placeholder="Flight times, ticket duration, vehicle type, what is included..."></textarea></div>
         <div class="field"><label for="quoteItemAdminNotes">Admin-only notes</label><textarea id="quoteItemAdminNotes" placeholder="Supplier cost, internal markup, advisor notes..."></textarea><p class="hint"><strong>Private:</strong> never shown on the traveler proposal.</p></div>
@@ -111,7 +113,9 @@
         <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
         <h2 style="font-size:18px">Supplier Confirmation & Payment</h2>
         <p class="hint">Use this after you have confirmed the supplier's live availability and final price. The system verifies that this request has a saved payment method and signed authorization before creating the secure payment step.</p>
-        <div class="field"><label for="fulfillmentSupplier">Supplier / confirmed service</label><input id="fulfillmentSupplier" placeholder="Delta + National Car Rental, Universal tickets, Villa supplier..."/></div>
+        <div class="field"><label for="fulfillmentSupplierId">Supplier / vendor</label><select id="fulfillmentSupplierId"><option value="">Select supplier</option></select></div>
+        <div class="field"><label for="fulfillmentSupplier">Confirmed service label</label><input id="fulfillmentSupplier" placeholder="Flight + car, Universal tickets, Villa, cruise cabin..."/></div>
+        <div id="fulfillmentSupplierActions" class="hint"></div>
         <div class="field-grid">
           <div class="field"><label for="fulfillmentSubtotal">Supplier-confirmed amount ($)</label><input id="fulfillmentSubtotal" type="number" min="0" step="0.01" placeholder="0.00"/></div>
           <div class="field"><label for="fulfillmentFee">TRV service fee ($)</label><input id="fulfillmentFee" type="number" min="0" step="0.01" value="0.00"/></div>
@@ -140,6 +144,10 @@
       <option value="tour">Tour / Activity</option><option value="transportation">Transportation</option>
       <option value="insurance">Travel Insurance</option><option value="other">Other</option>
     </select></div>
+    <div class="field"><label for="supplierConnectionMode">Connection type</label><select id="supplierConnectionMode">
+      <option value="admin_managed">Admin Managed — no supplier login required</option>
+      <option value="portal_account">Supplier Portal Account — invite a supplier contact</option>
+    </select><p class="hint">Admin Managed suppliers stay tied to their supplier ID, booking site, costs and confirmations without requiring an invite.</p></div>
     <div class="field"><label for="supplierContactName">Primary contact</label><input id="supplierContactName"/></div>
     <div class="field"><label for="supplierEmail">Contact / invite email</label><input id="supplierEmail" type="email"/></div>
     <div class="field"><label for="supplierPhone">Phone</label><input id="supplierPhone" type="tel"/></div>
@@ -148,6 +156,8 @@
     <div class="field"><label for="supplierAccount">TRV account / agency number</label><input id="supplierAccount"/></div>
     <div class="field"><label for="supplierCommission">Commission notes</label><textarea id="supplierCommission"></textarea></div>
     <div class="field"><label for="supplierPayment">Payment notes</label><textarea id="supplierPayment"></textarea></div>
+    <div class="field"><label for="supplierBookingInstructions">Booking instructions</label><textarea id="supplierBookingInstructions" placeholder="How TRV should book/pay this supplier, required account fields, special workflow..."></textarea></div>
+    <div class="field"><label for="supplierTravelerRequirements">Required traveler information</label><textarea id="supplierTravelerRequirements" placeholder="Example: legal name, DOB, gender, passport, citizenship, weights, loyalty number..."></textarea></div>
     <div class="field"><label for="supplierNotes">Internal notes</label><textarea id="supplierNotes"></textarea></div>
     <div class="field"><label for="supplierStatus">Status</label><select id="supplierStatus"><option value="active">Active</option><option value="inactive">Inactive</option><option value="invited">Invited</option><option value="connected">Connected</option></select></div>
     <div class="form-actions">
