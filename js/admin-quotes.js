@@ -275,6 +275,7 @@ $('#saveRequesterEmailButton')?.addEventListener('click',()=>saveRequesterEmail(
 
 async function saveQuote(publish=false){
   if(!currentRequest) return toast('Select a travel request first.',true);
+  if(publish && !(await saveRequesterEmail(false))) return toast('Add a valid requester email before publishing and emailing this quote.',true);
   const options=parseOptions(); if(!$('#quoteTitle').value.trim()||!options.length) return toast('Add a quote title and at least one option.',true);
   const valid=$('#quoteValidUntil').value ? new Date($('#quoteValidUntil').value+'T23:59:59').toISOString() : null;
   const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',valid_until:valid,ready_at:publish?new Date().toISOString():null,total_amount:Math.min(...options.map(o=>o.total_amount)),deposit_amount:Math.min(...options.map(o=>o.deposit_amount||o.total_amount))};
@@ -330,7 +331,7 @@ $('#previewQuoteButton')?.addEventListener('click',()=>{
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
-  ['quoteRequestId','quoteId','quoteClient','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#fulfillmentFee')) $('#fulfillmentFee').value='0.00';
   if($('#fulfillmentStatus')) $('#fulfillmentStatus').textContent='Select a request to view payment readiness.';
   if($('#openConfirmedPaymentLink')){$('#openConfirmedPaymentLink').style.display='none';$('#openConfirmedPaymentLink').href='#';}
