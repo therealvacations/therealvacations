@@ -59,7 +59,10 @@ export default async function handler(req,res){
     if(!selectedIds.includes(fixed.item_id)) return res.status(422).json({error:'A required trip item is missing from your selection.'});
   }
 
-  const total=selected.reduce((sum,i)=>sum+Math.max(0,Number(i.amount)||0),0);
+  const pricedSelected=selected.filter(i=>String(i.category||'').toLowerCase()!=='processing_fee'&&!/processing convenience fee/i.test(String(i.title||'')));
+  const subtotal=pricedSelected.reduce((sum,i)=>sum+Math.max(0,Number(i.amount)||0),0);
+  const processingFee=Math.round(subtotal*0.035);
+  const total=subtotal+processingFee;
   if(total<=0) return res.status(422).json({error:'The selected trip does not have a valid total yet.'});
 
   const now=new Date().toISOString();
@@ -96,7 +99,7 @@ export default async function handler(req,res){
     return res.status(500).json({error:'Your custom quote option could not be created.'});
   }
 
-  const copies=selected.map((i,index)=>({
+  const copies=pricedSelected.map((i,index)=>({
     option_id:newOption.option_id,
     category:i.category,
     title:i.title,
@@ -113,6 +116,23 @@ export default async function handler(req,res){
     client_visible:true,
     attachments:Array.isArray(i.attachments)?i.attachments:[]
   }));
+  copies.push({
+    option_id:newOption.option_id,
+    category:'processing_fee',
+    title:'Processing Convenience Fee',
+    description:'Credit-card processing convenience fee (3.5%).',
+    amount:processingFee,
+    quantity:1,
+    sort_order:copies.length+1,
+    details:{Rate:'3.5%',Applied_to:'Selected travel subtotal of '+new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(subtotal/100)},
+    admin_notes:'Automatically recalculated from the client-built selection.',
+    supplier_id:null,
+    image_url:null,
+    selection_group:null,
+    selection_rule:'fixed',
+    client_visible:true,
+    attachments:[]
+  });
   const {error:itemError}=await admin.from('travel_quote_items').insert(copies);
   if(itemError){
     await admin.from('travel_quotes').delete().eq('quote_id',newQuote.quote_id);
