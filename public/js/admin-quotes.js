@@ -6,7 +6,7 @@ const esc = v => String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;',
 let currentRequest=null, currentQuote=null, supplierCache=[], currentItemAttachments=[];
 
 async function loadSupplierChoices(){
-  const {data,error}=await supabase.from('suppliers').select('supplier_id,company_name,display_name,connection_mode,booking_portal_url,account_number,booking_instructions,required_traveler_information,status').neq('status','inactive').order('company_name');
+  const {data,error}=await supabase.from('suppliers').select('supplier_id,company_name,display_name,connection_mode,website_url,booking_portal_url,account_number,booking_instructions,required_traveler_information,status').neq('status','inactive').order('company_name');
   if(error) return;
   supplierCache=data||[];
   const options='<option value="">No supplier assigned</option>'+supplierCache.map(s=>'<option value="'+esc(s.supplier_id)+'">'+esc(s.display_name||s.company_name)+'</option>').join('');
@@ -15,6 +15,17 @@ async function loadSupplierChoices(){
 }
 function selectedSupplier(id){
   return supplierCache.find(s=>s.supplier_id===id)||null;
+}
+function supplierNoteLine(id){
+  const s=selectedSupplier(id);
+  if(!s) return '[Supplier] NOT ASSIGNED';
+  const name=s.display_name||s.company_name||'Supplier';
+  const url=s.booking_portal_url||s.website_url||'';
+  return '[Supplier] '+name+(url?' | '+url:'');
+}
+function mergeSupplierIntoAdminNotes(notes,id){
+  const cleaned=String(notes||'').replace(/^\[Supplier\][^\n]*(?:\n|$)/i,'').trim();
+  return supplierNoteLine(id)+(cleaned?'\n'+cleaned:'');
 }
 function renderFulfillmentSupplierActions(){
   const id=$('#fulfillmentSupplierId')?.value||'';
@@ -99,7 +110,8 @@ async function loadQuoteItems(){
   list.innerHTML=(data||[]).map(i=>{
     const amount=i.amount==null?'Price pending':money(i.amount);
     const supplier=selectedSupplier(i.supplier_id);
-    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p>'+(i.admin_notes?'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px"><strong>Admin only:</strong> '+esc(i.admin_notes)+'</div>':'')+'<div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
+    const adminNoteDisplay=mergeSupplierIntoAdminNotes(i.admin_notes,i.supplier_id);
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p><div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px;white-space:pre-wrap"><strong>Admin only:</strong> '+esc(adminNoteDisplay)+'</div><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
   }).join('')||'<div class="empty-state">No proposal items yet.</div>';
   document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
     const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
@@ -108,7 +120,7 @@ async function loadQuoteItems(){
     $('#quoteItemDescription').value=i.description||'';
     $('#quoteItemSupplier').value=i.supplier_id||'';
     $('#quoteItemImage').value=i.image_url||'';
-    $('#quoteItemAdminNotes').value=i.admin_notes||'';
+    $('#quoteItemAdminNotes').value=mergeSupplierIntoAdminNotes(i.admin_notes,i.supplier_id);
     $('#quoteItemDetails').value=Object.entries(i.details||{}).map(([k,v])=>k+' | '+v).join('\n');
     if($('#quoteItemSelectionGroup')) $('#quoteItemSelectionGroup').value=i.selection_group||'';
     if($('#quoteItemSelectionRule')) $('#quoteItemSelectionRule').value=i.selection_rule||'fixed';
@@ -169,7 +181,7 @@ async function saveQuoteItem(){
     details:parseItemDetails(),
     supplier_id:$('#quoteItemSupplier')?.value||null,
     image_url:$('#quoteItemImage')?.value.trim()||null,
-    admin_notes:$('#quoteItemAdminNotes')?.value.trim()||null,
+    admin_notes:mergeSupplierIntoAdminNotes($('#quoteItemAdminNotes')?.value,$('#quoteItemSupplier')?.value||null),
     selection_group:$('#quoteItemSelectionGroup')?.value.trim()||null,
     selection_rule:$('#quoteItemSelectionRule')?.value||'fixed',
     client_visible:$('#quoteItemClientVisible')?.checked!==false,
