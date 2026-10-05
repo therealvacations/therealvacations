@@ -455,15 +455,16 @@ async function saveQuote(publish=false){
   }
   await supabase.from('travel_requests').update({status:publish?'quote_ready':'quote_in_progress'}).eq('request_id',currentRequest.request_id);
   if(publish){
-    const {data:{session}}=await supabase.auth.getSession();
-    const resp=await fetch('/api/send-quote-ready',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+(session?.access_token||'')},body:JSON.stringify({quote_id:quoteId})});
-    const emailResult=await resp.json().catch(()=>({}));
-    if(!resp.ok){
-      const detail=emailResult?.error||('Email route failed with status '+resp.status);
-      console.error('Quote email failed:',resp.status,emailResult);
+    const eventId='admin-quote-ready-'+quoteId+'-'+Date.now();
+    const {data:emailResult,error:emailError}=await supabase.functions.invoke('send-email',{
+      body:{template_type:'quote_ready',event_id:eventId,quote_id:quoteId}
+    });
+    if(emailError || !emailResult?.delivered){
+      const detail=emailResult?.error||emailError?.message||'Email delivery failed';
+      console.error('Quote email failed:',emailError,emailResult);
       toast('Quote published, but email failed: '+detail,true);
     }else{
-      toast('Quote published and emailed to the client.');
+      toast(emailResult?.duplicate?'Quote published. Email was already sent for this event.':'Quote published and emailed to the client.');
     }
   } else toast('Quote draft saved.');
   await loadRequests();
