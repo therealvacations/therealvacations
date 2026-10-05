@@ -18,14 +18,18 @@ function selectedSupplier(id){
 }
 function supplierNoteLine(id){
   const s=selectedSupplier(id);
-  if(!s) return '[Supplier] NOT ASSIGNED';
+  if(!s) return '';
   const name=s.display_name||s.company_name||'Supplier';
   const url=s.booking_portal_url||s.website_url||'';
   return '[Supplier] '+name+(url?' | '+url:'');
 }
 function mergeSupplierIntoAdminNotes(notes,id){
   const cleaned=String(notes||'').replace(/^\[Supplier\][^\n]*(?:\n|$)/i,'').trim();
-  return supplierNoteLine(id)+(cleaned?'\n'+cleaned:'');
+  const line=supplierNoteLine(id);
+  return line+(cleaned?'\n'+cleaned:'');
+}
+function isInternalFeeItem(category,title){
+  return String(category||'').toLowerCase()==='processing_fee' || /processing convenience fee/i.test(String(title||''));
 }
 function renderFulfillmentSupplierActions(){
   const id=$('#fulfillmentSupplierId')?.value||'';
@@ -170,18 +174,23 @@ async function saveQuoteItem(){
   if(!optionId) return toast('Save the quote first so the proposal item has an option to attach to.',true);
   const title=$('#quoteItemTitle')?.value.trim();
   if(!title) return toast('Enter an item title.',true);
+  const category=$('#quoteItemCategory')?.value||'other';
+  const supplierId=$('#quoteItemSupplier')?.value||null;
+  if(!supplierId && !isInternalFeeItem(category,title)) return toast('Select the supplier/source for this quote item before saving it.',true);
   const amountRaw=$('#quoteItemAmount')?.value;
   const payload={
     option_id:optionId,
-    category:$('#quoteItemCategory')?.value||'other',
+    category,
     title,
     description:$('#quoteItemDescription')?.value.trim()||null,
     amount:amountRaw===''?null:Math.round(Number(amountRaw)*100),
     quantity:Math.max(1,Number($('#quoteItemQuantity')?.value||1)),
     details:parseItemDetails(),
-    supplier_id:$('#quoteItemSupplier')?.value||null,
+    supplier_id:supplierId,
     image_url:$('#quoteItemImage')?.value.trim()||null,
-    admin_notes:mergeSupplierIntoAdminNotes($('#quoteItemAdminNotes')?.value,$('#quoteItemSupplier')?.value||null),
+    admin_notes:isInternalFeeItem(category,title)
+      ? String($('#quoteItemAdminNotes')?.value||'').replace(/^\[Supplier\][^\n]*(?:\n|$)/i,'').trim()
+      : mergeSupplierIntoAdminNotes($('#quoteItemAdminNotes')?.value,supplierId),
     selection_group:$('#quoteItemSelectionGroup')?.value.trim()||null,
     selection_rule:$('#quoteItemSelectionRule')?.value||'fixed',
     client_visible:$('#quoteItemClientVisible')?.checked!==false,
@@ -409,6 +418,15 @@ $('#sendMemberEmailChangeButton')?.addEventListener('click',sendMemberEmailChang
 async function saveQuote(publish=false){
   if(!currentRequest) return toast('Select a travel request first.',true);
   if(publish && !(await saveRequesterEmail(false))) return toast('Add a valid requester email before publishing and emailing this quote.',true);
+  if(publish && currentQuote?.quote_id){
+    const optionIds=(currentQuote.travel_quote_options||[]).map(o=>o.option_id).filter(Boolean);
+    if(optionIds.length){
+      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,title,category,supplier_id').in('option_id',optionIds);
+      if(sourceCheckError) return toast('Could not verify quote-item suppliers: '+sourceCheckError.message,true);
+      const missing=(items||[]).filter(i=>!i.supplier_id&&!isInternalFeeItem(i.category,i.title));
+      if(missing.length) return toast('Every quote item must have its supplier/source before publishing. Missing: '+missing.map(i=>i.title).join(', '),true);
+    }
+  }
   const options=parseOptions(); if(!$('#quoteTitle').value.trim()||!options.length) return toast('Add a quote title and at least one option.',true);
   const valid=$('#quoteValidUntil').value ? new Date($('#quoteValidUntil').value+'T23:59:59').toISOString() : null;
   const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',workflow_status:publish?'published':(currentQuote?.workflow_status==='admin_review'?'admin_review':'draft'),valid_until:valid,ready_at:publish?new Date().toISOString():null,total_amount:Math.min(...options.map(o=>o.total_amount)),deposit_amount:Math.min(...options.map(o=>o.deposit_amount||o.total_amount))};
