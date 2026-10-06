@@ -12,6 +12,8 @@ export function safePortalPath(value) {
     '/request-travel',
     '/update-payment-method',
     '/supplier-portal',
+    '/host',
+    '/host-center',
     '/admin'
   ]).has(value)) return value
   try {
