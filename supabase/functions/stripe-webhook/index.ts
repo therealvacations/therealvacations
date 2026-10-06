@@ -140,6 +140,33 @@ Deno.serve(async (request) => {
         return jsonResponse({ received: true, vip_membership: true })
       }
 
+      if (session.metadata?.checkout_type === 'host_membership') {
+        const userId = session.metadata?.user_id
+        const billingPlan = session.metadata?.billing_plan
+        const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id ?? null
+        if (!userId || !subscriptionId || !['monthly','annual'].includes(String(billingPlan ?? ''))) {
+          return jsonResponse({ error: 'Host checkout metadata is incomplete' }, 422)
+        }
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+        const customerId = typeof session.customer === 'string'
+          ? session.customer
+          : typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id
+        const periodEnd = (subscription as any).current_period_end
+          ? new Date(Number((subscription as any).current_period_end) * 1000).toISOString()
+          : null
+        const { error: hostError } = await admin.from('host_memberships').upsert({
+          user_id: userId,
+          status: subscription.status === 'trialing' ? 'trialing' : 'active',
+          billing_plan: String(billingPlan),
+          paid_through: periodEnd,
+          stripe_customer_id: customerId,
+          stripe_subscription_id: subscriptionId,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' })
+        if (hostError) throw hostError
+        return jsonResponse({ received: true, host_membership: true })
+      }
+
       if (session.metadata?.checkout_type === 'travel_request_fulfillment') {
         const fulfillmentId = session.metadata?.fulfillment_id
         const requestId = session.metadata?.request_id
@@ -334,17 +361,30 @@ Deno.serve(async (request) => {
         const trialEnd = (subscription as any).trial_end
           ? new Date(Number((subscription as any).trial_end) * 1000).toISOString()
           : null
-        const { error: membershipError } = await admin.from('vip_memberships').update({
-          status,
-          trial_started_at: trialStart,
-          trial_ends_at: trialEnd,
-          paid_through: periodEnd,
-          stripe_customer_id: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
-          stripe_subscription_id: subscription.id,
-          billing_plan: subscription.metadata?.billing_plan || null,
-          updated_at: new Date().toISOString(),
-        }).eq('user_id', userId)
-        if (membershipError) throw membershipError
+        const checkoutType = subscription.metadata?.checkout_type
+        if (checkoutType === 'host_membership') {
+          const { error: membershipError } = await admin.from('host_memberships').update({
+            status,
+            paid_through: periodEnd,
+            stripe_customer_id: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
+            stripe_subscription_id: subscription.id,
+            billing_plan: subscription.metadata?.billing_plan || null,
+            updated_at: new Date().toISOString(),
+          }).eq('user_id', userId)
+          if (membershipError) throw membershipError
+        } else {
+          const { error: membershipError } = await admin.from('vip_memberships').update({
+            status,
+            trial_started_at: trialStart,
+            trial_ends_at: trialEnd,
+            paid_through: periodEnd,
+            stripe_customer_id: typeof subscription.customer === 'string' ? subscription.customer : subscription.customer.id,
+            stripe_subscription_id: subscription.id,
+            billing_plan: subscription.metadata?.billing_plan || null,
+            updated_at: new Date().toISOString(),
+          }).eq('user_id', userId)
+          if (membershipError) throw membershipError
+        }
       }
     } else if (event.type === 'charge.refunded') {
       const charge = event.data.object as Stripe.Charge
