@@ -27,6 +27,8 @@ if (settings) {
       { label: 'Profile', url: '/member-profile' },
       { label: 'Payment Method', url: '/update-payment-method' },
     ]
+    const { data: hostProfile } = await supabase.from('host_profiles').select('user_id').eq('user_id', session.user.id).maybeSingle()
+    if (hostProfile) memberItems.splice(2, 0, { label: 'Host Center', url: '/host-center' })
     document.querySelectorAll('nav .nav-links').forEach((container) => {
       container.replaceChildren(...memberItems.map((item) => {
         const a = document.createElement('a')
