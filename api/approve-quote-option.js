@@ -22,7 +22,7 @@ export default async function handler(req,res){
   if(!quoteId||!optionId) return res.status(422).json({error:'Quote and option are required.'});
 
   const {data:quote,error:quoteError}=await admin.from('travel_quotes')
-    .select('quote_id,request_id,status,valid_until,currency,travel_requests!inner(user_id),travel_quote_options(option_id,total_amount,deposit_amount,travel_quote_items(item_id,category,title,amount,client_visible,travel_quote_item_variants(variant_id,item_id,label,amount,active,is_default)))')
+    .select('quote_id,request_id,status,valid_until,currency,travel_requests!inner(user_id),travel_quote_options(option_id,total_amount,deposit_amount,travel_quote_items(item_id,category,title,amount,client_visible,builder_managed,travel_quote_item_variants(variant_id,item_id,label,amount,active,is_default)))')
     .eq('quote_id',quoteId).maybeSingle();
   if(quoteError||!quote) return res.status(404).json({error:'Quote not found'});
   const request=Array.isArray(quote.travel_requests)?quote.travel_requests[0]:quote.travel_requests;
@@ -32,7 +32,7 @@ export default async function handler(req,res){
 
   const option=(quote.travel_quote_options||[]).find(o=>o.option_id===optionId);
   if(!option) return res.status(422).json({error:'Selected option is not part of this quote.'});
-  const items=(option.travel_quote_items||[]).filter(i=>i.client_visible!==false);
+  const items=(option.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false);
   const variantMap=new Map();
   for(const item of items){
     for(const v of (item.travel_quote_item_variants||[]).filter(v=>v.active!==false)) variantMap.set(v.variant_id,{...v,item_id:item.item_id});
