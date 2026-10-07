@@ -455,10 +455,21 @@ async function saveQuote(publish=false){
   }
   await supabase.from('travel_requests').update({status:publish?'quote_ready':'quote_in_progress'}).eq('request_id',currentRequest.request_id);
   if(publish){
-    const eventId='admin-quote-ready-'+quoteId+'-'+Date.now();
-    const {data:emailResult,error:emailError}=await supabase.functions.invoke('send-email',{
-      body:{template_type:'quote_ready',event_id:eventId,quote_id:quoteId}
-    });
+    const {data:{session}}=await supabase.auth.getSession();
+    if(!session?.access_token) return toast('Your admin session expired. Sign in again.',true);
+    let emailResult={};
+    let emailError=null;
+    try{
+      const emailResp=await fetch('/api/send-quote-ready',{
+        method:'POST',
+        headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+        body:JSON.stringify({quote_id:quoteId})
+      });
+      emailResult=await emailResp.json().catch(()=>({}));
+      if(!emailResp.ok) emailError=new Error(emailResult?.error||'Email delivery failed');
+    }catch(error){
+      emailError=error;
+    }
     if(emailError || !emailResult?.delivered){
       const detail=emailResult?.error||emailError?.message||'Email delivery failed';
       console.error('Quote email failed:',emailError,emailResult);
