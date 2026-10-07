@@ -134,6 +134,51 @@ Deno.serve(async (request) => {
       .maybeSingle()
     if (!selectedPackage) return jsonResponse({ error: 'This trip package is not available' }, 409)
 
+    const requestedAddons = Array.isArray(body.selected_addons) ? body.selected_addons : []
+    const requestedAddonCodes = [...new Set(requestedAddons.map((item: any) => String(item?.code ?? '').trim()).filter(Boolean))]
+    let addonTotal = 0
+    let addonDueToday = 0
+    const addonSnapshot: Array<Record<string, unknown>> = []
+
+    if (requestedAddonCodes.length) {
+      const { data: addonRows, error: addonError } = await admin.from('trip_addons')
+        .select('addon_id,code,name,description,amount,currency,per_person,charge_timing')
+        .eq('trip_id', selectedPackage.trip_id)
+        .eq('is_active', true)
+        .in('code', requestedAddonCodes)
+
+      if (addonError) return jsonResponse({ error: 'Trip add-ons could not be verified' }, 500)
+      if ((addonRows || []).length !== requestedAddonCodes.length) {
+        return jsonResponse({ error: 'One or more selected trip add-ons are no longer available' }, 409)
+      }
+
+      const addonByCode = new Map((addonRows || []).map((row: any) => [row.code, row]))
+      for (const selection of requestedAddons as Array<Record<string, unknown>>) {
+        const code = String(selection?.code ?? '').trim()
+        const addon: any = addonByCode.get(code)
+        if (!addon) return jsonResponse({ error: 'A selected trip add-on is not available' }, 409)
+
+        const quantity = addon.per_person
+          ? Math.max(1, Math.min(partySize, Math.trunc(Number(selection?.quantity ?? 1) || 1)))
+          : 1
+        const lineTotal = Number(addon.amount ?? 0) * quantity
+        addonTotal += lineTotal
+        if (addon.charge_timing === 'due_today') addonDueToday += lineTotal
+        addonSnapshot.push({
+          addon_id: addon.addon_id,
+          code: addon.code,
+          name: addon.name,
+          description: addon.description,
+          amount: Number(addon.amount ?? 0),
+          currency: addon.currency || selectedPackage.currency || 'usd',
+          per_person: Boolean(addon.per_person),
+          quantity,
+          charge_timing: addon.charge_timing || 'due_today',
+          line_total: lineTotal,
+        })
+      }
+    }
+
     if (paymentPlan === 'installments') {
       const { data: subscriber } = await admin.from('subscribers')
         .select('subscriber_id,opted_in')
@@ -227,16 +272,19 @@ Deno.serve(async (request) => {
 
     const perPersonTotal = Number(selectedPackage.total_amount ?? 0)
     const perPersonDeposit = Number(selectedPackage.deposit_amount ?? 0)
-    const groupTotalBeforeDiscount = perPersonTotal * partySize
+    const packageGroupTotal = perPersonTotal * partySize
+    const groupTotalBeforeDiscount = packageGroupTotal + addonTotal
     const groupDeposit = perPersonDeposit * partySize
+    const baseDueNow = paymentResponsibility === 'individual' && partySize > 1 ? perPersonDeposit : groupDeposit
     const dueNowBeforeDiscount = paymentPlan === 'pay_in_full'
       ? groupTotalBeforeDiscount
-      : (paymentResponsibility === 'individual' && partySize > 1 ? perPersonDeposit : groupDeposit)
+      : baseDueNow + addonDueToday
 
     const { error: groupAmountError } = await admin.from('bookings').update({
       total_amount: groupTotalBeforeDiscount,
       deposit_amount: groupDeposit,
       balance_due: groupTotalBeforeDiscount,
+      selected_addons: addonSnapshot,
       updated_at: new Date().toISOString(),
     }).eq('booking_id', prepared.booking_id).eq('user_id', user.id)
     if (groupAmountError) return jsonResponse({ error: 'Unable to prepare group booking totals' }, 500)
@@ -320,9 +368,10 @@ Deno.serve(async (request) => {
       const originalTotal = Number(bookingAmounts.total_amount ?? 0)
       const originalDeposit = Number(bookingAmounts.deposit_amount ?? 0)
       const discountedTotal = Math.max(0, originalTotal - appliedDiscountAmount)
+      const baseDiscountedDueNow = paymentResponsibility === 'individual' && partySize > 1 ? perPersonDeposit : originalDeposit
       const amountDueNow = paymentPlan === 'pay_in_full'
         ? discountedTotal
-        : Math.min(paymentResponsibility === 'individual' && partySize > 1 ? perPersonDeposit : originalDeposit, discountedTotal)
+        : Math.min(baseDiscountedDueNow + addonDueToday, discountedTotal)
 
       const { error: promoBookingError } = await admin.from('bookings').update({
         total_amount: discountedTotal,
