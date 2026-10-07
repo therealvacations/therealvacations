@@ -45,7 +45,7 @@ const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
 if(user){
   const {data:q,error}=await supabase.from('travel_quotes')
-    .select('quote_id,title,summary,status,valid_until,quote_kind,workflow_status,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,allow_mix_and_match,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url,selection_group,selection_rule,client_visible,attachments))')
+    .select('quote_id,title,summary,status,valid_until,quote_kind,workflow_status,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,allow_mix_and_match,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url,selection_group,selection_rule,client_visible,attachments,travel_quote_item_variants(variant_id,label,description,amount,sort_order,is_default,active)))')
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
@@ -126,15 +126,44 @@ if(user){
           ? '<a href="'+esc(a.url)+'" target="_blank" rel="noopener"><img class="attachment-image" src="'+esc(a.url)+'" alt="'+esc(a.name||'Quote image')+'"></a>'
           : '<a class="attachment-link" href="'+esc(a.url)+'" target="_blank" rel="noopener">📄 '+esc(a.name||'View PDF')+'</a>').join('');
         const attachmentHtml=attachments?'<div class="attachment-grid">'+attachments+'</div>':'';
-        return '<section class="proposal-item"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price">'+(i.amount==null?'Price pending':money(i.amount))+'</div></div>'+imageHtml+'<p class="item-desc">'+esc(i.description||'')+'</p>'+detailHtml+attachmentHtml+'</section>';
+        const variants=(i.travel_quote_item_variants||[]).filter(v=>v.active!==false).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+        const chosenDefault=variants.find(v=>v.is_default)||variants[0];
+        const variantHtml=variants.length?'<div class="item-details" style="margin-top:12px"><strong>Choose your option</strong>'+variants.map(v=>'<label class="builder-choice" style="margin-top:8px"><input class="item-variant-choice" type="radio" name="variant-'+esc(o.option_id)+'-'+esc(i.item_id)+'" data-option="'+esc(o.option_id)+'" data-item="'+esc(i.item_id)+'" data-amount="'+Number(v.amount||0)+'" value="'+esc(v.variant_id)+'" '+(chosenDefault?.variant_id===v.variant_id?'checked':'')+'><span><strong>'+esc(v.label)+'</strong> · '+money(v.amount)+(v.description?'<br><small>'+esc(v.description)+'</small>':'')+'</span></label>').join('')+'</div>':'';
+        const displayed=variants.length?(chosenDefault?money(chosenDefault.amount):'Choose an option'):(i.amount==null?'Price pending':money(i.amount));
+        const processing=String(i.category||'').toLowerCase()==='processing_fee'||/processing convenience fee/i.test(String(i.title||''));
+        return '<section class="proposal-item" data-item="'+esc(i.item_id)+'"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price '+(processing?'processing-price':'')+'" data-option="'+esc(o.option_id)+'" data-item="'+esc(i.item_id)+'">'+displayed+'</div></div>'+imageHtml+'<p class="item-desc">'+esc(i.description||'')+'</p>'+variantHtml+detailHtml+attachmentHtml+'</section>';
       }).join('')+'</div>':'';
       const legacyDetails=!items.length&&o.details&&Object.keys(o.details).length?'<div class="details">'+esc(Object.entries(o.details).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join('\n'))+'</div>':'';
       const canApprove=ownsQuote&&!expired&&['ready','viewed'].includes(q.status);
       const previewOnly=!ownsQuote?'<p class="deposit" style="margin-top:14px">Preview only — booking must be completed while signed in to the traveler account that owns this proposal.</p>':'';
       const approvalBlock=canApprove?'<div style="margin-top:18px;padding:16px;border:1px solid #e7deef;border-radius:14px;background:#faf7fc"><label style="display:flex;gap:10px;align-items:flex-start;font-size:14px;line-height:1.45"><input class="review-confirm" type="checkbox" style="margin-top:3px"><span>I reviewed the full proposal details and understand that continuing will approve this option and create my booking.</span></label><button class="choose" data-option="'+o.option_id+'" disabled style="margin-top:12px">Approve & Continue to Booking</button></div>':(approvedBooking&&approvedBooking.custom_booking_id&&approvedBooking.balance_due>0?'<div style="margin-top:18px;padding:16px;border:1px solid #e7deef;border-radius:14px;background:#faf7fc"><p class="deposit" style="margin:0 0 10px">This option is already approved. You can still review every detail here before paying.</p><a href="/quote-checkout?booking='+encodeURIComponent(approvedBooking.custom_booking_id)+'" style="display:inline-block;background:#7c3aed;color:#fff;text-decoration:none;padding:13px 22px;border-radius:999px;font-weight:800">Continue to Payment →</a></div>':'');
-      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+previewOnly+approvalBlock+'</article>';
+      return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price option-total" data-option="'+o.option_id+'">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+previewOnly+approvalBlock+'</article>';
     }).join('');
     loading.hidden=true;content.hidden=false;
+
+    const recalcOptionTotal=optionId=>{
+      const option=opts.find(x=>x.option_id===optionId); if(!option)return 0;
+      const items=(option.travel_quote_items||[]).filter(i=>i.client_visible!==false);
+      let subtotal=0;
+      items.forEach(i=>{
+        const processing=String(i.category||'').toLowerCase()==='processing_fee'||/processing convenience fee/i.test(String(i.title||''));
+        if(processing)return;
+        const variants=(i.travel_quote_item_variants||[]).filter(v=>v.active!==false);
+        if(variants.length){
+          const selected=document.querySelector('.item-variant-choice[data-option="'+optionId+'"][data-item="'+i.item_id+'"]:checked');
+          subtotal+=Number(selected?.dataset.amount||0);
+          const price=document.querySelector('.item-price[data-option="'+optionId+'"][data-item="'+i.item_id+'"]');
+          if(price&&selected)price.textContent=money(Number(selected.dataset.amount||0));
+        }else subtotal+=Number(i.amount||0);
+      });
+      const fee=Math.round(subtotal*0.035), total=subtotal+fee;
+      const feeEl=document.querySelector('.processing-price[data-option="'+optionId+'"]'); if(feeEl)feeEl.textContent=money(fee);
+      const totalEl=document.querySelector('.option-total[data-option="'+optionId+'"]'); if(totalEl)totalEl.textContent=money(total);
+      return total;
+    };
+    document.querySelectorAll('.item-variant-choice').forEach(x=>x.addEventListener('change',()=>recalcOptionTotal(x.dataset.option)));
+    opts.forEach(o=>recalcOptionTotal(o.option_id));
+
     document.querySelectorAll('.review-confirm').forEach(box=>box.addEventListener('change',()=>{const btn=box.closest('div').querySelector('.choose');if(btn)btn.disabled=!box.checked;}));
     document.querySelectorAll('.choose').forEach(btn=>btn.addEventListener('click',async()=>{
       document.querySelectorAll('.choose').forEach(b=>b.disabled=true);
@@ -144,27 +173,23 @@ if(user){
         location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));
         return;
       }
-      const {error:responseError}=await supabase.from('travel_quote_responses').upsert({
-        quote_id:quoteId,
-        option_id:btn.dataset.option,
-        user_id:activeUser.id,
-        decision:'approved',
-        note:null
-      },{onConflict:'quote_id,user_id'});
-      if(responseError){
-        message.textContent=responseError.message||'Your selection could not be completed. Please try again.';
+      const selectedVariantIds=[...document.querySelectorAll('.item-variant-choice[data-option="'+btn.dataset.option+'"]:checked')].map(x=>x.value).filter(Boolean);
+      const {data:{session}}=await supabase.auth.getSession();
+      if(!session?.access_token){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));return;}
+      let result={};
+      try{
+        const resp=await fetch('/api/approve-quote-option',{method:'POST',headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},body:JSON.stringify({quote_id:quoteId,option_id:btn.dataset.option,selected_variant_ids:selectedVariantIds})});
+        result=await resp.json().catch(()=>({}));
+        if(!resp.ok)throw new Error(result.error||'Your selection could not be completed.');
+      }catch(error){
+        message.textContent=error.message||'Your selection could not be completed. Please try again.';
         document.querySelectorAll('.choose').forEach(b=>b.disabled=false);btn.textContent='Approve & Continue to Booking';return;
       }
-      const {data:booking,error:bookingError}=await supabase.from('custom_bookings')
-        .select('custom_booking_id')
-        .eq('quote_id',quoteId)
-        .eq('user_id',activeUser.id)
-        .maybeSingle();
-      if(bookingError||!booking?.custom_booking_id){
-        message.textContent=bookingError?.message||'Your approval was saved, but the booking record could not be opened. Refresh this page or open My Trips.';
+      if(!result.booking_id){
+        message.textContent='Your approval was saved, but the booking record could not be opened. Refresh this page or open My Trips.';
         document.querySelectorAll('.choose').forEach(b=>b.disabled=false);btn.textContent='Approve & Continue to Booking';return;
       }
-      location.assign('/quote-checkout?booking='+encodeURIComponent(booking.custom_booking_id));
+      location.assign('/quote-checkout?booking='+encodeURIComponent(result.booking_id));
     }));
   }
 }
