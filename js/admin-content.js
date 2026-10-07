@@ -552,6 +552,35 @@ async function saveContactSettings(event) {
 }
 
 
+async function loadCustomInvoices() {
+  const box = $('#customInvoiceList')
+  if (!box) return
+  box.innerHTML = '<p>Loading approved quote invoices…</p>'
+  const { data: bookings, error } = await supabase.from('custom_bookings')
+    .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
+    .order('created_at', { ascending: false })
+  if (error) {
+    box.innerHTML = '<div class="admin-record"><h3>Invoices could not be loaded</h3><p class="record-summary">'+error.message+'</p></div>'
+    return
+  }
+  if (!bookings?.length) {
+    box.innerHTML = '<div class="empty-state">No approved custom quote invoices yet.</div>'
+    return
+  }
+  box.innerHTML = bookings.map((b) => {
+    const req = Array.isArray(b.travel_requests) ? b.travel_requests[0] : b.travel_requests || {}
+    const quote = Array.isArray(b.travel_quotes) ? b.travel_quotes[0] : b.travel_quotes || {}
+    const opt = Array.isArray(b.travel_quote_options) ? b.travel_quote_options[0] : b.travel_quote_options || {}
+    const name = [req.primary_first_name, req.primary_last_name].filter(Boolean).join(' ') || req.requester_email || 'Traveler'
+    const payments = (b.custom_booking_payments || []).sort((a, c) => new Date(c.created_at) - new Date(a.created_at))
+    const paymentRows = payments.length ? payments.map((p) => {
+      const when = p.paid_at ? new Date(p.paid_at).toLocaleString() : new Date(p.created_at).toLocaleString()
+      return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+String(p.kind||'payment').replaceAll('_',' ')+'</strong> · '+money(p.amount)+' · '+esc(p.status||'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
+    }).join('') : '<p class="hint" style="margin-top:10px">No Stripe payment attempts recorded yet.</p>'
+    return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(quote.title||req.destination||'Custom quote')+(opt.name?' · '+esc(opt.name):'')+'</p></div><span class="status-badge '+esc(b.status||'')+'">'+esc(String(b.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Invoice total</span><br><strong>'+money(b.total_amount)+'</strong></div><div><span class="hint">Deposit</span><br><strong>'+(b.deposit_amount?money(b.deposit_amount):'—')+'</strong></div><div><span class="hint">Paid</span><br><strong>'+money(b.amount_paid)+'</strong></div><div><span class="hint">Balance</span><br><strong>'+money(b.balance_due)+'</strong></div></div><p class="record-summary">'+esc(req.requester_email||'')+(req.destination?' · '+esc(req.destination):'')+'</p>'+paymentRows+'<div class="record-actions" style="margin-top:12px"><a class="secondary-button" href="/proposal?quote='+encodeURIComponent(b.quote_id)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Approved Proposal</a></div></article>'
+  }).join('')
+}
+
 async function verifyStripeConnection() {
   const button = $('#verifyStripeButton')
   const box = $('#stripeConnectionStatus')
@@ -605,7 +634,7 @@ async function loadAll() {
   const failed = [tripsResult, packagesResult, addonsResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
   if (failed) return showMessage(failed.error.message, 'error')
   state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.addons = addonsResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
-  renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderPageHeadings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings()
+  renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderPageHeadings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings(); await loadCustomInvoices()
 }
 
 ensureTripAddonsField()
