@@ -153,8 +153,32 @@ function renderQuoteOptionChoices(){
   const select=$('#quoteOptionSelect'); if(!select) return;
   const current=select.value;
   const opts=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
-  select.innerHTML=opts.map(o=>'<option value="'+esc(o.option_id)+'">'+esc(o.name)+(Number(o.total_amount||0)>0?' · '+money(o.total_amount):' · $0.00 until items are added')+'</option>').join('');
+  select.innerHTML=opts.map((o,index)=>'<option value="'+esc(o.option_id)+'">Option '+(index+1)+' — '+esc(o.name)+(Number(o.total_amount||0)>0?' · '+money(o.total_amount):' · $0.00 until items are added')+'</option>').join('');
   if(current&&opts.some(o=>o.option_id===current)) select.value=current;
+  else if(opts[0]) select.value=opts[0].option_id;
+  renderQuoteOptionCards();
+}
+async function renderQuoteOptionCards(){
+  const box=$('#quoteOptionCards'); if(!box) return;
+  const opts=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
+  if(!opts.length){box.innerHTML='<div class="empty-state">Save quote options first.</div>';return;}
+  const ids=opts.map(o=>o.option_id);
+  let counts={};
+  if(ids.length){
+    const {data}=await supabase.from('travel_quote_items').select('option_id,item_id,client_visible,builder_managed').in('option_id',ids).eq('builder_managed',true);
+    (data||[]).forEach(i=>{counts[i.option_id]=(counts[i.option_id]||0)+1;});
+  }
+  const selected=currentOptionId();
+  box.innerHTML=opts.map((o,index)=>{
+    const active=o.option_id===selected;
+    return '<button type="button" class="quote-option-card" data-option-id="'+esc(o.option_id)+'" style="text-align:left;padding:14px;border-radius:12px;border:2px solid '+(active?'#7c3aed':'#e5dcec')+';background:'+(active?'#f5f3ff':'#fff')+';cursor:pointer"><strong style="display:block;color:#4A1D6A">Option '+(index+1)+'</strong><span style="display:block;font-weight:700;margin-top:3px">'+esc(o.name)+'</span><span class="hint" style="display:block;margin-top:6px">'+(counts[o.option_id]||0)+' saved item(s) · '+money(o.total_amount||0)+'</span></button>';
+  }).join('');
+  box.querySelectorAll('.quote-option-card').forEach(btn=>btn.onclick=()=>{
+    $('#quoteOptionSelect').value=btn.dataset.optionId;
+    clearQuoteItemForm();
+    renderQuoteOptionCards();
+    loadQuoteItems();
+  });
 }
 function currentOptionId(){
   return $('#quoteOptionSelect')?.value || (currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order)[0]?.option_id || null;
@@ -169,7 +193,7 @@ async function refreshQuoteOptionsFromDatabase(preferredOptionId=null){
   renderQuoteOptionChoices();
   if(preferredOptionId && (data||[]).some(o=>o.option_id===preferredOptionId)) $('#quoteOptionSelect').value=preferredOptionId;
 }
-$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();loadQuoteItems();});
+$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();renderQuoteOptionCards();loadQuoteItems();});
 async function loadQuoteItems(){
   const list=$('#quoteItemList'); if(!list) return;
   const optionId=currentOptionId();
@@ -184,7 +208,9 @@ async function loadQuoteItems(){
   }
   const variantsByItem=new Map();
   variantRows.forEach(v=>{if(!variantsByItem.has(v.item_id))variantsByItem.set(v.item_id,[]);variantsByItem.get(v.item_id).push(v);});
-  list.innerHTML=(data||[]).map(i=>{
+  const activeOption=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===optionId);
+  const activeIndex=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).findIndex(o=>o.option_id===optionId);
+  list.innerHTML='<div style="margin:0 0 12px;padding:12px 14px;border-radius:10px;background:#f5f3ff;border:1px solid #ddd6fe"><strong>Editing Option '+(activeIndex+1)+': '+esc(activeOption?.name||'')+'</strong><br><span class="hint">Every item shown below belongs only to this option.</span></div>'+ (data||[]).map(i=>{
     const amount=i.amount==null?'Price pending':money(i.amount);
     const supplier=selectedSupplier(i.supplier_id);
     const adminNoteDisplay=mergeSupplierIntoAdminNotes(i.admin_notes,i.supplier_id);
@@ -197,7 +223,7 @@ async function loadQuoteItems(){
       ? '<div style="margin:10px 0;padding:10px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:9px;font-size:12px"><strong style="display:block;margin-bottom:6px">Client-selectable variants</strong>'+itemVariants.map(v=>'<div>'+esc(v.label)+' · '+money(v.amount)+(v.is_default?' · Default':'')+'</div>').join('')+'</div>'
       : '';
     return '<div class="admin-record" data-quote-item-id="'+esc(i.item_id)+'"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p>'+detailHtml+variantHtml+'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px;white-space:pre-wrap"><strong style="display:block;margin-bottom:6px">Admin-only notes for this item</strong>'+esc(adminNoteDisplay||'No private note saved for this item.')+'</div><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit This Item</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete This Item</button></div></div>';
-  }).join('')||'<div class="empty-state">No proposal items yet. Add an item above; nothing will appear on the client proposal until it is saved here.</div>';
+  }).join('') || '<div class="empty-state">No proposal items yet. Add an item above; nothing will appear on the client proposal until it is saved here.</div>';
   document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
     const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
     $('#quoteItemId').value=i.item_id; $('#quoteItemCategory').value=i.category||'other'; $('#quoteItemTitle').value=i.title||'';
