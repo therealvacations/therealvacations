@@ -174,7 +174,7 @@ async function loadQuoteItems(){
   const list=$('#quoteItemList'); if(!list) return;
   const optionId=currentOptionId();
   if(!optionId){ list.innerHTML='<div class="empty-state">Save the quote first, then add proposal items.</div>'; return; }
-  const {data,error}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).order('sort_order',{ascending:true});
+  const {data,error}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).eq('builder_managed',true).order('sort_order',{ascending:true});
   if(error){ list.innerHTML='<p class="hint">Proposal items could not be loaded.</p>'; return; }
   const itemIds=(data||[]).map(i=>i.item_id);
   let variantRows=[];
@@ -279,6 +279,7 @@ async function saveQuoteItem(){
     selection_rule:$('#quoteItemSelectionRule')?.value||'fixed',
     client_visible:$('#quoteItemClientVisible')?.checked!==false,
     attachments:currentItemAttachments,
+    builder_managed:true,
     updated_at:new Date().toISOString()
   };
   const id=$('#quoteItemId')?.value;
@@ -289,7 +290,7 @@ async function saveQuoteItem(){
     savedItemId=saved.item_id;
     toast('Proposal item updated.');
   }else{
-    const {data:maxRows}=await supabase.from('travel_quote_items').select('sort_order').eq('option_id',optionId).order('sort_order',{ascending:false}).limit(1);
+    const {data:maxRows}=await supabase.from('travel_quote_items').select('sort_order').eq('option_id',optionId).eq('builder_managed',true).order('sort_order',{ascending:false}).limit(1);
     payload.sort_order=(maxRows?.[0]?.sort_order||0)+1;
     const {data:saved,error}=await supabase.from('travel_quote_items').insert(payload).select('item_id').single();
     if(error) return toast(error.message,true);
@@ -447,10 +448,10 @@ async function duplicateCurrentOption(){
     allow_mix_and_match:true
   }).select('*').single();
   if(error) return toast(error.message,true);
-  const {data:items,error:itemLoadError}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).order('sort_order');
+  const {data:items,error:itemLoadError}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).eq('builder_managed',true).order('sort_order');
   if(itemLoadError) return toast('Option duplicated, but its items could not be copied: '+itemLoadError.message,true);
   if(items?.length){
-    const copies=items.map(({item_id,created_at,updated_at,...i})=>({...i,option_id:newOption.option_id}));
+    const copies=items.map(({item_id,created_at,updated_at,...i})=>({...i,option_id:newOption.option_id,builder_managed:true}));
     const {error:copyError}=await supabase.from('travel_quote_items').insert(copies);
     if(copyError) return toast('Option duplicated, but some items could not be copied: '+copyError.message,true);
   }
@@ -524,7 +525,7 @@ async function saveQuote(publish=false){
   if(publish && currentQuote?.quote_id){
     const optionIds=(currentQuote.travel_quote_options||[]).map(o=>o.option_id).filter(Boolean);
     if(optionIds.length){
-      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,title,category,supplier_id,selection_rule,admin_notes').in('option_id',optionIds);
+      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,title,category,supplier_id,selection_rule,admin_notes,builder_managed').in('option_id',optionIds).eq('builder_managed',true);
       if(sourceCheckError) return toast('Could not verify quote-item suppliers: '+sourceCheckError.message,true);
       const hasDocumentedSupplierChoices=i=>!i.supplier_id&&['choose_one','optional'].includes(i.selection_rule)&&/CHOICE A|TWO SUPPLIER|supplier choice/i.test(String(i.admin_notes||''));
       const missing=(items||[]).filter(i=>!i.supplier_id&&!isInternalFeeItem(i.category,i.title)&&!hasDocumentedSupplierChoices(i));
