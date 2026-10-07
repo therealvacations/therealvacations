@@ -386,6 +386,39 @@ async function saveTraveler(){
 $('#saveTravelerButton')?.addEventListener('click',saveTraveler);
 $('#clearTravelerButton')?.addEventListener('click',clearTravelerForm);
 
+async function loadClientSelectionReview(){
+  const box=$('#clientSelectionReview');
+  if(!box) return;
+  box.hidden=true; box.innerHTML='';
+  const quoteId=currentQuote?.quote_id||'';
+  if(!quoteId || currentQuote?.quote_kind!=='custom_selection') return;
+
+  const {data:selection,error:selectionError}=await supabase.from('travel_quote_client_selections')
+    .select('selection_id,source_quote_id,selected_item_ids,total_amount,status,note,created_at')
+    .eq('generated_quote_id',quoteId).order('created_at',{ascending:false}).limit(1).maybeSingle();
+  if(selectionError || !selection){
+    box.hidden=false;
+    box.innerHTML='<strong>Client Selection Needs Review</strong><p class="hint">The selection record could not be loaded. Do not publish until the traveler choices are verified.</p>';
+    return;
+  }
+  const ids=Array.isArray(selection.selected_item_ids)?selection.selected_item_ids:[];
+  let selectedItems=[];
+  if(ids.length){
+    const {data,error}=await supabase.from('travel_quote_items')
+      .select('item_id,option_id,category,title,description,amount,quantity,details,client_visible,builder_managed,travel_quote_options(name,sort_order)')
+      .in('item_id',ids);
+    if(!error) selectedItems=(data||[]).filter(i=>i.builder_managed===true);
+  }
+  selectedItems.sort((a,b)=>(a.travel_quote_options?.sort_order||0)-(b.travel_quote_options?.sort_order||0));
+  const rows=selectedItems.map(i=>{
+    const option=i.travel_quote_options?.name||'Source option';
+    const amt=i.amount==null?'Price pending':money(i.amount);
+    return '<div style="padding:10px 0;border-bottom:1px solid #e8ddf1"><strong>'+esc(i.title)+'</strong><br><span class="hint">'+esc(option)+' · '+esc(String(i.category||'').replaceAll('_',' '))+' · '+amt+(i.quantity>1?' · Qty '+i.quantity:'')+'</span>'+(i.description?'<br><span>'+esc(i.description)+'</span>':'')+'</div>';
+  }).join('');
+  box.hidden=false;
+  box.innerHTML='<strong style="display:block;font-size:16px;margin-bottom:6px">Client Selection Needs Review</strong><p class="hint" style="margin-bottom:10px">Use these exact traveler choices to build the clean final proposal below. Nothing here is payable until you save the final Proposal Items, publish, send, and the traveler approves.</p>'+rows+(selection.note?'<p style="margin-top:10px"><strong>Traveler note:</strong> '+esc(selection.note)+'</p>':'')+'<p style="margin-top:10px"><strong>Traveler selection estimate:</strong> '+money(selection.total_amount||0)+'</p>';
+}
+
 function openRequest(r,quoteId=null){
   currentRequest=r;
   currentQuote=quoteId
@@ -427,6 +460,7 @@ function openRequest(r,quoteId=null){
   clearQuoteItemForm();
   renderQuoteOptionChoices();
   loadQuoteItems();
+  loadClientSelectionReview();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function duplicateCurrentOption(){
