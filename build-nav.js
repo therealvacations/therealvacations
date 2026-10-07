@@ -8,6 +8,17 @@ const publicDir = path.join(__dirname, 'public');
 const sourceJsDir = path.join(__dirname, 'js');
 const publicJsDir = path.join(publicDir, 'js');
 
+const driveScript = `
+<script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
+  (function () {
+    var script = document.createElement("script");
+    script.async = 1;
+    script.setAttribute("data-cmp-ab","2");
+    script.src = 'https://emrld.ltd/MzA4Njkz.js?t=308693';
+    document.head.appendChild(script);
+  })();
+</script>`;
+
 // The deployed site is served from /public. Copy browser modules there so
 // imports such as /js/auth.js and /js/supabase-client.js resolve in production.
 fs.mkdirSync(publicJsDir, { recursive: true });
@@ -25,6 +36,12 @@ function processHTML(filePath) {
   content = content.replace('<!-- NAV_PLACEHOLDER -->', navFile);
   // Replace footer placeholder
   content = content.replace('<!-- FOOTER_PLACEHOLDER -->', footerFile);
+
+  // Install the Impact/Drive tracking script globally in <head>.
+  // Idempotent so repeated builds never duplicate the snippet.
+  if (!content.includes('https://emrld.ltd/MzA4Njkz.js?t=308693')) {
+    content = content.replace('</head>', driveScript + '\n</head>');
+  }
 
   // Keep a safe default logo in older templates; live branding is then
   // applied from site_settings by /js/site-settings.js.
