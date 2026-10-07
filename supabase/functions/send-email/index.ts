@@ -189,6 +189,30 @@ Deno.serve(async (request) => {
     subject = `${tripTitle} — your TRV deposit is due`
     relatedTable = 'travel_group_invitations'; relatedId = invitation.invitation_id
     html = emailShell(`Your deposit for ${tripTitle}`, `<p>Hi ${escapeHtml(member.display_name || 'Traveler')},</p><p><strong>${escapeHtml(leaderName)}</strong> included you in a group booking for <strong>${escapeHtml(tripTitle)}</strong>${dates ? ` (${escapeHtml(dates)})` : ''}.</p><p>Your required non-refundable deposit is <strong>${money(member.deposit_required || 0)}</strong>.</p><p><strong>You have 24 hours from this invitation to complete your deposit.</strong> This group reservation is not confirmed until every traveler in the booking has paid the required deposit.</p><p><a href="${escapeHtml(joinUrl)}" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold;display:inline-block">Pay My ${money(member.deposit_required || 0)} Deposit →</a></p><p style="font-size:13px;color:#6b6270">Deposit deadline: <strong>${escapeHtml(new Date(dueAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}))}</strong>.<br>Deposits are non-refundable.</p>`, siteUrl)
+  } else if (requestedType === 'custom_quote_payment') {
+    const paymentId = String(body.payment_id ?? '')
+    const { data: payment } = await admin.from('custom_booking_payments')
+      .select('payment_id,amount,kind,status,paid_at,custom_bookings!inner(custom_booking_id,user_id,status,currency,total_amount,amount_paid,balance_due,travel_quotes!inner(title),travel_quote_options!inner(name))')
+      .eq('payment_id', paymentId).maybeSingle()
+    if (!payment || payment.status !== 'succeeded') return jsonResponse({ error: 'Successful custom quote payment not found' }, 404)
+
+    const booking = payment.custom_bookings
+    const { data: authUser } = await admin.auth.admin.getUserById(booking.user_id)
+    if (!authUser.user?.email) return jsonResponse({ error: 'Traveler email not found' }, 404)
+
+    recipient = authUser.user.email
+    relatedTable = 'custom_booking_payments'; relatedId = payment.payment_id
+    const firstName = authUser.user.user_metadata?.first_name || 'Traveler'
+    const tripTitle = booking.travel_quotes?.title || 'Your TRV custom trip'
+    const optionName = booking.travel_quote_options?.name || ''
+    const isPaidInFull = Number(booking.balance_due || 0) <= 0
+    templateType = isPaidInFull ? 'custom_booking_confirmation' : 'custom_payment_receipt'
+    subject = isPaidInFull ? `Payment received: ${tripTitle}` : `Deposit received: ${tripTitle}`
+    html = emailShell(
+      isPaidInFull ? 'Your TRV booking payment is complete' : 'Your TRV deposit was received',
+      `<p>Hi ${escapeHtml(firstName)},</p><p>We received <strong>${money(payment.amount, booking.currency)}</strong> for <strong>${escapeHtml(tripTitle)}</strong>${optionName ? ` — ${escapeHtml(optionName)}` : ''}.</p><p><strong>Total:</strong> ${money(booking.total_amount, booking.currency)}<br><strong>Paid:</strong> ${money(booking.amount_paid, booking.currency)}<br><strong>Remaining balance:</strong> ${money(booking.balance_due, booking.currency)}</p><p>${isPaidInFull ? 'Your TRV account now shows this custom booking as paid in full.' : 'Your TRV account now shows this payment and the remaining balance. You can return to My TRV Trips anytime to continue payment.'}</p>`,
+      siteUrl
+    )
   } else if (requestedType === 'payment_update' || requestedType === 'payment_reminder') {
     const paymentId = String(body.payment_id ?? '')
     const { data: payment } = await admin.from('booking_payments')
