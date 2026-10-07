@@ -84,8 +84,9 @@
         <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
         <h2 style="font-size:18px">Proposal Items by Option</h2>
         <p class="hint">Choose which quote option you are editing. Each option has its own flights, cars, Disney, Universal, hotels, activities, suppliers, photos, PDFs, and private notes.</p>
+        <div id="quoteOptionCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0 18px"></div>
         <div class="field-grid">
-          <div class="field"><label for="quoteOptionSelect">Editing option</label><select id="quoteOptionSelect"></select></div>
+          <div class="field"><label for="quoteOptionSelect">Editing option</label><select id="quoteOptionSelect"></select><p class="hint">The highlighted option card above is the option receiving any item you add or edit below.</p></div>
           <div class="field" style="align-self:end"><button class="secondary-button" id="duplicateQuoteOptionButton" type="button">Duplicate This Option</button></div>
         </div>
         <input id="quoteItemId" type="hidden"/>
