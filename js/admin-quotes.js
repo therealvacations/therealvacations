@@ -6,7 +6,7 @@ const esc = v => String(v ?? '').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;',
 let currentRequest=null, currentQuote=null, supplierCache=[], currentItemAttachments=[];
 
 async function loadSupplierChoices(){
-  const {data,error}=await supabase.from('suppliers').select('supplier_id,company_name,display_name,connection_mode,website_url,booking_portal_url,account_number,booking_instructions,required_traveler_information,status').neq('status','inactive').order('company_name');
+  const {data,error}=await supabase.from('suppliers').select('supplier_id,company_name,display_name,supplier_code,connection_mode,website_url,booking_portal_url,account_number,booking_instructions,required_traveler_information,status').neq('status','inactive').order('company_name');
   if(error) return;
   supplierCache=data||[];
   const options='<option value="">No supplier assigned</option>'+supplierCache.map(s=>'<option value="'+esc(s.supplier_id)+'">'+esc(s.display_name||s.company_name)+'</option>').join('');
@@ -58,6 +58,61 @@ function parseItemDetails(){
   });
   return out;
 }
+function parseItemVariants(){
+  const lines=($('#quoteItemVariants')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean);
+  return lines.map((line,index)=>{
+    const parts=line.split('|').map(x=>x.trim());
+    const [label,clientPrice,supplierCost,supplierKey,...descParts]=parts;
+    if(!label||clientPrice==='') throw new Error('Each variant needs a choice name and client price.');
+    const amount=Math.round(Number(clientPrice)*100);
+    if(!Number.isFinite(amount)||amount<0) throw new Error('Variant client price must be a valid amount.');
+    const base=supplierCost===''||supplierCost==null?null:Math.round(Number(supplierCost)*100);
+    if(base!=null&&(!Number.isFinite(base)||base<0)) throw new Error('Variant supplier cost must be a valid amount.');
+    const key=String(supplierKey||'').trim().toLowerCase();
+    const supplier=key?supplierCache.find(s=>String(s.supplier_code||'').toLowerCase()===key||String(s.display_name||'').toLowerCase()===key||String(s.company_name||'').toLowerCase()===key):null;
+    if(key&&!supplier) throw new Error('Variant supplier "'+supplierKey+'" was not found in Suppliers.');
+    return {
+      label,
+      description:descParts.join(' | ')||null,
+      amount,
+      sort_order:index,
+      is_default:index===0,
+      supplier_id:supplier?.supplier_id||null,
+      supplier_cost:base,
+      booking_url:supplier?.booking_portal_url||supplier?.website_url||null
+    };
+  });
+}
+function formatItemVariants(rows){
+  return (rows||[]).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0)).map(v=>{
+    const adm=Array.isArray(v.travel_quote_item_variant_admin)?v.travel_quote_item_variant_admin[0]:v.travel_quote_item_variant_admin;
+    const s=selectedSupplier(adm?.supplier_id);
+    const supplier=s?.supplier_code||s?.display_name||s?.company_name||'';
+    const base=adm?.supplier_cost==null?'':(adm.supplier_cost/100).toFixed(2);
+    return [v.label,(v.amount/100).toFixed(2),base,supplier,v.description||''].join(' | ');
+  }).join('\n');
+}
+async function syncItemVariants(itemId,variants){
+  const {data:existing,error:existingError}=await supabase.from('travel_quote_item_variants').select('variant_id').eq('item_id',itemId);
+  if(existingError) throw existingError;
+  const ids=(existing||[]).map(v=>v.variant_id);
+  if(ids.length){
+    const {error}=await supabase.from('travel_quote_item_variants').delete().in('variant_id',ids);
+    if(error) throw error;
+  }
+  if(!variants.length) return;
+  const publicRows=variants.map(v=>({item_id:itemId,label:v.label,description:v.description,amount:v.amount,sort_order:v.sort_order,is_default:v.is_default,active:true}));
+  const {data:saved,error:saveError}=await supabase.from('travel_quote_item_variants').insert(publicRows).select('variant_id,sort_order');
+  if(saveError) throw saveError;
+  const adminRows=(saved||[]).map(savedRow=>{
+    const v=variants.find(x=>x.sort_order===savedRow.sort_order);
+    return {variant_id:savedRow.variant_id,supplier_id:v?.supplier_id||null,supplier_cost:v?.supplier_cost??null,booking_url:v?.booking_url||null,admin_notes:v?.supplier_cost!=null?'Supplier/base cost '+money(v.supplier_cost)+' · Client price '+money(v.amount):null};
+  });
+  if(adminRows.length){
+    const {error:adminError}=await supabase.from('travel_quote_item_variant_admin').insert(adminRows);
+    if(adminError) throw adminError;
+  }
+}
 function renderItemAttachments(){
   const box=$('#quoteItemAttachmentList'); if(!box) return;
   box.innerHTML=currentItemAttachments.length
@@ -85,7 +140,7 @@ async function uploadQuoteItemFiles(input){
 $('#quoteItemUpload')?.addEventListener('change',e=>uploadQuoteItemFiles(e.target));
 
 function clearQuoteItemForm(){
-  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemImage','quoteItemSelectionGroup'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemImage','quoteItemSelectionGroup','quoteItemVariants'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#quoteItemSupplier')) $('#quoteItemSupplier').value='';
   if($('#quoteItemCategory')) $('#quoteItemCategory').value='flight';
   if($('#quoteItemQuantity')) $('#quoteItemQuantity').value='1';
@@ -111,6 +166,14 @@ async function loadQuoteItems(){
   if(!optionId){ list.innerHTML='<div class="empty-state">Save the quote first, then add proposal items.</div>'; return; }
   const {data,error}=await supabase.from('travel_quote_items').select('*').eq('option_id',optionId).order('sort_order',{ascending:true});
   if(error){ list.innerHTML='<p class="hint">Proposal items could not be loaded.</p>'; return; }
+  const itemIds=(data||[]).map(i=>i.item_id);
+  let variantRows=[];
+  if(itemIds.length){
+    const {data:vr,error:variantError}=await supabase.from('travel_quote_item_variants').select('*,travel_quote_item_variant_admin(*)').in('item_id',itemIds).order('sort_order',{ascending:true});
+    if(!variantError) variantRows=vr||[];
+  }
+  const variantsByItem=new Map();
+  variantRows.forEach(v=>{if(!variantsByItem.has(v.item_id))variantsByItem.set(v.item_id,[]);variantsByItem.get(v.item_id).push(v);});
   list.innerHTML=(data||[]).map(i=>{
     const amount=i.amount==null?'Price pending':money(i.amount);
     const supplier=selectedSupplier(i.supplier_id);
@@ -129,6 +192,7 @@ async function loadQuoteItems(){
     if($('#quoteItemSelectionGroup')) $('#quoteItemSelectionGroup').value=i.selection_group||'';
     if($('#quoteItemSelectionRule')) $('#quoteItemSelectionRule').value=i.selection_rule||'fixed';
     if($('#quoteItemClientVisible')) $('#quoteItemClientVisible').checked=i.client_visible!==false;
+    if($('#quoteItemVariants')) $('#quoteItemVariants').value=formatItemVariants(variantsByItem.get(i.item_id)||[]);
     currentItemAttachments=Array.isArray(i.attachments)?[...i.attachments]:[];
     renderItemAttachments();
     $('#saveQuoteItemButton').textContent='Update Proposal Item';
@@ -176,7 +240,9 @@ async function saveQuoteItem(){
   if(!title) return toast('Enter an item title.',true);
   const category=$('#quoteItemCategory')?.value||'other';
   const supplierId=$('#quoteItemSupplier')?.value||null;
-  if(!supplierId && !isInternalFeeItem(category,title)) return toast('Select the supplier/source for this quote item before saving it.',true);
+  let parsedVariants=[];
+  try{parsedVariants=parseItemVariants();}catch(error){return toast(error.message,true);}
+  if(!supplierId && !isInternalFeeItem(category,title) && !parsedVariants.some(v=>v.supplier_id)) return toast('Select the supplier/source for this quote item, or assign suppliers to its variants.',true);
   const amountRaw=$('#quoteItemAmount')?.value;
   const payload={
     option_id:optionId,
@@ -213,6 +279,7 @@ async function saveQuoteItem(){
     toast('Proposal item added.');
   }
   await syncSupplierAssignment(savedItemId,payload);
+  try{await syncItemVariants(savedItemId,parsedVariants);}catch(error){return toast('Item saved, but variants could not be saved: '+error.message,true);}
   clearQuoteItemForm(); await loadQuoteItems();
 }
 $('#saveQuoteItemButton')?.addEventListener('click',saveQuoteItem);
