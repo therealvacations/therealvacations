@@ -304,6 +304,25 @@ Deno.serve(async (request) => {
         })
         if (customError) throw customError
 
+        try {
+          const customEmail = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              authorization: `Bearer ${serviceRoleKey}`,
+              apikey: serviceRoleKey,
+              'content-type': 'application/json',
+            },
+            body: JSON.stringify({
+              template_type: 'custom_quote_payment',
+              payment_id: paymentId,
+              event_id: event.id,
+            }),
+          })
+          if (!customEmail.ok) console.error('Custom quote payment email failed', customEmail.status)
+        } catch (emailError) {
+          console.error('Custom quote payment email failed', emailError instanceof Error ? emailError.message : 'Unknown error')
+        }
+
         return jsonResponse({ received: true, custom_quote: true })
       }
 
