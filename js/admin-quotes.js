@@ -153,11 +153,21 @@ function renderQuoteOptionChoices(){
   const select=$('#quoteOptionSelect'); if(!select) return;
   const current=select.value;
   const opts=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
-  select.innerHTML=opts.map(o=>'<option value="'+esc(o.option_id)+'">'+esc(o.name)+'</option>').join('');
+  select.innerHTML=opts.map(o=>'<option value="'+esc(o.option_id)+'">'+esc(o.name)+(Number(o.total_amount||0)>0?' · '+money(o.total_amount):' · $0.00 until items are added')+'</option>').join('');
   if(current&&opts.some(o=>o.option_id===current)) select.value=current;
 }
 function currentOptionId(){
   return $('#quoteOptionSelect')?.value || (currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order)[0]?.option_id || null;
+}
+async function refreshQuoteOptionsFromDatabase(preferredOptionId=null){
+  const quoteId=currentQuote?.quote_id||$('#quoteId')?.value||'';
+  if(!quoteId) return;
+  const {data,error}=await supabase.from('travel_quote_options').select('*').eq('quote_id',quoteId).order('sort_order');
+  if(error) return;
+  currentQuote={...(currentQuote||{}),quote_id:quoteId,travel_quote_options:data||[]};
+  $('#quoteOptions').value=(data||[]).map(o=>[o.name,o.description||''].filter((value,index)=>index===0||value).join(' | ')).join('\n');
+  renderQuoteOptionChoices();
+  if(preferredOptionId && (data||[]).some(o=>o.option_id===preferredOptionId)) $('#quoteOptionSelect').value=preferredOptionId;
 }
 $('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();loadQuoteItems();});
 async function loadQuoteItems(){
@@ -200,7 +210,7 @@ async function loadQuoteItems(){
   document.querySelectorAll('.delete-quote-item').forEach(btn=>btn.onclick=async()=>{
     if(!confirm('Remove this proposal item?')) return;
     const {error}=await supabase.from('travel_quote_items').delete().eq('item_id',btn.dataset.id);
-    if(error) return toast(error.message,true); toast('Proposal item removed.'); await loadQuoteItems();
+    if(error) return toast(error.message,true); toast('Proposal item removed.'); await refreshQuoteOptionsFromDatabase(optionId); await loadQuoteItems();
   });
 }
 async function syncSupplierAssignment(itemId,itemPayload){
@@ -280,16 +290,33 @@ async function saveQuoteItem(){
   }
   await syncSupplierAssignment(savedItemId,payload);
   try{await syncItemVariants(savedItemId,parsedVariants);}catch(error){return toast('Item saved, but variants could not be saved: '+error.message,true);}
+  await refreshQuoteOptionsFromDatabase(optionId);
   clearQuoteItemForm(); await loadQuoteItems();
+}
+const quoteOptionsField=$('#quoteOptions');
+if(quoteOptionsField){
+  quoteOptionsField.placeholder='Oceanfront Escape | Private villa, transfers, welcome experience';
+  const hint=quoteOptionsField.parentElement?.querySelector('.hint');
+  if(hint) hint.textContent='One per line: Option name | description. Pricing is calculated automatically from the saved Proposal Items under each option.';
 }
 $('#saveQuoteItemButton')?.addEventListener('click',saveQuoteItem);
 $('#clearQuoteItemButton')?.addEventListener('click',clearQuoteItemForm);
 
 function parseOptions(){
   return ($('#quoteOptions')?.value||'').split('\n').map(x=>x.trim()).filter(Boolean).map((line,i)=>{
-    const [name,total,deposit,...rest]=line.split('|').map(x=>x.trim());
-    return {name,total_amount:Math.round(Number(total||0)*100),deposit_amount:deposit?Math.round(Number(deposit)*100):null,description:rest.join(' | ')||null,sort_order:i};
-  }).filter(x=>x.name && x.total_amount>0);
+    const parts=line.split('|').map(x=>x.trim());
+    const name=parts.shift()||'';
+    let description='';
+    // Backward compatibility: old saved rows may still be "name | total | deposit | description".
+    if(parts.length>=2 && /^\d+(?:\.\d{1,2})?$/.test(parts[0]||'') && (parts[1]==='' || /^\d+(?:\.\d{1,2})?$/.test(parts[1]||''))){
+      parts.shift();
+      parts.shift();
+      description=parts.join(' | ').trim();
+    }else{
+      description=parts.join(' | ').trim();
+    }
+    return {name,description:description||null,sort_order:i};
+  }).filter(x=>x.name);
 }
 async function loadRequests(){
   if(!$('#requestQuoteList')) return;
@@ -367,7 +394,7 @@ function openRequest(r,quoteId=null){
   $('#quoteTitle').value=currentQuote?.title || (r.destination ? r.destination+' — The Real Vacations Quote' : 'Your TRV Travel Quote');
   $('#quoteSummary').value=currentQuote?.summary||'';
   $('#quoteValidUntil').value=currentQuote?.valid_until ? currentQuote.valid_until.slice(0,10) : '';
-  $('#quoteOptions').value=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,(o.total_amount/100).toFixed(2),o.deposit_amount==null?'':(o.deposit_amount/100).toFixed(2),o.description||''].join(' | ')).join('\n');
+  $('#quoteOptions').value=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,o.description||''].filter((value,index)=>index===0||value).join(' | ')).join('\n');
   renderQuoteOptionChoices();
 
   const fulfillment=Array.isArray(r.travel_request_fulfillments)?r.travel_request_fulfillments[0]:r.travel_request_fulfillments;
@@ -405,8 +432,8 @@ async function duplicateCurrentOption(){
     name:name.trim(),
     description:source.description||null,
     sort_order:Math.max(-1,...(currentQuote.travel_quote_options||[]).map(o=>Number(o.sort_order)||0))+1,
-    total_amount:source.total_amount,
-    deposit_amount:source.deposit_amount,
+    total_amount:0,
+    deposit_amount:null,
     is_recommended:false,
     details:source.details||{},
     allow_mix_and_match:true
@@ -420,7 +447,8 @@ async function duplicateCurrentOption(){
     if(copyError) return toast('Option duplicated, but some items could not be copied: '+copyError.message,true);
   }
   currentQuote.travel_quote_options=[...(currentQuote.travel_quote_options||[]),newOption];
-  $('#quoteOptions').value=(currentQuote.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,(o.total_amount/100).toFixed(2),o.deposit_amount==null?'':(o.deposit_amount/100).toFixed(2),o.description||''].join(' | ')).join('\n');
+  await refreshQuoteOptionsFromDatabase(newOption.option_id);
+  $('#quoteOptions').value=(currentQuote.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,o.description||''].filter((value,index)=>index===0||value).join(' | ')).join('\n');
   renderQuoteOptionChoices();
   $('#quoteOptionSelect').value=newOption.option_id;
   clearQuoteItemForm();
@@ -497,14 +525,14 @@ async function saveQuote(publish=false){
   }
   const options=parseOptions(); if(!$('#quoteTitle').value.trim()||!options.length) return toast('Add a quote title and at least one option.',true);
   const valid=$('#quoteValidUntil').value ? new Date($('#quoteValidUntil').value+'T23:59:59').toISOString() : null;
-  const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',workflow_status:publish?'published':(currentQuote?.workflow_status==='admin_review'?'admin_review':'draft'),valid_until:valid,ready_at:publish?new Date().toISOString():null,total_amount:Math.min(...options.map(o=>o.total_amount)),deposit_amount:Math.min(...options.map(o=>o.deposit_amount||o.total_amount))};
+  const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',workflow_status:publish?'published':(currentQuote?.workflow_status==='admin_review'?'admin_review':'draft'),valid_until:valid,ready_at:publish?new Date().toISOString():null};
   let quoteId=$('#quoteId').value;
   let existingOptions=[];
   if(quoteId){
     const {error}=await supabase.from('travel_quotes').update(qPayload).eq('quote_id',quoteId); if(error) return toast(error.message,true);
     existingOptions=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
   }else{
-    const {data,error}=await supabase.from('travel_quotes').insert(qPayload).select('quote_id').single(); if(error) return toast(error.message,true);
+    const {data,error}=await supabase.from('travel_quotes').insert({...qPayload,total_amount:0,deposit_amount:null}).select('quote_id').single(); if(error) return toast(error.message,true);
     quoteId=data.quote_id; $('#quoteId').value=quoteId;
   }
   for(let i=0;i<options.length;i++){
@@ -513,13 +541,22 @@ async function saveQuote(publish=false){
       const {error}=await supabase.from('travel_quote_options').update(payload).eq('option_id',existingOptions[i].option_id);
       if(error) return toast(error.message,true);
     }else{
-      const {error}=await supabase.from('travel_quote_options').insert(payload);
+      const {error}=await supabase.from('travel_quote_options').insert({...payload,total_amount:0,deposit_amount:null});
       if(error) return toast(error.message,true);
     }
   }
   for(let i=options.length;i<existingOptions.length;i++){
     const {error}=await supabase.from('travel_quote_options').delete().eq('option_id',existingOptions[i].option_id);
     if(error) return toast(error.message,true);
+  }
+  const {data:freshOptions,error:freshOptionsError}=await supabase.from('travel_quote_options').select('option_id,name,total_amount').eq('quote_id',quoteId).order('sort_order');
+  if(freshOptionsError) return toast('Could not verify proposal option totals: '+freshOptionsError.message,true);
+  for(const option of freshOptions||[]) await supabase.rpc('recalculate_quote_option_totals',{p_option_id:option.option_id});
+  const {data:verifiedOptions,error:verifyOptionsError}=await supabase.from('travel_quote_options').select('option_id,name,total_amount').eq('quote_id',quoteId).order('sort_order');
+  if(verifyOptionsError) return toast('Could not verify proposal option totals: '+verifyOptionsError.message,true);
+  if(publish){
+    const empty=(verifiedOptions||[]).filter(o=>Number(o.total_amount||0)<=0);
+    if(empty.length) return toast('Each quote option must contain saved client-facing proposal items before publishing. Empty: '+empty.map(o=>o.name).join(', '),true);
   }
   await supabase.from('travel_requests').update({status:publish?'quote_ready':'quote_in_progress'}).eq('request_id',currentRequest.request_id);
   if(publish){
