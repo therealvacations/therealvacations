@@ -102,6 +102,38 @@ Deno.serve(async (request) => {
       return jsonResponse({ error: 'Choose a payment plan' }, 422)
     }
 
+    const partySize = Math.max(1, Math.min(8, Number(body.party_size ?? 1) || 1))
+    const paymentResponsibility = partySize > 1 ? String(body.payment_responsibility ?? 'one_payer') : 'one_payer'
+    if (!['one_payer','individual'].includes(paymentResponsibility)) {
+      return jsonResponse({ error: 'Choose how your group will pay' }, 422)
+    }
+    if (paymentResponsibility === 'individual' && paymentPlan !== 'installments') {
+      return jsonResponse({ error: 'Individual traveler payments begin with each traveler paying their own deposit.' }, 422)
+    }
+    const roommates = Array.isArray(body.roommates) ? body.roommates.slice(0, Math.max(0, partySize - 1)) : []
+    if (partySize > 1 && roommates.length !== partySize - 1) {
+      return jsonResponse({ error: 'Add every additional traveler before continuing' }, 422)
+    }
+    for (const roommate of roommates as Array<Record<string, unknown>>) {
+      const name = String(roommate?.name ?? '').trim()
+      const email = String(roommate?.email ?? '').trim().toLowerCase()
+      if (name.length < 2 || name.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return jsonResponse({ error: 'Enter a valid name and email for every additional traveler' }, 422)
+      }
+      if (email === user.email.toLowerCase()) {
+        return jsonResponse({ error: 'Each traveler must use a different email address' }, 422)
+      }
+    }
+
+    const { data: selectedPackage } = await admin.from('trip_packages')
+      .select('package_id,total_amount,deposit_amount,currency,trip_id,trips!inner(title,dates_start,dates_end,slug,status)')
+      .eq('code', packageCode)
+      .eq('is_active', true)
+      .eq('trips.slug', tripSlug)
+      .eq('trips.status', 'active')
+      .maybeSingle()
+    if (!selectedPackage) return jsonResponse({ error: 'This trip package is not available' }, 409)
+
     if (paymentPlan === 'installments') {
       const { data: subscriber } = await admin.from('subscribers')
         .select('subscriber_id,opted_in')
@@ -193,6 +225,87 @@ Deno.serve(async (request) => {
     }
     const prepared = data as CheckoutRow
 
+    const perPersonTotal = Number(selectedPackage.total_amount ?? 0)
+    const perPersonDeposit = Number(selectedPackage.deposit_amount ?? 0)
+    const groupTotalBeforeDiscount = perPersonTotal * partySize
+    const groupDeposit = perPersonDeposit * partySize
+    const dueNowBeforeDiscount = paymentPlan === 'pay_in_full'
+      ? groupTotalBeforeDiscount
+      : (paymentResponsibility === 'individual' && partySize > 1 ? perPersonDeposit : groupDeposit)
+
+    const { error: groupAmountError } = await admin.from('bookings').update({
+      total_amount: groupTotalBeforeDiscount,
+      deposit_amount: groupDeposit,
+      balance_due: groupTotalBeforeDiscount,
+      updated_at: new Date().toISOString(),
+    }).eq('booking_id', prepared.booking_id).eq('user_id', user.id)
+    if (groupAmountError) return jsonResponse({ error: 'Unable to prepare group booking totals' }, 500)
+
+    const { error: firstPaymentError } = await admin.from('booking_payments').update({
+      scheduled_amount: dueNowBeforeDiscount,
+    }).eq('payment_id', prepared.payment_id)
+    if (firstPaymentError) return jsonResponse({ error: 'Unable to prepare the group deposit' }, 500)
+    prepared.amount = dueNowBeforeDiscount
+
+    if (partySize > 1) {
+      const { data: existingLeader } = await admin.from('travel_group_members')
+        .select('membership_id,group_id')
+        .eq('booking_id', prepared.booking_id)
+        .eq('role', 'leader')
+        .eq('user_id', user.id)
+        .maybeSingle()
+
+      let groupId = existingLeader?.group_id ?? null
+      if (!groupId) {
+        const { data: group, error: groupError } = await admin.from('travel_groups').insert({
+          trip_id: selectedPackage.trip_id,
+          leader_user_id: user.id,
+          name: prepared.trip_title,
+          group_type: 'trip_booking',
+          status: paymentResponsibility === 'individual' ? 'inviting' : 'planning',
+          separate_payments: paymentResponsibility === 'individual',
+          target_travelers: partySize,
+        }).select('group_id').single()
+        if (groupError || !group) return jsonResponse({ error: 'Unable to prepare the group reservation' }, 500)
+        groupId = group.group_id
+
+        const nowIso = new Date().toISOString()
+        const leaderShare = paymentResponsibility === 'individual' ? perPersonTotal : groupTotalBeforeDiscount
+        const { error: leaderError } = await admin.from('travel_group_members').insert({
+          group_id: groupId,
+          user_id: user.id,
+          invited_email: user.email.toLowerCase(),
+          display_name: signerName,
+          role: 'leader',
+          status: 'joined',
+          booking_id: prepared.booking_id,
+          share_total: leaderShare,
+          share_paid: 0,
+          share_status: 'pending',
+          deposit_required: paymentResponsibility === 'individual' ? perPersonDeposit : groupDeposit,
+          joined_at: nowIso,
+        })
+        if (leaderError) return jsonResponse({ error: 'Unable to prepare the lead traveler' }, 500)
+
+        for (const roommate of roommates as Array<Record<string, unknown>>) {
+          const { error: memberError } = await admin.from('travel_group_members').insert({
+            group_id: groupId,
+            invited_email: String(roommate.email).trim().toLowerCase(),
+            display_name: String(roommate.name).trim(),
+            role: 'member',
+            status: 'invited',
+            booking_id: prepared.booking_id,
+            share_total: paymentResponsibility === 'individual' ? perPersonTotal : 0,
+            share_paid: 0,
+            share_status: paymentResponsibility === 'individual' ? 'pending' : 'waived',
+            deposit_required: paymentResponsibility === 'individual' ? perPersonDeposit : 0,
+            invited_at: nowIso,
+          })
+          if (memberError) return jsonResponse({ error: 'Unable to save all travelers in this reservation' }, 500)
+        }
+      }
+    }
+
     if (appliedPromoCode) {
       const { data: bookingAmounts, error: bookingAmountsError } = await admin
         .from('bookings')
@@ -209,7 +322,7 @@ Deno.serve(async (request) => {
       const discountedTotal = Math.max(0, originalTotal - appliedDiscountAmount)
       const amountDueNow = paymentPlan === 'pay_in_full'
         ? discountedTotal
-        : Math.min(originalDeposit, discountedTotal)
+        : Math.min(paymentResponsibility === 'individual' && partySize > 1 ? perPersonDeposit : originalDeposit, discountedTotal)
 
       const { error: promoBookingError } = await admin.from('bookings').update({
         total_amount: discountedTotal,
