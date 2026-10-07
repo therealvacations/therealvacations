@@ -6,8 +6,8 @@
 <section class="hero"><h1>Search & Book</h1><p>Book simple travel yourself or send TRV a request when you want us to handle the planning and supplier coordination.</p></section>
 <main class="wrap"><div class="grid">
 <section class="card"><span class="tag">Flights</span><h2>Search Flights</h2><p>Use the TRV flight search without leaving your member experience.</p><a class="btn" href="/flights">Search Flights →</a></section>
-<section class="card"><span class="tag">Hotels & Stays</span><h2>Search Expedia</h2><p>Compare hotel and resort options through Expedia. Your TRV account stays available when you return.</p><a class="btn" href="https://www.expedia.com/Hotels" target="_blank" rel="noopener">Search Expedia →</a></section>
+<section class="card"><span class="tag">Hotels & Stays</span><h2>Search Hotels & Stays</h2><p>Compare hotel and resort options through a TRV travel relationship while keeping The Real Vacations as your starting point.</p><a class="btn" href="https://www.expedia.com/Hotels" target="_blank" rel="noopener sponsored">Search Hotels →</a><p style="margin:14px 0 0;font-size:12px;color:#8a7e92"><strong>Partnered with Expedia</strong></p></section>
 <section class="card"><span class="tag">Full Service</span><h2>Have TRV Handle It</h2><p>Flights, hotels, cars, cruises, tickets or a complete custom vacation can be requested from your account and will appear under My Travel Requests & Quotes.</p><a class="btn" href="/request-travel">Request a Trip →</a></section>
-</div><div class="note"><strong>Affiliate/partner booking links:</strong> the page is ready for your exact Expedia or other affiliate search URL. Until you provide that private partner link, the Expedia button uses the standard Expedia hotel search rather than pretending it is an affiliate link.</div></main>
+</div></main>
 <script type="module">import {supabase} from '/js/supabase-client.js';import{handleLogout}from'/js/auth.js';const{data:{user}}=await supabase.auth.getUser();if(!user)location.replace('/login?next='+encodeURIComponent('/member-book'));document.getElementById('logout').onclick=()=>handleLogout();</script>
 </body></html>
