@@ -17,6 +17,15 @@
   <p class="intro" id="tripIntro">Loading current package details…</p>
   <form id="bookingForm" hidden>
     <div class="packages" id="packages"></div>
+    <div class="signature"><label for="partySize">How many travelers are in this booking?</label><select id="partySize" name="party_size" style="width:100%;padding:12px;border:1px solid #cfc7d6;border-radius:9px;font:inherit"><option value="1">1 traveler</option><option value="2">2 travelers</option><option value="3">3 travelers</option><option value="4">4 travelers</option><option value="5">5 travelers</option><option value="6">6 travelers</option><option value="7">7 travelers</option><option value="8">8 travelers</option></select></div>
+    <div id="groupPaymentBox" hidden>
+      <div class="plans">
+        <label class="plan"><input type="radio" name="payment_responsibility" value="one_payer" checked><span><strong>One traveler will pay for the entire reservation</strong><br><small>The lead traveler pays the full required deposit for everyone in this booking.</small></span></label>
+        <label class="plan"><input type="radio" name="payment_responsibility" value="individual"><span><strong>Each traveler will pay their own portion</strong><br><small>You pay your own deposit now. Each roommate receives a private payment invitation for their deposit.</small></span></label>
+      </div>
+      <div id="roommateFields"></div>
+      <p class="notice" id="groupDepositNotice">For separate payments, each additional traveler must pay their non-refundable deposit within 24 hours of the invitation email. The group reservation is not confirmed until every required deposit has been paid.</p>
+    </div>
     <div class="plans">
       <label class="plan" id="installmentPlan"><input type="radio" name="payment_plan" value="installments" checked><span><strong>Deposit + automatic monthly installments</strong><br><small>Stripe securely saves this card and charges the displayed monthly schedule automatically.</small></span></label>
       <label class="plan"><input type="radio" name="payment_plan" value="pay_in_full"><span><strong>Pay in full</strong><br><small>Pay the complete package price securely in Stripe.</small></span></label>
@@ -54,6 +63,9 @@ const signerName = document.getElementById('signerName');
 const subscriberConsentWrap = document.getElementById('subscriberConsentWrap');
 const subscriberConsent = document.getElementById('subscriberConsent');
 const promoCode = document.getElementById('promoCode');
+const partySize = document.getElementById('partySize');
+const groupPaymentBox = document.getElementById('groupPaymentBox');
+const roommateFields = document.getElementById('roommateFields');
 let availablePackages = [];
 let finalPaymentDeadline = null;
 const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(Number(value) / 100);
@@ -83,6 +95,15 @@ if (user) {
   }
 }
 
+function renderRoommates(){
+  const count=Math.max(1,Number(partySize.value||1));
+  groupPaymentBox.hidden=count===1;
+  if(count===1){roommateFields.innerHTML='';return;}
+  roommateFields.innerHTML=Array.from({length:count-1},(_,i)=>'<div class="form-row" style="margin-bottom:10px"><div class="signature" style="margin:0"><label>Traveler '+(i+2)+' full name</label><input class="roommate-name" type="text" maxlength="160" required></div><div class="signature" style="margin:0"><label>Traveler '+(i+2)+' email</label><input class="roommate-email" type="email" maxlength="240" required></div></div>').join('');
+}
+function collectRoommates(){
+  return [...roommateFields.querySelectorAll('.roommate-name')].map((nameInput,i)=>({name:nameInput.value.trim(),email:roommateFields.querySelectorAll('.roommate-email')[i].value.trim().toLowerCase()}));
+}
 function updateSchedulePreview() {
   const plan = form.querySelector('input[name="payment_plan"]:checked')?.value;
   const code = form.querySelector('input[name="package_code"]:checked')?.value;
@@ -93,22 +114,28 @@ function updateSchedulePreview() {
   subscriberConsentWrap.hidden = !installments;
   subscriberConsent.required = installments;
   if (!selected || !finalPaymentDeadline) return;
+  const count=Math.max(1,Number(partySize.value||1));
+  const responsibility=form.querySelector('input[name="payment_responsibility"]:checked')?.value||'one_payer';
   if (!installments) {
-    schedulePreview.textContent = money(selected.total_amount) + ' will be charged today.';
+    schedulePreview.textContent = money(selected.total_amount*count) + ' will be charged today for '+count+' traveler'+(count===1?'':'s')+'.';
     return;
   }
   let firstDue = new Date();
   firstDue = new Date(firstDue.getFullYear(), firstDue.getMonth() + 1, 1, 12);
   if (firstDue > finalPaymentDeadline) firstDue = new Date(finalPaymentDeadline);
   const count = Math.max(1, (finalPaymentDeadline.getFullYear() - firstDue.getFullYear()) * 12 + finalPaymentDeadline.getMonth() - firstDue.getMonth() + 1);
-  const remaining = selected.total_amount - selected.deposit_amount;
-  const base = Math.floor(remaining / count);
-  schedulePreview.textContent = money(selected.deposit_amount) + ' deposit today, then ' + count + ' automatic monthly payment' + (count === 1 ? '' : 's') + ' of about ' + money(base) + '. Final balance reaches $0 by ' + finalPaymentDeadline.toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'}) + ' (60 days before departure).';
+  const dueNow=responsibility==='individual'&&count>1?selected.deposit_amount:selected.deposit_amount*count;
+  const groupTotal=selected.total_amount*count;
+  const remaining = groupTotal - (responsibility==='individual'&&count>1?selected.deposit_amount*count:dueNow);
+  const base = Math.floor(Math.max(0,remaining) / count);
+  schedulePreview.textContent = money(dueNow) + ' due from you today. '+(responsibility==='individual'&&count>1?(count-1)+' additional traveler deposit invitation'+(count-1===1?'':'s')+' will be emailed after your payment. ':'')+'Group total: '+money(groupTotal)+'. Final balance must reach $0 by ' + finalPaymentDeadline.toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'}) + ' (60 days before departure).';
 }
 
+partySize.addEventListener('change',()=>{renderRoommates();updateSchedulePreview();});
 form.addEventListener('change', event => {
-  if (event.target.matches('input[name="payment_plan"], input[name="package_code"]')) updateSchedulePreview();
+  if (event.target.matches('input[name="payment_plan"], input[name="package_code"], input[name="payment_responsibility"]')) updateSchedulePreview();
 });
+renderRoommates();
 
 form.addEventListener('submit', async event => {
   event.preventDefault();
@@ -118,6 +145,13 @@ form.addEventListener('submit', async event => {
   button.textContent = 'Opening Stripe…';
   message.textContent = '';
   const installments = values.get('payment_plan') === 'installments';
+  const travelerCount=Math.max(1,Number(partySize.value||1));
+  const responsibility=travelerCount>1?(values.get('payment_responsibility')||'one_payer'):'one_payer';
+  const roommates=collectRoommates();
+  if(travelerCount>1){
+    const bad=roommates.find(r=>r.name.length<2||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(r.email));
+    if(bad){message.textContent='Enter the full name and valid email address for every additional traveler.';button.disabled=false;button.textContent='Continue to secure checkout';return;}
+  }
   if (installments && !consent.checked) {
     message.textContent = 'Please authorize the automatic monthly payment schedule.';
     button.disabled = false;
@@ -158,7 +192,10 @@ form.addEventListener('submit', async event => {
     auto_pay_consent:installments && consent.checked,
     booking_terms_consent:true,
     signer_name:signerName.value.trim(),
-    promo_code:promoCode.value.trim().toUpperCase()
+    promo_code:promoCode.value.trim().toUpperCase(),
+    party_size:travelerCount,
+    payment_responsibility:responsibility,
+    roommates
   }});
   if (error || !data?.url) {
     message.textContent = data?.error || 'Checkout could not be started. Please try again.';
