@@ -1,6 +1,6 @@
 import { supabase } from './supabase-client.js'
 
-const state = { user: null, permissions: null, trips: [], resources: [], posts: [], packages: [], settings: null }
+const state = { user: null, permissions: null, trips: [], resources: [], posts: [], packages: [], addons: [], settings: null }
 const BRANDING_DEFAULTS = {
   logo_url: '/newtrv180x180no bckgrd logo favi.jpg',
   site_name: 'The Real Vacations',
@@ -110,6 +110,8 @@ function resetTripForm() {
   $('#tripStatus').value = 'draft'
   $('#tripSortOrder').value = '0'
   $('#tripFormTitle').textContent = 'Add Group Trip'
+  ensureTripAddonsField()
+  if ($('#tripAddons')) $('#tripAddons').value = ''
 }
 
 function parsePackages(value) {
@@ -120,6 +122,44 @@ function parsePackages(value) {
     }
     return { code: slugify(code), name, total_amount: cents(total), deposit_amount: cents(deposit), description: description || null, currency: 'usd', is_active: true, sort_order: index + 1 }
   })
+}
+
+function parseAddons(value) {
+  return String(value || '').split('\n').map((line) => line.trim()).filter(Boolean).map((line, index) => {
+    const [code, name, amount, perPerson = 'yes', timing = 'due_today', description = ''] = line.split('|').map((part) => part.trim())
+    const amountCents = cents(amount)
+    if (!code || !name || amountCents <= 0) {
+      throw new Error(`Add-on line ${index + 1} must be: code | name | price dollars | yes/no | due_today/add_to_total | description`)
+    }
+    return {
+      code: slugify(code),
+      name,
+      amount: amountCents,
+      per_person: !/^(no|false|0)$/i.test(perPerson),
+      charge_timing: timing === 'add_to_total' ? 'add_to_total' : 'due_today',
+      description: description || null,
+      currency: 'usd',
+      is_active: true,
+      sort_order: index + 1,
+    }
+  })
+}
+
+function addonsForTrip(tripId) {
+  return state.addons.filter((item) => item.trip_id === tripId && item.is_active)
+    .sort((a, b) => a.sort_order - b.sort_order)
+    .map((item) => `${item.code} | ${item.name} | ${dollars(item.amount)} | ${item.per_person ? 'yes' : 'no'} | ${item.charge_timing || 'due_today'} | ${item.description || ''}`)
+    .join('\n')
+}
+
+function ensureTripAddonsField() {
+  if ($('#tripAddons')) return
+  const packageField = $('#tripPackages')?.closest('.field')
+  if (!packageField) return
+  const wrapper = document.createElement('div')
+  wrapper.className = 'field full'
+  wrapper.innerHTML = '<label for="tripAddons">Optional Trip Add-Ons</label><textarea id="tripAddons" placeholder="meet-greet | Meet & Greet VIP Experience | 399 | yes | due_today | Photo opportunity + backstage access"></textarea><p class="hint">Optional. One per line: code | name | price dollars | per person (yes/no) | charge timing (due_today/add_to_total) | description. Leave blank if no add-on is confirmed.</p>'
+  packageField.insertAdjacentElement('afterend', wrapper)
 }
 
 function packagesForTrip(tripId) {
@@ -173,6 +213,8 @@ function editTrip(id) {
     ? trip.itinerary.map((item) => typeof item === 'string' ? item : `${item.title || item.day || ''}: ${item.description || item.details || ''}`.trim()).join('\n')
     : ''
   $('#tripPackages').value = packagesForTrip(trip.trip_id)
+  ensureTripAddonsField()
+  if ($('#tripAddons')) $('#tripAddons').value = addonsForTrip(trip.trip_id)
   $('#tripForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
@@ -188,6 +230,8 @@ async function saveTrip(event) {
   const button = $('#saveTripButton'); button.disabled = true
   try {
     const packageRows = parsePackages($('#tripPackages').value)
+    ensureTripAddonsField()
+    const addonRows = parseAddons($('#tripAddons')?.value || '')
     if (!packageRows.length) throw new Error('Add at least one package.')
     const itinerary = $('#tripItinerary').value.split('\n').map((line) => line.trim()).filter(Boolean)
     const payload = {
@@ -233,6 +277,21 @@ async function saveTrip(event) {
     }
     const { error: packageError } = await supabase.from('trip_packages').upsert(packageRows.map((item) => ({ ...item, trip_id: trip.trip_id })), { onConflict: 'trip_id,code' })
     if (packageError) throw packageError
+
+    const existingAddons = state.addons.filter((item) => item.trip_id === trip.trip_id)
+    const incomingAddonCodes = new Set(addonRows.map((item) => item.code))
+    const removedAddonIds = existingAddons.filter((item) => !incomingAddonCodes.has(item.code)).map((item) => item.addon_id)
+    if (removedAddonIds.length) {
+      const { error: addonDisableError } = await supabase.from('trip_addons').update({ is_active: false }).in('addon_id', removedAddonIds)
+      if (addonDisableError) throw addonDisableError
+    }
+    if (addonRows.length) {
+      const { error: addonError } = await supabase.from('trip_addons').upsert(
+        addonRows.map((item) => ({ ...item, trip_id: trip.trip_id })),
+        { onConflict: 'trip_id,code' }
+      )
+      if (addonError) throw addonError
+    }
     showMessage(id ? 'Trip updated.' : 'Trip added.'); resetTripForm(); await loadAll()
   } catch (error) { showMessage(error.message || 'Trip could not be saved.', 'error') }
   finally { button.disabled = false }
@@ -535,18 +594,21 @@ async function verifyStripeConnection() {
 }
 
 async function loadAll() {
-  const [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult] = await Promise.all([
+  const [tripsResult, packagesResult, addonsResult, resourcesResult, postsResult, settingsResult] = await Promise.all([
     supabase.from('trips').select('*').order('dates_start', { ascending: false }),
     supabase.from('trip_packages').select('*').order('sort_order'),
+    supabase.from('trip_addons').select('*').order('sort_order'),
     supabase.from('resources').select('*').order('category').order('sort_order'),
     supabase.from('blog_posts').select('*').order('created_at', { ascending: false }),
     supabase.from('site_settings').select('*').eq('id', 1).maybeSingle(),
   ])
-  const failed = [tripsResult, packagesResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
+  const failed = [tripsResult, packagesResult, addonsResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
   if (failed) return showMessage(failed.error.message, 'error')
-  state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
+  state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.addons = addonsResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
   renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderPageHeadings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings()
 }
+
+ensureTripAddonsField()
 
 async function initialize() {
   const { data: { session } } = await supabase.auth.getSession()
