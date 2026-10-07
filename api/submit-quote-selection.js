@@ -23,7 +23,7 @@ export default async function handler(req,res){
   if(!sourceQuoteId||!selectedIds.length) return res.status(422).json({error:'Choose the trip components you want before submitting.'});
 
   const {data:quote,error:quoteError}=await admin.from('travel_quotes')
-    .select('quote_id,request_id,title,summary,status,currency,deposit_amount,valid_until,travel_requests!inner(user_id),travel_quote_options(option_id,name,sort_order,travel_quote_items(item_id,option_id,category,title,description,amount,quantity,sort_order,details,admin_notes,supplier_id,image_url,selection_group,selection_rule,client_visible,attachments))')
+    .select('quote_id,request_id,title,summary,status,currency,deposit_amount,valid_until,travel_requests!inner(user_id),travel_quote_options(option_id,name,sort_order,travel_quote_items(item_id,option_id,category,title,description,amount,quantity,sort_order,details,admin_notes,supplier_id,image_url,selection_group,selection_rule,client_visible,builder_managed,attachments))')
     .eq('quote_id',sourceQuoteId).maybeSingle();
 
   if(quoteError||!quote) return res.status(404).json({error:'Quote not found'});
@@ -32,7 +32,7 @@ export default async function handler(req,res){
   if(!['ready','viewed'].includes(quote.status)) return res.status(409).json({error:'This quote is not currently open for selections.'});
   if(quote.valid_until&&new Date(quote.valid_until).getTime()<Date.now()) return res.status(409).json({error:'This quote has expired. Ask TRV to refresh pricing.'});
 
-  const allItems=(quote.travel_quote_options||[]).flatMap(o=>(o.travel_quote_items||[]).map(i=>({...i,option_name:o.name,option_sort:o.sort_order})));
+  const allItems=(quote.travel_quote_options||[]).flatMap(o=>(o.travel_quote_items||[]).filter(i=>i.builder_managed===true).map(i=>({...i,option_name:o.name,option_sort:o.sort_order})));
   const itemMap=new Map(allItems.map(i=>[i.item_id,i]));
   const selected=selectedIds.map(id=>itemMap.get(id)).filter(Boolean);
   if(selected.length!==selectedIds.length) return res.status(422).json({error:'One or more selected items are not part of this quote.'});
@@ -72,8 +72,8 @@ export default async function handler(req,res){
     summary:'Client-built selection submitted for TRV price and availability verification.',
     status:'draft',
     currency:quote.currency||'USD',
-    total_amount:total,
-    deposit_amount:quote.deposit_amount&&quote.deposit_amount<total?quote.deposit_amount:null,
+    total_amount:0,
+    deposit_amount:null,
     valid_until:quote.valid_until,
     quote_kind:'custom_selection',
     source_quote_id:quote.quote_id,
@@ -88,8 +88,8 @@ export default async function handler(req,res){
     name:'Custom Quote — Client Selection',
     description:'Built from the traveler’s selected components. Pending TRV verification.',
     sort_order:0,
-    total_amount:total,
-    deposit_amount:quote.deposit_amount&&quote.deposit_amount<total?quote.deposit_amount:null,
+    total_amount:0,
+    deposit_amount:null,
     is_recommended:true,
     allow_mix_and_match:false,
     details:{source_quote_id:quote.quote_id}
@@ -99,46 +99,7 @@ export default async function handler(req,res){
     return res.status(500).json({error:'Your custom quote option could not be created.'});
   }
 
-  const copies=pricedSelected.map((i,index)=>({
-    option_id:newOption.option_id,
-    category:i.category,
-    title:i.title,
-    description:i.description,
-    amount:i.amount,
-    quantity:i.quantity||1,
-    sort_order:index+1,
-    details:i.details||{},
-    admin_notes:i.admin_notes||null,
-    supplier_id:i.supplier_id||null,
-    image_url:i.image_url||null,
-    selection_group:i.selection_group||null,
-    selection_rule:'fixed',
-    client_visible:true,
-    attachments:Array.isArray(i.attachments)?i.attachments:[]
-  }));
-  copies.push({
-    option_id:newOption.option_id,
-    category:'processing_fee',
-    title:'Processing Convenience Fee',
-    description:'Credit-card processing convenience fee (3.5%).',
-    amount:processingFee,
-    quantity:1,
-    sort_order:copies.length+1,
-    details:{Rate:'3.5%',Applied_to:'Selected travel subtotal of '+new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(subtotal/100)},
-    admin_notes:'Automatically recalculated from the client-built selection.',
-    supplier_id:null,
-    image_url:null,
-    selection_group:null,
-    selection_rule:'fixed',
-    client_visible:true,
-    attachments:[]
-  });
-  const {error:itemError}=await admin.from('travel_quote_items').insert(copies);
-  if(itemError){
-    await admin.from('travel_quotes').delete().eq('quote_id',newQuote.quote_id);
-    return res.status(500).json({error:'Your selected trip components could not be copied.'});
-  }
-
+  // Client selections are saved for Admin review only. Proposal items are created only in Requests & Quotes.
   const {data:selection,error:selectionError}=await admin.from('travel_quote_client_selections').insert({
     source_quote_id:quote.quote_id,
     generated_quote_id:newQuote.quote_id,
