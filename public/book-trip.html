@@ -17,6 +17,7 @@
   <p class="intro" id="tripIntro">Loading current package details…</p>
   <form id="bookingForm" hidden>
     <div class="packages" id="packages"></div>
+    <section id="addonsSection" hidden style="margin:24px 0"><h2 style="font-size:20px;color:#1a0533;margin-bottom:12px">Optional Trip Add-Ons</h2><div id="addons"></div></section>
     <div class="signature"><label for="partySize">How many travelers are in this booking?</label><select id="partySize" name="party_size" style="width:100%;padding:12px;border:1px solid #cfc7d6;border-radius:9px;font:inherit"><option value="1">1 traveler</option><option value="2">2 travelers</option><option value="3">3 travelers</option><option value="4">4 travelers</option><option value="5">5 travelers</option><option value="6">6 travelers</option><option value="7">7 travelers</option><option value="8">8 travelers</option></select></div>
     <div id="groupPaymentBox" hidden>
       <div class="plans">
@@ -66,13 +67,16 @@ const promoCode = document.getElementById('promoCode');
 const partySize = document.getElementById('partySize');
 const groupPaymentBox = document.getElementById('groupPaymentBox');
 const roommateFields = document.getElementById('roommateFields');
+const addonsSection = document.getElementById('addonsSection');
+const addonsContainer = document.getElementById('addons');
 let availablePackages = [];
+let availableAddons = [];
 let finalPaymentDeadline = null;
 const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(Number(value) / 100);
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
 if (user) {
-  const { data: trip, error } = await supabase.from('trips').select('title,dates_start,trip_packages(*)').eq('slug', slug).eq('status', 'active').maybeSingle();
+  const { data: trip, error } = await supabase.from('trips').select('trip_id,title,dates_start,trip_packages(*)').eq('slug', slug).eq('status', 'active').maybeSingle();
   const packages = (trip?.trip_packages || []).filter(item => item.is_active).sort((a,b) => a.sort_order - b.sort_order);
   if (error || !trip || packages.length === 0) {
     intro.textContent = 'This trip is not currently available for online booking.';
@@ -82,6 +86,13 @@ if (user) {
     finalPaymentDeadline.setDate(finalPaymentDeadline.getDate() - 60);
     const installmentsAvailable = finalPaymentDeadline > new Date();
     availablePackages = packages;
+    const { data: addons } = await supabase.from('trip_addons').select('addon_id,code,name,description,amount,per_person,charge_timing,sort_order').eq('trip_id', trip.trip_id).eq('is_active', true).order('sort_order');
+    availableAddons = addons || [];
+    if (availableAddons.length) {
+      addonsSection.hidden = false;
+      addonsContainer.innerHTML = availableAddons.map((item) => '<label class="plan" style="align-items:flex-start"><input type="checkbox" class="addon-choice" data-code="' + escapeHtml(item.code) + '"><span><strong>' + escapeHtml(item.name) + '</strong><br><small>' + escapeHtml(item.description || '') + '</small><br><span class="price" style="font-size:18px">' + money(item.amount) + (item.per_person ? ' per person' : '') + '</span>' + (item.per_person ? '<label style="display:block;margin-top:8px;font-size:12px;font-weight:700">Quantity <select class="addon-qty" data-code="' + escapeHtml(item.code) + '" disabled style="margin-left:6px;padding:5px"></select></label>' : '') + '</span></label>').join('');
+      updateAddonQuantities();
+    }
     packageContainer.innerHTML = packages.map((item, index) => '<label class="option"><input type="radio" name="package_code" value="' + escapeHtml(item.code) + '" ' + (item.code === requestedPackage || (!packages.some(p => p.code === requestedPackage) && index === 0) ? 'checked' : '') + '><strong>' + escapeHtml(item.name) + '</strong><span class="price">' + money(item.total_amount) + '</span><small>' + (installmentsAvailable ? money(item.deposit_amount) + ' deposit' : 'Pay in full required') + '</small></label>').join('');
     if (!installmentsAvailable) {
       const installmentInput = document.querySelector('input[value="installments"]');
@@ -104,6 +115,31 @@ function renderRoommates(){
 function collectRoommates(){
   return [...roommateFields.querySelectorAll('.roommate-name')].map((nameInput,i)=>({name:nameInput.value.trim(),email:roommateFields.querySelectorAll('.roommate-email')[i].value.trim().toLowerCase()}));
 }
+function updateAddonQuantities(){
+  const travelers=Math.max(1,Number(partySize.value||1));
+  addonsContainer.querySelectorAll('.addon-qty').forEach(select=>{
+    const current=Math.min(travelers,Math.max(1,Number(select.value||1)));
+    select.innerHTML=Array.from({length:travelers},(_,i)=>'<option value="'+(i+1)+'">'+(i+1)+'</option>').join('');
+    select.value=String(current);
+  });
+}
+function selectedAddons(){
+  return [...addonsContainer.querySelectorAll('.addon-choice:checked')].map(input=>{
+    const addon=availableAddons.find(item=>item.code===input.dataset.code);
+    const qty=addon?.per_person?Math.max(1,Number(addonsContainer.querySelector('.addon-qty[data-code="'+CSS.escape(input.dataset.code)+'"]')?.value||1)):1;
+    return addon?{code:addon.code,quantity:qty}:null;
+  }).filter(Boolean);
+}
+function addonTotals(){
+  return selectedAddons().reduce((sum,selection)=>{
+    const addon=availableAddons.find(item=>item.code===selection.code);
+    if(!addon) return sum;
+    const amount=Number(addon.amount||0)*Number(selection.quantity||1);
+    sum.total+=amount;
+    if(addon.charge_timing==='due_today') sum.dueToday+=amount;
+    return sum;
+  },{total:0,dueToday:0});
+}
 function updateSchedulePreview() {
   const plan = form.querySelector('input[name="payment_plan"]:checked')?.value;
   const code = form.querySelector('input[name="package_code"]:checked')?.value;
@@ -114,26 +150,35 @@ function updateSchedulePreview() {
   subscriberConsentWrap.hidden = !installments;
   subscriberConsent.required = installments;
   if (!selected || !finalPaymentDeadline) return;
-  const count=Math.max(1,Number(partySize.value||1));
+  const travelerCount=Math.max(1,Number(partySize.value||1));
   const responsibility=form.querySelector('input[name="payment_responsibility"]:checked')?.value||'one_payer';
+  const addOn=addonTotals();
   if (!installments) {
-    schedulePreview.textContent = money(selected.total_amount*count) + ' will be charged today for '+count+' traveler'+(count===1?'':'s')+'.';
+    schedulePreview.textContent = money(selected.total_amount*travelerCount + addOn.total) + ' will be charged today for '+travelerCount+' traveler'+(travelerCount===1?'':'s')+(addOn.total?' including selected add-ons.':'.');
     return;
   }
   let firstDue = new Date();
   firstDue = new Date(firstDue.getFullYear(), firstDue.getMonth() + 1, 1, 12);
   if (firstDue > finalPaymentDeadline) firstDue = new Date(finalPaymentDeadline);
-  const count = Math.max(1, (finalPaymentDeadline.getFullYear() - firstDue.getFullYear()) * 12 + finalPaymentDeadline.getMonth() - firstDue.getMonth() + 1);
-  const dueNow=responsibility==='individual'&&count>1?selected.deposit_amount:selected.deposit_amount*count;
-  const groupTotal=selected.total_amount*count;
-  const remaining = groupTotal - (responsibility==='individual'&&count>1?selected.deposit_amount*count:dueNow);
-  const base = Math.floor(Math.max(0,remaining) / count);
-  schedulePreview.textContent = money(dueNow) + ' due from you today. '+(responsibility==='individual'&&count>1?(count-1)+' additional traveler deposit invitation'+(count-1===1?'':'s')+' will be emailed after your payment. ':'')+'Group total: '+money(groupTotal)+'. Final balance must reach $0 by ' + finalPaymentDeadline.toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'}) + ' (60 days before departure).';
+  const installmentCount = Math.max(1, (finalPaymentDeadline.getFullYear() - firstDue.getFullYear()) * 12 + finalPaymentDeadline.getMonth() - firstDue.getMonth() + 1);
+  const baseDeposit=responsibility==='individual'&&travelerCount>1?selected.deposit_amount:selected.deposit_amount*travelerCount;
+  const dueNow=baseDeposit+addOn.dueToday;
+  const groupTotal=selected.total_amount*travelerCount+addOn.total;
+  const depositsExpected=responsibility==='individual'&&travelerCount>1?selected.deposit_amount*travelerCount:selected.deposit_amount*travelerCount;
+  const remaining = Math.max(0,groupTotal-depositsExpected-addOn.dueToday);
+  const monthly = Math.floor(remaining / installmentCount);
+  schedulePreview.textContent = money(dueNow) + ' due from you today. '+(responsibility==='individual'&&travelerCount>1?(travelerCount-1)+' additional traveler deposit invitation'+(travelerCount-1===1?'':'s')+' will be emailed after your payment. ':'')+(addOn.total?'Selected add-ons: '+money(addOn.total)+'. ':'')+'Group total: '+money(groupTotal)+'. Remaining installments are about '+money(monthly)+' each. Final balance must reach $0 by ' + finalPaymentDeadline.toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'}) + ' (60 days before departure).';
 }
 
-partySize.addEventListener('change',()=>{renderRoommates();updateSchedulePreview();});
+partySize.addEventListener('change',()=>{renderRoommates();updateAddonQuantities();updateSchedulePreview();});
 form.addEventListener('change', event => {
-  if (event.target.matches('input[name="payment_plan"], input[name="package_code"], input[name="payment_responsibility"]')) updateSchedulePreview();
+  if (event.target.matches('input[name="payment_plan"], input[name="package_code"], input[name="payment_responsibility"], .addon-choice, .addon-qty')) {
+    if(event.target.matches('.addon-choice')) {
+      const qty=addonsContainer.querySelector('.addon-qty[data-code="'+CSS.escape(event.target.dataset.code)+'"]');
+      if(qty) qty.disabled=!event.target.checked;
+    }
+    updateSchedulePreview();
+  }
 });
 renderRoommates();
 
@@ -195,7 +240,8 @@ form.addEventListener('submit', async event => {
     promo_code:promoCode.value.trim().toUpperCase(),
     party_size:travelerCount,
     payment_responsibility:responsibility,
-    roommates
+    roommates,
+    selected_addons:selectedAddons()
   }});
   if (error || !data?.url) {
     message.textContent = data?.error || 'Checkout could not be started. Please try again.';
