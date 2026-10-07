@@ -155,6 +155,40 @@ Deno.serve(async (request) => {
     subject = `You're invited to ${invitation.travel_groups.name}`
     relatedTable = 'travel_group_invitations'; relatedId = invitation.invitation_id
     html = emailShell('Join your travel group', `<p>You’ve been invited to <strong>${escapeHtml(invitation.travel_groups.name)}</strong>.</p><p><a href="${escapeHtml(joinUrl)}">Accept this private invitation</a> before ${escapeHtml(new Date(invitation.expires_at).toLocaleDateString())}. If you weren’t expecting it, you can ignore this email.</p>`, siteUrl)
+  } else if (requestedType === 'group_deposit_invitation') {
+    const invitationId = String(body.invitation_id ?? '')
+    const joinUrl = String(body.join_url ?? '')
+    if (!joinUrl.startsWith(`${siteUrl}/join-group?code=`)) return jsonResponse({ error: 'Invalid invitation URL' }, 422)
+
+    const { data: invitation } = await admin.from('travel_group_invitations')
+      .select('invitation_id,group_id,invited_email,expires_at,travel_groups!inner(name,leader_user_id,trip_id,trips(title,dates_start,dates_end))')
+      .eq('invitation_id', invitationId).maybeSingle()
+    if (!invitation?.invited_email) return jsonResponse({ error: 'Traveler deposit invitation not found' }, 404)
+
+    const { data: member } = await admin.from('travel_group_members')
+      .select('display_name,deposit_required,deposit_due_at')
+      .eq('group_id', invitation.group_id)
+      .ilike('invited_email', invitation.invited_email)
+      .eq('status', 'invited')
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    if (!member) return jsonResponse({ error: 'Traveler deposit record not found' }, 404)
+
+    const group = invitation.travel_groups
+    const trip = group?.trips
+    const tripTitle = trip?.title || group?.name || 'The Real Vacations Group Trip'
+    const { data: leaderAuth } = await admin.auth.admin.getUserById(group.leader_user_id)
+    const leaderName = leaderAuth.user?.user_metadata?.full_name || leaderAuth.user?.user_metadata?.first_name || leaderAuth.user?.email || 'your group leader'
+    const dates = trip?.dates_start
+      ? new Date(trip.dates_start + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) + (trip?.dates_end ? ' – ' + new Date(trip.dates_end + 'T12:00:00').toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'}) : '')
+      : ''
+    const dueAt = member.deposit_due_at || invitation.expires_at
+
+    recipient = invitation.invited_email
+    subject = `${tripTitle} — your TRV deposit is due`
+    relatedTable = 'travel_group_invitations'; relatedId = invitation.invitation_id
+    html = emailShell(`Your deposit for ${tripTitle}`, `<p>Hi ${escapeHtml(member.display_name || 'Traveler')},</p><p><strong>${escapeHtml(leaderName)}</strong> included you in a group booking for <strong>${escapeHtml(tripTitle)}</strong>${dates ? ` (${escapeHtml(dates)})` : ''}.</p><p>Your required non-refundable deposit is <strong>${money(member.deposit_required || 0)}</strong>.</p><p><strong>You have 24 hours from this invitation to complete your deposit.</strong> This group reservation is not confirmed until every traveler in the booking has paid the required deposit.</p><p><a href="${escapeHtml(joinUrl)}" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold;display:inline-block">Pay My ${money(member.deposit_required || 0)} Deposit →</a></p><p style="font-size:13px;color:#6b6270">Deposit deadline: <strong>${escapeHtml(new Date(dueAt).toLocaleString('en-US',{dateStyle:'medium',timeStyle:'short'}))}</strong>.<br>Deposits are non-refundable.</p>`, siteUrl)
   } else if (requestedType === 'payment_update' || requestedType === 'payment_reminder') {
     const paymentId = String(body.payment_id ?? '')
     const { data: payment } = await admin.from('booking_payments')
