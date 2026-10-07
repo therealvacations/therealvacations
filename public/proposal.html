@@ -16,6 +16,18 @@ nav{background:#1a0533;padding:14px 28px;display:flex;align-items:center;gap:24p
 button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 22px;font-size:15px;font-weight:800;cursor:pointer}button:disabled{opacity:.55}.message{margin-top:10px;color:#991b1b}.loading{text-align:center;padding:70px 20px;color:#6d6273}
 .expired{background:#fff3cd;border:1px solid #f4d98a;padding:14px;border-radius:12px;margin-bottom:18px}
 @media(max-width:720px){.nav-links{display:none}.option-top{display:block}.price{margin:12px 0}}
+@media print{
+  @page{size:auto;margin:.45in}
+  *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{background:#fff}
+  nav,.review-confirm,.choose,.builder button,.nav-auth,.expired,.message{display:none!important}
+  .hero{padding:34px 0;background:linear-gradient(135deg,#1a0533,#4c1d6f)!important}
+  .hero-inner,.wrap{max-width:none}
+  .wrap{padding:20px 0}
+  .option,.proposal-item,.builder{break-inside:avoid;page-break-inside:avoid;box-shadow:none}
+  .attachment-image,img{max-width:100%!important}
+  a{color:inherit;text-decoration:none}
+}
 </style>
 </head>
 <body>
@@ -37,7 +49,7 @@ button{border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:13px 2
 </main>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
-const qs=new URLSearchParams(location.search), quoteId=qs.get('quote')||'';
+const qs=new URLSearchParams(location.search), quoteId=qs.get('quote')||'', pdfMode=qs.get('pdf')==='1';
 const loading=document.getElementById('loading'),content=document.getElementById('content'),optionsEl=document.getElementById('options'),builderEl=document.getElementById('builder'),message=document.getElementById('message');
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -140,6 +152,20 @@ if(user){
       return '<article class="option '+(o.is_recommended?'recommended':'')+'"><div class="option-top"><div><h2>'+esc(o.name)+(o.is_recommended?' · Recommended':'')+'</h2><p class="desc">'+esc(o.description||'')+'</p></div></div>'+itemsHtml+legacyDetails+'<div class="total-box"><div class="option-top"><strong>Proposal Total</strong><div class="price option-total" data-option="'+o.option_id+'">'+money(o.total_amount)+'</div></div>'+(o.deposit_amount?'<p class="deposit">Deposit to book: '+money(o.deposit_amount)+'</p>':'')+'</div>'+previewOnly+approvalBlock+'</article>';
     }).join('');
     loading.hidden=true;content.hidden=false;
+    if(pdfMode){
+      document.body.classList.add('pdf-mode');
+      const waitForImages=async()=>{
+        const imgs=[...document.images];
+        await Promise.all(imgs.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{
+          const done=()=>resolve();
+          img.addEventListener('load',done,{once:true});
+          img.addEventListener('error',done,{once:true});
+        })));
+        if(document.fonts?.ready){try{await document.fonts.ready}catch{}}
+        await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+      };
+      waitForImages().then(()=>setTimeout(()=>window.print(),250));
+    }
 
     const recalcOptionTotal=optionId=>{
       const option=opts.find(x=>x.option_id===optionId); if(!option)return 0;
