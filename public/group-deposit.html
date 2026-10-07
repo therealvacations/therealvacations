@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Traveler Deposit | The Real Vacations</title><link rel="icon" href="/favicon.ico"/>
+<style>*{box-sizing:border-box}body{margin:0;font-family:"Segoe UI",Arial,sans-serif;background:#f7f3fb;color:#2e2436}nav{background:#1a0533;padding:14px 28px}nav img{height:48px}.wrap{max-width:720px;margin:42px auto;padding:0 18px}.card{background:#fff;border:1px solid #e7deef;border-radius:22px;padding:30px;box-shadow:0 14px 35px rgba(45,24,74,.08)}h1{color:#1a0533;margin:0 0 8px}.muted{color:#6d6273;line-height:1.6}.summary{background:#faf5ff;border-radius:14px;padding:18px;margin:22px 0}.row{display:flex;justify-content:space-between;gap:20px;padding:7px 0}.btn{width:100%;border:0;border-radius:999px;background:#7c3aed;color:#fff;padding:14px;font-weight:800;font-size:16px;cursor:pointer}.btn:disabled{opacity:.55}.status{margin-top:16px;padding:12px;border-radius:10px;background:#f3e8ff;color:#5b217b}.error{background:#fee2e2;color:#991b1b}.success{background:#dcfce7;color:#166534}</style></head>
+<body><nav><a href="/"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"/></a></nav>
+<main class="wrap"><section class="card">
+<h1>Your traveler deposit</h1>
+<p class="muted" id="intro">Loading your group booking…</p>
+<div class="summary" id="summary" hidden></div>
+<button class="btn" id="payButton" type="button" hidden>Pay my deposit securely</button>
+<div class="status" id="status" hidden></div>
+</section></main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+const params=new URLSearchParams(location.search),groupId=params.get('group')||'',result=params.get('status')||'';
+const intro=document.getElementById('intro'),summary=document.getElementById('summary'),payButton=document.getElementById('payButton'),status=document.getElementById('status');
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+const {data:{user}}=await supabase.auth.getUser();
+if(!user){location.replace('/login?next='+encodeURIComponent(location.pathname+location.search))}
+if(user){
+ const {data:member,error}=await supabase.from('travel_group_members')
+   .select('membership_id,display_name,share_total,share_paid,share_status,deposit_required,deposit_due_at,deposit_paid_at,travel_groups!inner(name,status,trips(title,dates_start,dates_end))')
+   .eq('group_id',groupId).eq('user_id',user.id).maybeSingle();
+ if(error||!member){intro.textContent='This traveler deposit invitation is not available.'}
+ else{
+   const g=member.travel_groups||{},trip=g.trips||{};
+   intro.textContent=(trip.title||g.name||'Your TRV group trip')+' · individual traveler deposit';
+   summary.hidden=false;
+   summary.innerHTML='<div class="row"><strong>Trip</strong><span>'+String(trip.title||g.name||'TRV Group Trip')+'</span></div><div class="row"><strong>Deposit due</strong><span>'+money(member.deposit_required)+'</span></div>'+(member.deposit_due_at?'<div class="row"><strong>Pay by</strong><span>'+new Date(member.deposit_due_at).toLocaleString()+'</span></div>':'')+'<div class="row"><strong>Deposit policy</strong><span>Non-refundable</span></div>';
+   if(member.deposit_paid_at){
+     status.hidden=false;status.className='status success';status.textContent='Your deposit has been received. Thank you — your payment is attached to this group booking.';
+   }else if(member.deposit_due_at&&new Date(member.deposit_due_at)<new Date()){
+     status.hidden=false;status.className='status error';status.textContent='This 24-hour deposit window has expired. Contact The Real Vacations for assistance.';
+   }else{
+     payButton.hidden=false;
+     if(result==='cancelled'){status.hidden=false;status.className='status';status.textContent='Payment was not completed. Your deposit is still due within the invitation window.'}
+     if(result==='success'){status.hidden=false;status.className='status';status.textContent='Stripe returned successfully. We are confirming your payment now; refresh in a moment if this message remains.'}
+   }
+ }
+}
+payButton.addEventListener('click',async()=>{
+ payButton.disabled=true;payButton.textContent='Opening secure checkout…';
+ const {data,error}=await supabase.functions.invoke('create-group-deposit-checkout',{body:{group_id:groupId}});
+ if(error||!data?.url){status.hidden=false;status.className='status error';status.textContent=data?.error||'Checkout could not be started.';payButton.disabled=false;payButton.textContent='Pay my deposit securely';return}
+ location.assign(data.url);
+});
+</script></body></html>
