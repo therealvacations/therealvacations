@@ -57,7 +57,7 @@ const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/proposal?quote='+quoteId));}
 if(user){
   const {data:q,error}=await supabase.from('travel_quotes')
-    .select('quote_id,title,summary,status,valid_until,quote_kind,workflow_status,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,allow_mix_and_match,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url,selection_group,selection_rule,client_visible,attachments,travel_quote_item_variants(variant_id,label,description,amount,sort_order,is_default,active)))')
+    .select('quote_id,title,summary,status,valid_until,quote_kind,workflow_status,travel_requests!inner(request_id,user_id,request_travelers(first_name,middle_name,last_name,traveler_type)),travel_quote_options(option_id,name,description,total_amount,deposit_amount,is_recommended,details,sort_order,allow_mix_and_match,travel_quote_items(item_id,category,title,description,amount,quantity,sort_order,details,image_url,selection_group,selection_rule,client_visible,builder_managed,attachments,travel_quote_item_variants(variant_id,label,description,amount,sort_order,is_default,active)))')
     .eq('quote_id',quoteId).maybeSingle();
   if(error||!q){loading.textContent='This proposal could not be found for your account.'}
   else{
@@ -78,7 +78,7 @@ if(user){
     const travelerHtml=travelers.length?'<section class="option" style="margin-bottom:18px"><h2 style="margin-top:0">Travelers on this proposal</h2><div class="details">'+travelers.map((t,i)=>esc((i+1)+'. '+[t.first_name,t.middle_name,t.last_name].filter(Boolean).join(' ')+(t.traveler_type?' · '+t.traveler_type.replaceAll('_',' '):''))).join('<br>')+'</div></section>':'';
     document.getElementById('options').insertAdjacentHTML('beforebegin',travelerHtml);
     const opts=(q.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order);
-    const allMixItems=opts.flatMap(o=>(o.travel_quote_items||[]).filter(i=>i.client_visible!==false&&i.selection_group&&o.allow_mix_and_match!==false).map(i=>({...i,option_name:o.name})));
+    const allMixItems=opts.flatMap(o=>(o.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false&&i.selection_group&&o.allow_mix_and_match!==false).map(i=>({...i,option_name:o.name})));
     const groups=new Map();
     allMixItems.forEach(i=>{
       const key=String(i.selection_group||'').trim();
@@ -130,7 +130,7 @@ if(user){
     }else builderEl.innerHTML='';
 
     optionsEl.innerHTML=opts.map(o=>{
-      const items=(o.travel_quote_items||[]).filter(i=>i.client_visible!==false).sort((a,b)=>a.sort_order-b.sort_order);
+      const items=(o.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false).sort((a,b)=>a.sort_order-b.sort_order);
       const itemsHtml=items.length?'<div class="items">'+items.map(i=>{
         const detailHtml=i.details&&Object.keys(i.details).length?'<div class="item-details">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>':'';
         const imageHtml=i.image_url?'<img src="'+esc(i.image_url)+'" alt="'+esc(i.title||'Travel proposal item')+'" style="width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin:12px 0">':'';
@@ -169,7 +169,7 @@ if(user){
 
     const recalcOptionTotal=optionId=>{
       const option=opts.find(x=>x.option_id===optionId); if(!option)return 0;
-      const items=(option.travel_quote_items||[]).filter(i=>i.client_visible!==false);
+      const items=(option.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false);
       let subtotal=0;
       items.forEach(i=>{
         const processing=String(i.category||'').toLowerCase()==='processing_fee'||/processing convenience fee/i.test(String(i.title||''));
