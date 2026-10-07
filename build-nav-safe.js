@@ -44,6 +44,7 @@ function processHTML(filePath) {
   const driveExcluded = new Set([
     'admin.html','admin-login.html','dashboard.html',
     'login.html','signup.html','forgot-password.html','reset-password.html',
+    'book-trip.html','join-group.html','group-deposit.html',
     'account-confirmed.html','my-trips.html','member-profile.html','member-book.html',
     'proposal.html','quote-checkout.html','custom-payment-result.html','payment-result.html',
     'request-payment-result.html','request-received.html','request-travel.html',
