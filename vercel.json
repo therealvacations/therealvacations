@@ -291,6 +291,10 @@
     {
       "source": "/hosts/:slug",
       "destination": "/host-profile.html"
+    },
+    {
+      "source": "/group-deposit",
+      "destination": "/group-deposit.html"
     }
   ]
 }
