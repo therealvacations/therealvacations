@@ -568,30 +568,8 @@ async function saveQuote(publish=false){
     if(empty.length) return toast('Each quote option must contain saved client-facing proposal items before publishing. Empty: '+empty.map(o=>o.name).join(', '),true);
   }
   await supabase.from('travel_requests').update({status:publish?'quote_ready':'quote_in_progress'}).eq('request_id',currentRequest.request_id);
-  if(publish){
-    const {data:{session}}=await supabase.auth.getSession();
-    if(!session?.access_token) return toast('Your admin session expired. Sign in again.',true);
-    let emailResult={};
-    let emailError=null;
-    try{
-      const emailResp=await fetch('/api/send-quote-ready',{
-        method:'POST',
-        headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
-        body:JSON.stringify({quote_id:quoteId})
-      });
-      emailResult=await emailResp.json().catch(()=>({}));
-      if(!emailResp.ok) emailError=new Error(emailResult?.error||'Email delivery failed');
-    }catch(error){
-      emailError=error;
-    }
-    if(emailError || !emailResult?.delivered){
-      const detail=emailResult?.error||emailError?.message||'Email delivery failed';
-      console.error('Quote email failed:',emailError,emailResult);
-      toast('Quote published, but email failed: '+detail,true);
-    }else{
-      toast(emailResult?.duplicate?'Quote published. Email was already sent for this event.':'Quote published and emailed to the client.');
-    }
-  } else toast('Quote draft saved.');
+  if(publish) toast('Quote published. Review it, then use Send to Client when you are ready.');
+  else toast('Quote draft saved.');
   await loadRequests();
   if(currentRequest) {
     const refreshed=(await supabase.from('travel_requests').select('request_id,travel_quotes(quote_id,title,summary,status,valid_until,total_amount,deposit_amount,quote_kind,workflow_status,source_quote_id,travel_quote_options(*))').eq('request_id',currentRequest.request_id).maybeSingle()).data;
@@ -600,7 +578,31 @@ async function saveQuote(publish=false){
     await loadQuoteItems();
   }
 }
+async function sendQuoteToClient(){
+  const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
+  if(!quoteId) return toast('Save and publish the quote before sending it.',true);
+  const {data:quote,error:quoteError}=await supabase.from('travel_quotes').select('quote_id,status').eq('quote_id',quoteId).maybeSingle();
+  if(quoteError) return toast('Could not verify quote status: '+quoteError.message,true);
+  if(!quote || quote.status!=='ready') return toast('Publish the quote first. Sending does not publish or change the quote.',true);
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session?.access_token) return toast('Your admin session expired. Sign in again.',true);
+  let emailResult={};
+  try{
+    const emailResp=await fetch('/api/send-quote-ready',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({quote_id:quoteId})
+    });
+    emailResult=await emailResp.json().catch(()=>({}));
+    if(!emailResp.ok) throw new Error(emailResult?.error||'Email delivery failed');
+  }catch(error){
+    console.error('Quote email failed:',error,emailResult);
+    return toast('Send failed: '+(emailResult?.error||error?.message||'Email delivery failed'),true);
+  }
+  toast(emailResult?.duplicate?'This quote email was already sent for this event.':'Quote sent to the client.');
+}
 $('#saveQuoteButton')?.addEventListener('click',()=>saveQuote(false));
+$('#sendQuoteButton')?.addEventListener('click',sendQuoteToClient);
 $('#previewQuoteButton')?.addEventListener('click',()=>{
   const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
   if(!quoteId) return toast('Save the quote first, then preview the proposal.',true);
