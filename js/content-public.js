@@ -203,9 +203,14 @@ async function loadTripDetail() {
     .eq('slug', slug).eq('status', 'active').maybeSingle()
   if (error || !trip) return showState(container, 'This trip is not currently available.', 'error')
 
-  const { data: packages } = await supabase.from('trip_packages')
-    .select('code,name,description,total_amount,deposit_amount,currency,sort_order')
-    .eq('trip_id', trip.trip_id).eq('is_active', true).order('sort_order')
+  const [{ data: packages }, { data: addons }] = await Promise.all([
+    supabase.from('trip_packages')
+      .select('code,name,description,total_amount,deposit_amount,currency,sort_order')
+      .eq('trip_id', trip.trip_id).eq('is_active', true).order('sort_order'),
+    supabase.from('trip_addons')
+      .select('code,name,description,amount,currency,per_person,charge_timing,sort_order')
+      .eq('trip_id', trip.trip_id).eq('is_active', true).order('sort_order'),
+  ])
 
   document.title = `${trip.title} | The Real Vacations`
   const hero = node('header', 'detail-hero')
@@ -236,7 +241,27 @@ async function loadTripDetail() {
   }))
   if (!packages?.length) packageGrid.append(node('p', 'content-state', 'Package details are being finalized.'))
   pricing.append(packageGrid)
-  container.replaceChildren(hero, overview, pricing)
+
+  const sections = [hero, overview, pricing]
+  if (addons?.length) {
+    const addonSection = node('section', 'detail-section')
+    addonSection.append(node('h2', '', 'Optional Trip Add-Ons'))
+    const addonGrid = node('div', 'package-grid')
+    addonGrid.append(...addons.map((item) => {
+      const card = node('article', 'package-card')
+      const price = dollars(item.amount) + (item.per_person ? ' per person' : '')
+      card.append(
+        node('h3', '', item.name),
+        node('div', 'package-price', price),
+        node('p', '', item.description || 'Optional experience available with this trip.')
+      )
+      return card
+    }))
+    addonSection.append(addonGrid)
+    sections.push(addonSection)
+  }
+
+  container.replaceChildren(...sections)
 }
 
 async function loadBlogDetail() {
