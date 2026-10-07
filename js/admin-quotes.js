@@ -188,8 +188,16 @@ async function loadQuoteItems(){
     const amount=i.amount==null?'Price pending':money(i.amount);
     const supplier=selectedSupplier(i.supplier_id);
     const adminNoteDisplay=mergeSupplierIntoAdminNotes(i.admin_notes,i.supplier_id);
-    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p><div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px;white-space:pre-wrap"><strong>Admin only:</strong> '+esc(adminNoteDisplay)+'</div><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete</button></div></div>';
-  }).join('')||'<div class="empty-state">No proposal items yet.</div>';
+    const detailEntries=Object.entries(i.details||{});
+    const detailHtml=detailEntries.length
+      ? '<div style="margin:10px 0;padding:10px 12px;background:#fafafa;border:1px solid #e5e7eb;border-radius:9px;font-size:12px"><strong style="display:block;margin-bottom:6px">Saved client details</strong>'+detailEntries.map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>'
+      : '';
+    const itemVariants=variantsByItem.get(i.item_id)||[];
+    const variantHtml=itemVariants.length
+      ? '<div style="margin:10px 0;padding:10px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:9px;font-size:12px"><strong style="display:block;margin-bottom:6px">Client-selectable variants</strong>'+itemVariants.map(v=>'<div>'+esc(v.label)+' · '+money(v.amount)+(v.is_default?' · Default':'')+'</div>').join('')+'</div>'
+      : '';
+    return '<div class="admin-record" data-quote-item-id="'+esc(i.item_id)+'"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p>'+detailHtml+variantHtml+'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px;white-space:pre-wrap"><strong style="display:block;margin-bottom:6px">Admin-only notes for this item</strong>'+esc(adminNoteDisplay||'No private note saved for this item.')+'</div><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit This Item</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete This Item</button></div></div>';
+  }).join('')||'<div class="empty-state">No proposal items yet. Add an item above; nothing will appear on the client proposal until it is saved here.</div>';
   document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
     const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
     $('#quoteItemId').value=i.item_id; $('#quoteItemCategory').value=i.category||'other'; $('#quoteItemTitle').value=i.title||'';
