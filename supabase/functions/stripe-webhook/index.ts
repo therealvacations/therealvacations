@@ -373,7 +373,7 @@ Deno.serve(async (request) => {
 
       if (paidBookingPayment?.kind === 'deposit' && paidBookingPayment.booking_id) {
         const { data: leaderMember } = await admin.from('travel_group_members')
-          .select('membership_id,group_id,deposit_required,deposit_paid_at,share_paid,share_total,travel_groups!inner(separate_payments,status)')
+          .select('membership_id,group_id,deposit_required,deposit_paid_at,share_paid,share_total,travel_groups!inner(separate_payments,status,leader_user_id)')
           .eq('booking_id', paidBookingPayment.booking_id)
           .eq('role', 'leader')
           .maybeSingle()
@@ -406,7 +406,7 @@ Deno.serve(async (request) => {
             const dueAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
             const { data: invitation, error: invitationError } = await admin.from('travel_group_invitations').insert({
               group_id: leaderMember.group_id,
-              invited_by: session.metadata?.user_id || null,
+              invited_by: leaderMember.travel_groups.leader_user_id,
               invited_email: member.invited_email,
               token_hash: tokenHash,
               expires_at: dueAt,
@@ -424,7 +424,6 @@ Deno.serve(async (request) => {
             }).eq('membership_id', member.membership_id)
 
             try {
-              const joinUrl = `${supabaseUrl.replace('.supabase.co','')}`
               const publicSite = (Deno.env.get('PUBLIC_SITE_URL') ?? 'https://therealvacations.com').replace(/\/$/, '')
               const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
                 method: 'POST',
