@@ -8,6 +8,18 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   })
 }
 
+function randomCode() {
+  const bytes = crypto.getRandomValues(new Uint8Array(24))
+  let binary = ''
+  for (const byte of bytes) binary += String.fromCharCode(byte)
+  return btoa(binary).replaceAll('+', '-').replaceAll('/', '_').replaceAll('=', '')
+}
+
+async function sha256(value: string) {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('')
+}
+
 Deno.serve(async (request) => {
   if (request.method !== 'POST') return jsonResponse({ error: 'Method not allowed' }, 405)
 
@@ -216,6 +228,58 @@ Deno.serve(async (request) => {
         return jsonResponse({ received: true, travel_request_fulfillment: true })
       }
 
+      if (session.metadata?.checkout_type === 'group_member_deposit') {
+        const membershipId = session.metadata?.membership_id
+        const bookingId = session.metadata?.booking_id
+        if (!membershipId || !bookingId) return jsonResponse({ error: 'Group deposit metadata is incomplete' }, 422)
+        if (session.payment_status !== 'paid') return jsonResponse({ received: true, group_member_deposit: true })
+
+        const { data: member } = await admin.from('travel_group_members')
+          .select('membership_id,group_id,deposit_required,deposit_paid_at,share_paid,share_total')
+          .eq('membership_id', membershipId)
+          .eq('booking_id', bookingId)
+          .maybeSingle()
+        if (!member) return jsonResponse({ error: 'Group traveler was not found' }, 404)
+
+        if (!member.deposit_paid_at) {
+          const paidAmount = Number(session.amount_total ?? member.deposit_required ?? 0)
+          const { data: claimedMember } = await admin.from('travel_group_members').update({
+            deposit_paid_at: new Date().toISOString(),
+            share_paid: Number(member.share_paid ?? 0) + paidAmount,
+            share_status: Number(member.share_total ?? 0) <= Number(member.share_paid ?? 0) + paidAmount ? 'paid' : 'partial',
+            stripe_deposit_session_id: session.id,
+            updated_at: new Date().toISOString(),
+          }).eq('membership_id', membershipId).is('deposit_paid_at', null).select('membership_id').maybeSingle()
+
+          if (claimedMember) {
+            const { data: booking } = await admin.from('bookings')
+              .select('total_amount,amount_paid,balance_due')
+              .eq('booking_id', bookingId).maybeSingle()
+            if (booking) {
+              const nextPaid = Math.min(Number(booking.total_amount ?? 0), Number(booking.amount_paid ?? 0) + paidAmount)
+              await admin.from('bookings').update({
+                amount_paid: nextPaid,
+                balance_due: Math.max(0, Number(booking.total_amount ?? 0) - nextPaid),
+                updated_at: new Date().toISOString(),
+              }).eq('booking_id', bookingId)
+            }
+          }
+        }
+
+        const { data: unpaidMembers } = await admin.from('travel_group_members')
+          .select('membership_id')
+          .eq('group_id', member.group_id)
+          .gt('deposit_required', 0)
+          .is('deposit_paid_at', null)
+
+        if ((unpaidMembers || []).length === 0) {
+          await admin.from('travel_groups').update({ status: 'confirmed', updated_at: new Date().toISOString() }).eq('group_id', member.group_id)
+          await admin.from('bookings').update({ status: 'confirmed', updated_at: new Date().toISOString() }).eq('booking_id', bookingId)
+        }
+
+        return jsonResponse({ received: true, group_member_deposit: true })
+      }
+
       if (session.metadata?.checkout_type === 'custom_quote') {
         const paymentId = session.metadata?.payment_id
         const customBookingId = session.metadata?.custom_booking_id
@@ -297,6 +361,88 @@ Deno.serve(async (request) => {
                 .update({ used_count: currentUsed + 1 })
                 .eq('code', promoCode)
                 .eq('used_count', currentUsed)
+            }
+          }
+        }
+      }
+
+      const { data: paidBookingPayment } = await admin.from('booking_payments')
+        .select('kind,booking_id')
+        .eq('payment_id', paymentId)
+        .maybeSingle()
+
+      if (paidBookingPayment?.kind === 'deposit' && paidBookingPayment.booking_id) {
+        const { data: leaderMember } = await admin.from('travel_group_members')
+          .select('membership_id,group_id,deposit_required,deposit_paid_at,share_paid,share_total,travel_groups!inner(separate_payments,status)')
+          .eq('booking_id', paidBookingPayment.booking_id)
+          .eq('role', 'leader')
+          .maybeSingle()
+
+        if (leaderMember?.travel_groups?.separate_payments) {
+          const leadPaid = Number(session.amount_total ?? leaderMember.deposit_required ?? 0)
+          if (!leaderMember.deposit_paid_at) {
+            await admin.from('travel_group_members').update({
+              deposit_paid_at: new Date().toISOString(),
+              share_paid: Number(leaderMember.share_paid ?? 0) + leadPaid,
+              share_status: Number(leaderMember.share_total ?? 0) <= Number(leaderMember.share_paid ?? 0) + leadPaid ? 'paid' : 'partial',
+              updated_at: new Date().toISOString(),
+            }).eq('membership_id', leaderMember.membership_id).is('deposit_paid_at', null)
+          }
+
+          const { data: invitees } = await admin.from('travel_group_members')
+            .select('membership_id,invited_email,display_name,deposit_required,deposit_due_at')
+            .eq('group_id', leaderMember.group_id)
+            .eq('role', 'member')
+            .eq('status', 'invited')
+            .gt('deposit_required', 0)
+            .is('deposit_paid_at', null)
+
+          for (const member of invitees || []) {
+            if (!member.invited_email) continue
+            if (member.deposit_due_at) continue
+
+            const code = randomCode()
+            const tokenHash = await sha256(code)
+            const dueAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+            const { data: invitation, error: invitationError } = await admin.from('travel_group_invitations').insert({
+              group_id: leaderMember.group_id,
+              invited_by: session.metadata?.user_id || null,
+              invited_email: member.invited_email,
+              token_hash: tokenHash,
+              expires_at: dueAt,
+            }).select('invitation_id').single()
+
+            if (invitationError || !invitation) {
+              console.error('Unable to create group deposit invitation', invitationError?.message)
+              continue
+            }
+
+            await admin.from('travel_group_members').update({
+              deposit_due_at: dueAt,
+              invited_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('membership_id', member.membership_id)
+
+            try {
+              const joinUrl = `${supabaseUrl.replace('.supabase.co','')}`
+              const publicSite = (Deno.env.get('PUBLIC_SITE_URL') ?? 'https://therealvacations.com').replace(/\/$/, '')
+              const response = await fetch(`${supabaseUrl}/functions/v1/send-email`, {
+                method: 'POST',
+                headers: {
+                  authorization: `Bearer ${serviceRoleKey}`,
+                  apikey: serviceRoleKey,
+                  'content-type': 'application/json',
+                },
+                body: JSON.stringify({
+                  template_type: 'group_deposit_invitation',
+                  invitation_id: invitation.invitation_id,
+                  join_url: `${publicSite}/join-group?code=${encodeURIComponent(code)}&deposit=1`,
+                  event_id: `${event.id}:${member.membership_id}`,
+                }),
+              })
+              if (!response.ok) console.error('Group deposit invitation email failed', response.status)
+            } catch (inviteError) {
+              console.error('Group deposit invitation email failed', inviteError instanceof Error ? inviteError.message : 'Unknown error')
             }
           }
         }
