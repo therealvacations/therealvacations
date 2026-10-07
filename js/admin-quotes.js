@@ -560,6 +560,11 @@ $('#previewQuoteButton')?.addEventListener('click',()=>{
   if(!quoteId) return toast('Save the quote first, then preview the proposal.',true);
   window.open('/proposal?quote='+encodeURIComponent(quoteId),'_blank','noopener');
 });
+$('#saveQuotePdfButton')?.addEventListener('click',()=>{
+  const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
+  if(!quoteId) return toast('Save the quote first, then create the PDF.',true);
+  window.open('/proposal?quote='+encodeURIComponent(quoteId)+'&pdf=1','_blank','noopener');
+});
 $('#publishQuoteButton')?.addEventListener('click',()=>saveQuote(true));
 $('#resetQuoteResponseButton')?.addEventListener('click',async()=>{
   const quoteId=$('#quoteId')?.value || currentQuote?.quote_id || '';
