@@ -33,7 +33,8 @@ import { supabase } from '/js/supabase-client.js';
 
 const params = new URLSearchParams(window.location.search);
 const code = params.get('code') || '';
-const nextPath = '/join-group?code=' + encodeURIComponent(code);
+const depositMode = params.get('deposit') === '1';
+const nextPath = '/join-group?code=' + encodeURIComponent(code) + (depositMode ? '&deposit=1' : '');
 const validCode = /^[A-Za-z0-9_-]{20,100}$/.test(code);
 const status = document.getElementById('status');
 const showStatus = (message, type = '') => {
@@ -64,8 +65,8 @@ if (!validCode) {
         button.textContent = 'Try Again';
         return;
       }
-      showStatus('You joined the group. Opening your trip dashboard...', 'success');
-      window.setTimeout(() => window.location.replace('/my-trips#travel-groups'), 700);
+      showStatus(depositMode?'You joined the group. Opening your traveler deposit…':'You joined the group. Opening your trip dashboard...', 'success');
+      window.setTimeout(() => window.location.replace(depositMode?('/group-deposit?group='+encodeURIComponent(data.group_id)):'/my-trips#travel-groups'), 700);
     });
   }
 }
