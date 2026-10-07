@@ -421,9 +421,10 @@ async function saveQuote(publish=false){
   if(publish && currentQuote?.quote_id){
     const optionIds=(currentQuote.travel_quote_options||[]).map(o=>o.option_id).filter(Boolean);
     if(optionIds.length){
-      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,title,category,supplier_id').in('option_id',optionIds);
+      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,title,category,supplier_id,selection_rule,admin_notes').in('option_id',optionIds);
       if(sourceCheckError) return toast('Could not verify quote-item suppliers: '+sourceCheckError.message,true);
-      const missing=(items||[]).filter(i=>!i.supplier_id&&!isInternalFeeItem(i.category,i.title));
+      const hasDocumentedSupplierChoices=i=>!i.supplier_id&&['choose_one','optional'].includes(i.selection_rule)&&/CHOICE A|TWO SUPPLIER|supplier choice/i.test(String(i.admin_notes||''));
+      const missing=(items||[]).filter(i=>!i.supplier_id&&!isInternalFeeItem(i.category,i.title)&&!hasDocumentedSupplierChoices(i));
       if(missing.length) return toast('Every quote item must have its supplier/source before publishing. Missing: '+missing.map(i=>i.title).join(', '),true);
     }
   }
