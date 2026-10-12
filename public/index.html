@@ -155,7 +155,7 @@
   <div class="hero-checks" id="homeTrustItems">
     <span>20+ Years of Group Travel</span>
     <span>Flexible Payment Plans</span>
-    <span>24/7 Trip Support</span>
+    <span>Support Before, During &amp; After</span>
   </div>
   <div class="cta-group">
     <a href="/trips" class="btn-primary" id="homeMainCta">Explore Our Trips →</a><a href="/request-travel" class="btn-ghost">Request Travel →</a>
@@ -247,7 +247,7 @@
         </div>
         <div class="faq-item">
           <h3>How does the spin wheel discount work?</h3>
-          <p>Click "Spin for My Discount" anywhere on the site. After spinning, enter your name and email to submit the result. Our team confirms eligibility and redemption details before any discount is applied.</p>
+          <p>Spin &amp; Save uses TRV's live prize wheel. The server issues the result, and eligible prize codes are emailed after you opt in. Codes are subject to expiration, trip restrictions, inventory, and availability.</p>
         </div>
         <div class="faq-item">
           <h3>Can I travel solo or do I need a group?</h3>
@@ -259,7 +259,7 @@
         </div>
         <div class="faq-item">
           <h3>How do I get notified when new trips open?</h3>
-          <p>Click "Join the Interest List" on any upcoming trip or <a href="/signup" style="color:#7c3aed;font-weight:600">create a free account</a>. You'll be first to know when booking opens — with exclusive early-bird pricing.</p>
+          <p><a href="/signup" style="color:#7c3aed;font-weight:600">Create a free TRV account</a> and opt in to TRV updates, then check the Trips page for current experiences and any promotional offers that are actually available.</p>
         </div>
       </div>
     </div>
@@ -269,7 +269,7 @@
 
 <div class="cta-bottom" id="spinwheel">
   <h2 id="homeBottomHeading">Ready to Make Memories?</h2>
-  <p id="homeBottomText">Spin the wheel first — win up to $500 off your trip. Then book your spot before they're gone!</p>
+  <p id="homeBottomText">Spin &amp; Save for an eligible TRV promotional offer, then explore the current trips and booking options.</p>
   <button onclick="document.getElementById('spinModal').classList.add('open')" class="btn-primary">🎡 Spin for My Discount</button>
   &nbsp;&nbsp;
   <a href="/trips" class="btn-ghost" style="display:inline-block">View All Trips →</a>
@@ -279,8 +279,8 @@
 <div id="spinModal">
   <div class="spin-box">
     <button class="spin-close" onclick="document.getElementById('spinModal').classList.remove('open')">✕</button>
-    <h2>🎡 Spin to Win!</h2>
-    <p style="font-size:14px;color:#666;margin-bottom:8px">Spin for a chance to win up to $500 off your trip!</p>
+    <h2>🎡 Spin &amp; Save</h2>
+    <p style="font-size:14px;color:#666;margin-bottom:8px">Spin the live TRV wheel for an eligible promotional offer.</p>
     <div class="wheel-wrap">
       <div class="spin-arrow">▼</div>
       <canvas id="spinCanvas" width="220" height="220"></canvas>
@@ -336,29 +336,14 @@
 import { supabase } from '/js/supabase-client.js';
 
 let segments=[
-  {label:'$50 Off',color:'#7c3aed'},{label:'$100 Off',color:'#9f67f5'},
-  {label:'$200 Off',color:'#1a0533'},{label:'Free Upgrade',color:'#c084fc'},
-  {label:'$500 Off',color:'#3b1066'},{label:'$75 Off',color:'#7c3aed'},
-  {label:'$150 Off',color:'#9f67f5'},{label:'$250 Off',color:'#1a0533'}
+  {label:'TRV Offer',color:'#7c3aed'},{label:'TRV Perk',color:'#9f67f5'},
+  {label:'Travel Extra',color:'#1a0533'},{label:'Try Again',color:'#c084fc'}
 ];
-
 const canvas=document.getElementById('spinCanvas');
 const ctx=canvas.getContext('2d');
-let angle=0,spinning=false;
-
-async function loadWheelSettings(){
-  const {data}=await supabase.from('wheel_settings')
-    .select('prize_1,prize_2,prize_3,prize_4,prize_5,prize_6,prize_7,prize_8,wheel_color_1,wheel_color_2,wheel_color_3')
-    .eq('is_active',true).limit(1).maybeSingle();
-  if(data){
-    const colors=[data.wheel_color_1||'#7c3aed',data.wheel_color_2||'#c084fc',data.wheel_color_3||'#a855f7'];
-    const configured=Array.from({length:8},(_,i)=>String(data['prize_'+(i+1)]||'').trim()).filter(Boolean);
-    if(configured.length>=2){
-      segments=configured.map((label,i)=>({label,color:colors[i%colors.length]}));
-    }
-    drawWheel(0);
-  }
-}
+let angle=0,spinning=false,spinToken='';
+const spinButton=document.getElementById('spinBtn');
+spinButton.disabled=true;
 
 function drawWheel(rot){
   const cx=110,cy=110,r=106,arc=2*Math.PI/segments.length;
@@ -368,39 +353,68 @@ function drawWheel(rot){
     ctx.arc(cx,cy,r,rot+i*arc,rot+(i+1)*arc);
     ctx.closePath();ctx.fillStyle=s.color;ctx.fill();
     ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
-    ctx.save();ctx.translate(cx,cy);
-    ctx.rotate(rot+(i+0.5)*arc);
-    ctx.textAlign='right';ctx.fillStyle='#fff';
-    ctx.font='bold 13px Segoe UI,Arial,sans-serif';
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(rot+(i+.5)*arc);
+    ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font='bold 13px Segoe UI,Arial,sans-serif';
     ctx.fillText(s.label,r-10,5);ctx.restore();
   });
   ctx.beginPath();ctx.arc(cx,cy,18,0,2*Math.PI);
-  ctx.fillStyle='#fff';ctx.fill();
-  ctx.strokeStyle='#7c3aed';ctx.lineWidth=3;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#7c3aed';ctx.lineWidth=3;ctx.stroke();
 }
 
-window.spinWheel=function(){
-  if(spinning)return;
-  spinning=true;
-  document.getElementById('spinBtn').disabled=true;
-  const extra=Math.random()*2*Math.PI;
-  const total=10*2*Math.PI+extra;
-  const dur=4000;const start=performance.now();
-  const startAngle=angle;
+async function loadWheelSettings(){
+  const {data}=await supabase.from('wheel_settings')
+    .select('prize_1,prize_2,prize_3,prize_4,prize_5,prize_6,prize_7,prize_8,inventory_1,inventory_2,inventory_3,inventory_4,inventory_5,inventory_6,inventory_7,inventory_8,wheel_color_1,wheel_color_2,wheel_color_3')
+    .eq('is_active',true).limit(1).maybeSingle();
+  if(!data){
+    spinButton.textContent='PRIZES CURRENTLY UNAVAILABLE';
+    drawWheel(0);
+    return;
+  }
+  const colors=[data.wheel_color_1||'#7c3aed',data.wheel_color_2||'#c084fc',data.wheel_color_3||'#a855f7'];
+  const configured=Array.from({length:8},(_,i)=>{
+    const slot=i+1,label=String(data['prize_'+slot]||'').trim(),inventory=data['inventory_'+slot];
+    return {label,available:label&&(inventory==null||Number(inventory)>0)};
+  }).filter(x=>x.available);
+  if(configured.length<2){
+    spinButton.disabled=true;spinButton.textContent='PRIZES CURRENTLY UNAVAILABLE';
+    drawWheel(0);return;
+  }
+  segments=configured.map((x,i)=>({label:x.label,color:colors[i%colors.length]}));
+  spinButton.disabled=false;spinButton.textContent='SPIN!';
+  drawWheel(0);
+}
+
+window.spinWheel=async function(){
+  if(spinning||spinButton.disabled)return;
+  spinning=true;spinButton.disabled=true;spinButton.textContent='SPINNING…';
+  document.getElementById('spinResult').classList.remove('show');
+  spinToken='';
+  const {data,error}=await supabase.functions.invoke('spin-wheel',{body:{}});
+  if(error||!data?.ok||!data?.token){
+    spinning=false;spinButton.disabled=false;spinButton.textContent='SPIN!';
+    alert(data?.error||'Spin & Save is unavailable right now. Please try again.');return;
+  }
+  const idx=segments.findIndex(s=>s.label===data.prize);
+  if(idx<0){
+    spinning=false;spinButton.disabled=false;spinButton.textContent='SPIN!';
+    alert('The prize wheel changed. Please refresh and spin again.');return;
+  }
+  spinToken=data.token;
+  const arc=2*Math.PI/segments.length;
+  const target=-Math.PI/2-(idx+.5)*arc;
+  const current=((angle%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  const targetNorm=((target%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  const delta=(targetNorm-current+2*Math.PI)%(2*Math.PI);
+  const total=10*2*Math.PI+delta,start=performance.now(),startAngle=angle;
   function animate(now){
-    const t=Math.min((now-start)/dur,1);
-    const ease=1-Math.pow(1-t,4);
-    angle=startAngle+total*ease;
-    drawWheel(angle);
-    if(t<1){requestAnimationFrame(animate);}
+    const t=Math.min((now-start)/4000,1),ease=1-Math.pow(1-t,4);
+    angle=startAngle+total*ease;drawWheel(angle);
+    if(t<1)requestAnimationFrame(animate);
     else{
       spinning=false;
-      const arc=2*Math.PI/segments.length;
-      const norm=(((-angle%(2*Math.PI))+2*Math.PI)%(2*Math.PI));
-      const idx=Math.floor(norm/arc)%segments.length;
-      document.getElementById('prizeText').textContent=segments[idx].label;
+      document.getElementById('prizeText').textContent=data.prize;
       document.getElementById('spinResult').classList.add('show');
-      document.getElementById('spinBtn').disabled=false;
+      spinButton.disabled=false;spinButton.textContent='SPIN AGAIN';
     }
   }
   requestAnimationFrame(animate);
@@ -410,26 +424,25 @@ window.claimCode=async function(){
   const name=document.getElementById('claimName').value.trim();
   const email=document.getElementById('claimEmail').value.trim();
   const optedIn=document.getElementById('claimOptIn').checked;
-  const prize=document.getElementById('prizeText').textContent.trim();
+  if(!spinToken){alert('Please spin the live wheel first.');return;}
   if(!name||!email){alert('Please enter your name and email.');return;}
-  if(!optedIn){alert('You must subscribe to the TRV VIP list to receive your prize code.');return;}
-
+  if(!optedIn){alert('Please check the subscription box to receive a prize code.');return;}
   const button=document.querySelector('#spinResult .claim-form button');
-  button.disabled=true; button.textContent='Sending your code…';
-  const tripInterest=new URLSearchParams(location.search).get('trip') || 'All TRV Group Trips';
+  button.disabled=true;button.textContent='Sending your code…';
+  const tripInterest=new URLSearchParams(location.search).get('trip')||'All TRV Group Trips';
   const {data,error}=await supabase.functions.invoke('vip-signup',{body:{
-    name,email,source:'spin_wheel',trip_interest:tripInterest,spin_prize:prize,opted_in:true
+    name,email,source:'spin_wheel',trip_interest:tripInterest,spin_token:spinToken,opted_in:true
   }});
   if(error||!data?.ok){
     alert(data?.error||'Something went wrong. Please try again.');
-    button.disabled=false; button.textContent='🎟️ Subscribe & Claim My Code';
-    return;
+    button.disabled=false;button.textContent='🎟️ Subscribe & Claim My Code';return;
   }
-  const expiry=data.expires_at ? new Date(data.expires_at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}) : '';
+  spinToken='';
+  const expiry=data.expires_at?new Date(data.expires_at).toLocaleString([], {dateStyle:'medium',timeStyle:'short'}):'';
   document.getElementById('spinResult').innerHTML=
-    '<h3>🎊 You’re on the VIP list!</h3>'+
-    (data.code?'<p style="color:#555;font-size:14px">Your prize code is <strong>'+data.code+'</strong>.<br>It expires '+expiry+'. We also emailed it to you through The Real Vacations.</p>':
-    '<p style="color:#555;font-size:14px">You’re subscribed to the TRV VIP list. This spin did not issue a prize code.</p>')+
+    '<h3>🎊 Your TRV result is recorded.</h3>'+
+    (data.code?'<p style="color:#555;font-size:14px">Your code is <strong>'+data.code+'</strong>.'+(expiry?'<br>It expires '+expiry+'.':'')+' Check your email for the same details.</p>':
+    '<p style="color:#555;font-size:14px">You are subscribed. This spin did not issue a prize code.</p>')+
     '<p><a href="/trips" style="color:#7c3aed;font-weight:700">Browse group trips →</a></p>';
 };
 
