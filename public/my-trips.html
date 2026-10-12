@@ -169,7 +169,7 @@ if (user) {
       const ownShare = currentMember ? '<div class="member-row"><div><strong>Your individual share</strong><small>' + escapeHtml(String(currentMember.share_status||'pending').replaceAll('_', ' ')) + '</small></div><div><strong>' + (currentMember.share_total == null ? 'Not assigned' : money(currentMember.share_total)) + '</strong><small>' + money(currentMember.share_paid) + ' paid · ' + money(Math.max(0,Number(currentMember.share_total||0)-Number(currentMember.share_paid||0))) + ' remaining</small></div></div>' : '';
 
       const ownPayments = currentMember ? (travelerPaymentsByMember[currentMember.membership_id] || []) : [];
-      const nextPayable = ownPayments.find(payment => ['scheduled','failed','expired'].includes(payment.status));
+      const nextPayable = ownPayments.find(payment => ['open','scheduled','failed','expired'].includes(payment.status));
       const travelerPaymentRows = ownPayments.map(payment => {
         const refunded = Number(payment.refunded_amount || 0);
         const net = Math.max(0, Number(payment.amount || 0) - refunded);
@@ -182,7 +182,11 @@ if (user) {
           action = '<span class="pending-lbl">' + (refunded >= Number(payment.amount||0) ? 'Refunded' : refunded > 0 ? 'Partially refunded' : 'Paid') + '</span>';
         } else if (payment.status === 'scheduled') {
           action = '<span class="pending-lbl">' + (currentMember?.autopay_authorized ? 'Automatic charge scheduled' : 'Scheduled') + '</span>' + (canPay ? '<br><button class="pay-button traveler-pay-button" data-group-member-payment-id="' + payment.group_member_payment_id + '">Pay early</button>' : '');
-        } else if (payment.status === 'open' || payment.status === 'processing' || payment.status === 'pending') {
+        } else if (payment.status === 'open') {
+          action = canPay
+            ? '<span class="pending-lbl">Checkout started</span><br><button class="pay-button traveler-pay-button" data-group-member-payment-id="' + payment.group_member_payment_id + '">Resume checkout</button>'
+            : '<span class="pending-lbl">Checkout started</span>';
+        } else if (payment.status === 'processing' || payment.status === 'pending') {
           action = '<span class="pending-lbl">Processing</span>';
         } else if (canPay) {
           action = '<button class="pay-button traveler-pay-button" data-group-member-payment-id="' + payment.group_member_payment_id + '">Retry securely</button>';
