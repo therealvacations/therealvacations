@@ -130,10 +130,10 @@
 
             <div class="contact-form-section" id="contact-form">
                 <h2>Send Us a Message</h2>
-                <form class="contact-form" action="https://formspree.io/f/xgonqlyk" method="POST">
+                <form class="contact-form" id="trvContactForm">
                     <div class="form-group">
                         <label for="name">Full Name *</label>
-                        <input type="text" id="name" name="name" required>
+                        <input type="text" id="name" name="full_name" required>
                     </div>
                     <div class="form-group">
                         <label for="email">Email Address *</label>
@@ -145,7 +145,7 @@
                     </div>
                     <div class="form-group">
                         <label for="trip">Interested Trip</label>
-                        <select id="trip" name="trip">
+                        <select id="trip" name="trip_interest">
                             <option value="">Choose a topic (optional)</option>
                             <option value="group-trip">Current or upcoming group trip</option>
                             <option value="custom">Custom vacation / private group</option>
@@ -157,14 +157,15 @@
                     </div>
                     <div class="form-group">
                         <label for="travelers">Number of Travelers</label>
-                        <input type="number" id="travelers" name="travelers" min="1" placeholder="How many people?">
+                        <input type="number" id="travelers" name="num_travelers" min="1" placeholder="How many people?">
                     </div>
                     <div class="form-group">
                         <label for="message">Message *</label>
                         <textarea id="message" name="message" required placeholder="Tell us about your travel plans, questions, or special requests..."></textarea>
                     </div>
-                    <input type="hidden" name="source" value="">
+                    <input type="text" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
                     <button type="submit" class="submit-button">Send Message →</button>
+                    <p id="contactFormStatus" style="margin-top:12px;font-weight:600"></p>
                 </form>
             </div>
         </div>
@@ -173,12 +174,14 @@
     <div class="newsletter-section">
         <h2>Stay In The Loop</h2>
         <p>Get early access to new trips, special offers, and travel updates from The Real Vacations.</p>
-        <form class="newsletter-form" action="https://formspree.io/f/xzdjlraj" method="POST">
+        <form class="newsletter-form" id="trvNewsletterForm">
+            <input type="text" name="name" placeholder="Your name" required>
             <input type="email" name="email" placeholder="Your email address" required>
-            <input type="hidden" name="source" value="contact-page-newsletter">
+            <label style="display:flex;align-items:flex-start;gap:8px;width:100%;font-size:12px;color:#e9d5ff;text-align:left"><input type="checkbox" name="opted_in" required style="width:auto;min-width:auto;margin-top:3px"> Yes, send me TRV trip updates, announcements, promotional offers, and travel deals. I can unsubscribe anytime.</label>
             <button type="submit">Join the Fam →</button>
+            <p id="newsletterStatus" style="width:100%;font-size:13px;font-weight:700"></p>
         </form>
-        <p class="newsletter-note">🔒 Unsubscribe anytime. Your info is never shared.</p>
+        <p class="newsletter-note">🔒 Unsubscribe anytime. Your information is not sold to advertisers.</p>
     </div>
 
     <footer>
@@ -214,6 +217,52 @@
     </footer>
 
     <script type="module" src="/js/site-settings.js"></script>
+    <script type="module">
+      import { supabase } from '/js/supabase-client.js';
+
+      const contactForm=document.getElementById('trvContactForm');
+      contactForm?.addEventListener('submit',async(e)=>{
+        e.preventDefault();
+        const button=contactForm.querySelector('button[type="submit"]');
+        const status=document.getElementById('contactFormStatus');
+        button.disabled=true; button.textContent='Sending…'; status.textContent='';
+        try{
+          const payload=Object.fromEntries(new FormData(contactForm).entries());
+          const response=await fetch('/api/submit-contact',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+          const data=await response.json().catch(()=>({}));
+          if(!response.ok) throw new Error(data.error||'Your message could not be sent.');
+          contactForm.reset();
+          status.textContent='Message received ✓ TRV has it in the Admin inbox.';
+        }catch(err){
+          status.textContent=err.message||'Your message could not be sent.';
+        }finally{
+          button.disabled=false; button.textContent='Send Message →';
+        }
+      });
+
+      const newsletterForm=document.getElementById('trvNewsletterForm');
+      newsletterForm?.addEventListener('submit',async(e)=>{
+        e.preventDefault();
+        const button=newsletterForm.querySelector('button[type="submit"]');
+        const status=document.getElementById('newsletterStatus');
+        button.disabled=true; button.textContent='Joining…'; status.textContent='';
+        const values=Object.fromEntries(new FormData(newsletterForm).entries());
+        const {data,error}=await supabase.functions.invoke('vip-signup',{body:{
+          name:String(values.name||'').trim(),
+          email:String(values.email||'').trim().toLowerCase(),
+          source:'contact_page_newsletter',
+          trip_interest:'General TRV Updates',
+          opted_in:!!values.opted_in
+        }});
+        if(error||!data?.ok){
+          status.textContent=data?.error||error?.message||'Could not subscribe right now.';
+          button.disabled=false; button.textContent='Join the Fam →'; return;
+        }
+        newsletterForm.reset();
+        status.textContent='You’re subscribed ✓ Check your email for confirmation.';
+        button.disabled=false; button.textContent='Join the Fam →';
+      });
+    </script>
     <script>
         (function() {
             var params = new URLSearchParams(window.location.search);
