@@ -172,7 +172,7 @@ async function renderQuoteOptionCards(){
   const selected=currentOptionId();
   box.innerHTML=opts.map((o,index)=>{
     const active=o.option_id===selected;
-    return '<button type="button" class="quote-option-card" data-option-id="'+esc(o.option_id)+'" style="text-align:left;padding:14px;border-radius:12px;border:2px solid '+(active?'#7c3aed':'#e5dcec')+';background:'+(active?'#f5f3ff':'#fff')+';cursor:pointer"><strong style="display:block;color:#4A1D6A">Option '+(index+1)+'</strong><span style="display:block;font-weight:700;margin-top:3px">'+esc(o.name)+'</span><span class="hint" style="display:block;margin-top:6px">'+(counts[o.option_id]||0)+' saved item(s) · '+money(o.total_amount||0)+(o.deposit_amount!=null?' · Deposit '+money(o.deposit_amount):' · Pay in full')+'</span></button>';
+    return '<button type="button" class="quote-option-card" data-option-id="'+esc(o.option_id)+'" style="text-align:left;padding:14px;border-radius:12px;border:2px solid '+(active?'#7c3aed':'#e5dcec')+';background:'+(active?'#f5f3ff':'#fff')+';cursor:pointer"><strong style="display:block;color:#4A1D6A">Option '+(index+1)+'</strong><span style="display:block;font-weight:700;margin-top:3px">'+esc(o.name)+'</span><span class="hint" style="display:block;margin-top:6px">'+(counts[o.option_id]||0)+' saved item(s) · '+money(o.total_amount||0)+(o.deposit_amount!=null?' · Deposit '+money(o.deposit_amount):' · Pay in full')+' · '+(o.pricing_display_mode==='package'?'TRV Package':'Itemized')+'</span></button>';
   }).join('');
   box.querySelectorAll('.quote-option-card').forEach(btn=>btn.onclick=()=>{
     $('#quoteOptionSelect').value=btn.dataset.optionId;
@@ -198,23 +198,43 @@ async function loadOptionDeposit(){
   const option=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===currentOptionId());
   const input=$('#quoteOptionDeposit');
   if(input) input.value=option?.deposit_amount==null?'':(Number(option.deposit_amount)/100).toFixed(2);
+  if($('#quoteOptionPricingMode')) $('#quoteOptionPricingMode').value=option?.pricing_display_mode||'itemized';
+  if($('#quotePackageTotal')) $('#quotePackageTotal').value=option?.package_total_amount==null?'':(Number(option.package_total_amount)/100).toFixed(2);
 }
-async function saveOptionDeposit(){
+async function saveOptionPricing(){
   const optionId=currentOptionId();
   if(!optionId) return toast('Choose a quote option first.',true);
-  const raw=$('#quoteOptionDeposit')?.value.trim()||'';
-  const cents=raw===''?null:Math.round(Number(raw)*100);
   const option=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===optionId);
-  if(cents!=null && (!Number.isFinite(cents)||cents<0)) return toast('Enter a valid deposit amount.',true);
-  if(cents!=null && Number(option?.total_amount||0)>0 && cents>Number(option.total_amount)) return toast('Deposit cannot be greater than the option total.',true);
-  const {error}=await supabase.from('travel_quote_options').update({deposit_amount:cents,updated_at:new Date().toISOString()}).eq('option_id',optionId);
+  const mode=$('#quoteOptionPricingMode')?.value||'itemized';
+  const depRaw=$('#quoteOptionDeposit')?.value.trim()||'';
+  const deposit=depRaw===''?null:Math.round(Number(depRaw)*100);
+  const packageRaw=$('#quotePackageTotal')?.value.trim()||'';
+  const packageTotal=packageRaw===''?null:Math.round(Number(packageRaw)*100);
+  if(deposit!=null&&(!Number.isFinite(deposit)||deposit<0)) return toast('Enter a valid deposit amount.',true);
+  if(mode==='package'&&(packageTotal==null||!Number.isFinite(packageTotal)||packageTotal<=0)) return toast('Enter the TRV package selling total.',true);
+  if(mode==='itemized'&&deposit!=null&&Number(option?.total_amount||0)>0&&deposit>Number(option.total_amount)) return toast('Deposit cannot exceed the option total.',true);
+
+  if(mode==='package'&&option?.comparison_option_id){
+    const comparison=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===option.comparison_option_id);
+    if(comparison?.total_amount>0&&packageTotal>=comparison.total_amount){
+      return toast('The TRV package must be lower than its itemized comparison total.',true);
+    }
+  }
+
+  const {error}=await supabase.from('travel_quote_options').update({
+    pricing_display_mode:mode,
+    package_total_amount:mode==='package'?packageTotal:null,
+    deposit_amount:deposit,
+    updated_at:new Date().toISOString()
+  }).eq('option_id',optionId);
   if(error) return toast(error.message,true);
+  await supabase.rpc('recalculate_quote_option_totals',{p_option_id:optionId});
   await refreshQuoteOptionsFromDatabase(optionId);
   await loadOptionDeposit();
-  toast(cents==null?'Deposit cleared. This option will require payment in full.':'Option deposit saved.');
+  toast(mode==='package'?'TRV package pricing saved.':'Itemized pricing saved.');
 }
-$('#saveOptionDepositButton')?.addEventListener('click',saveOptionDeposit);
-$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();renderQuoteOptionCards();loadQuoteItems();loadOptionDeposit();const o=(currentQuote?.travel_quote_options||[]).find(x=>x.option_id===currentOptionId());if($('#quotePackageTotal'))$('#quotePackageTotal').value=o?.package_total_amount==null?'':(Number(o.package_total_amount)/100).toFixed(2);});
+$('#saveOptionPricingButton')?.addEventListener('click',saveOptionPricing);
+$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();renderQuoteOptionCards();loadQuoteItems();loadOptionDeposit();});
 async function loadQuoteItems(){
   const list=$('#quoteItemList'); if(!list) return;
   const optionId=currentOptionId();
@@ -496,9 +516,6 @@ function openRequest(r,quoteId=null){
   $('#quoteTitle').value=currentQuote?.title || (r.destination ? r.destination+' — The Real Vacations Quote' : 'Your TRV Travel Quote');
   $('#quoteSummary').value=currentQuote?.summary||'';
   $('#quoteValidUntil').value=currentQuote?.valid_until ? currentQuote.valid_until.slice(0,10) : '';
-  if($('#quotePricingDisplayMode')) $('#quotePricingDisplayMode').value=currentQuote?.pricing_display_mode||'itemized';
-  const activePackageOption=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===currentOptionId())||(currentQuote?.travel_quote_options||[])[0];
-  if($('#quotePackageTotal')) $('#quotePackageTotal').value=activePackageOption?.package_total_amount==null?'':(Number(activePackageOption.package_total_amount)/100).toFixed(2);
   $('#quoteOptions').value=(currentQuote?.travel_quote_options||[]).sort((a,b)=>a.sort_order-b.sort_order).map(o=>[o.name,o.description||''].filter((value,index)=>index===0||value).join(' | ')).join('\n');
   renderQuoteOptionChoices();
 
@@ -564,6 +581,57 @@ async function duplicateCurrentOption(){
 }
 $('#duplicateQuoteOptionButton')?.addEventListener('click',duplicateCurrentOption);
 
+async function createPackageFromCurrentOption(){
+  if(!currentQuote) return toast('Open a quote first.',true);
+  const sourceId=currentOptionId();
+  const source=(currentQuote.travel_quote_options||[]).find(o=>o.option_id===sourceId);
+  if(!source) return toast('Choose the itemized option you want to package.',true);
+  if((source.pricing_display_mode||'itemized')!=='itemized') return toast('Start from an itemized comparison option.',true);
+
+  const {data:items,error:itemError}=await supabase.from('travel_quote_items').select('*').eq('option_id',sourceId).eq('builder_managed',true).order('sort_order');
+  if(itemError) return toast(itemError.message,true);
+  if(!(items||[]).length) return toast('Add the comparison items first.',true);
+
+  const name=prompt('Package option name:','TRV Package — Best Value');
+  if(!name) return;
+  const suggested=Math.max(0,Number(source.total_amount||0)-100);
+  const entered=prompt('Enter the TRV package selling total. It must be lower than the itemized comparison total of '+money(source.total_amount||0)+':',suggested?(suggested/100).toFixed(2):'');
+  if(entered===null) return;
+  const packageTotal=Math.round(Number(entered)*100);
+  if(!Number.isFinite(packageTotal)||packageTotal<=0) return toast('Enter a valid package total.',true);
+  if(Number(source.total_amount||0)>0&&packageTotal>=Number(source.total_amount)) return toast('The package total must be lower than the itemized comparison total.',true);
+
+  const {data:newOption,error}=await supabase.from('travel_quote_options').insert({
+    quote_id:currentQuote.quote_id,
+    name:name.trim(),
+    description:'Same requested trip components presented as a TRV package/best-value option. Individual component prices remain Admin-only.',
+    sort_order:Math.max(-1,...(currentQuote.travel_quote_options||[]).map(o=>Number(o.sort_order)||0))+1,
+    total_amount:packageTotal,
+    package_total_amount:packageTotal,
+    pricing_display_mode:'package',
+    comparison_option_id:sourceId,
+    deposit_amount:null,
+    is_recommended:true,
+    details:{package_strategy:'best_value',comparison_option_id:sourceId},
+    allow_mix_and_match:false
+  }).select('*').single();
+  if(error) return toast(error.message,true);
+
+  const copies=(items||[]).map(({item_id,created_at,updated_at,...i})=>({...i,option_id:newOption.option_id,builder_managed:true}));
+  if(copies.length){
+    const {error:copyError}=await supabase.from('travel_quote_items').insert(copies);
+    if(copyError) return toast('Package option created, but its component records could not be copied: '+copyError.message,true);
+  }
+
+  await supabase.rpc('recalculate_quote_option_totals',{p_option_id:newOption.option_id});
+  await refreshQuoteOptionsFromDatabase(newOption.option_id);
+  $('#quoteOptionSelect').value=newOption.option_id;
+  await loadOptionDeposit();
+  await loadQuoteItems();
+  toast('TRV package option created from the itemized comparison.');
+}
+$('#createPackageOptionButton')?.addEventListener('click',createPackageFromCurrentOption);
+
 async function saveRequesterEmail(showMessage=true){
   if(!currentRequest){
     if(showMessage) toast('Select a travel request first.',true);
@@ -623,23 +691,31 @@ async function saveQuote(publish=false){
   if(publish && currentQuote?.quote_id){
     const optionIds=(currentQuote.travel_quote_options||[]).map(o=>o.option_id).filter(Boolean);
     if(optionIds.length){
-      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,title,category,supplier_id,rate_source_url,amount,selection_rule,admin_notes,builder_managed').in('option_id',optionIds).eq('builder_managed',true);
+      const {data:items,error:sourceCheckError}=await supabase.from('travel_quote_items').select('item_id,option_id,title,category,supplier_id,rate_source_url,amount,selection_rule,admin_notes,builder_managed').in('option_id',optionIds).eq('builder_managed',true);
       if(sourceCheckError) return toast('Could not verify quote-item suppliers: '+sourceCheckError.message,true);
       const hasDocumentedSupplierChoices=i=>!i.supplier_id&&['choose_one','optional'].includes(i.selection_rule)&&/CHOICE A|TWO SUPPLIER|supplier choice/i.test(String(i.admin_notes||''));
       const missingSupplier=(items||[]).filter(i=>!i.supplier_id&&!isInternalFeeItem(i.category,i.title)&&!hasDocumentedSupplierChoices(i));
       if(missingSupplier.length) return toast('Every quote item must have its supplier/source before publishing. Missing: '+missingSupplier.map(i=>i.title).join(', '),true);
       const missingRateSource=(items||[]).filter(i=>!isInternalFeeItem(i.category,i.title)&&!i.rate_source_url);
       if(missingRateSource.length) return toast('Every supplier item needs its live Rate Source URL before publishing. Missing: '+missingRateSource.map(i=>i.title).join(', '),true);
-      if(($('#quotePricingDisplayMode')?.value||'itemized')==='itemized'){
-        const pending=(items||[]).filter(i=>!isInternalFeeItem(i.category,i.title)&&i.amount==null);
-        if(pending.length) return toast('Enter the refreshed live rate for every item before publishing. Pending: '+pending.map(i=>i.title).join(', '),true);
+      for(const opt of currentQuote.travel_quote_options||[]){
+        const optionItems=(items||[]).filter(i=>i.option_id===opt.option_id);
+        if((opt.pricing_display_mode||'itemized')==='itemized'){
+          const pending=optionItems.filter(i=>!isInternalFeeItem(i.category,i.title)&&i.amount==null);
+          if(pending.length) return toast('Enter the refreshed live rate for every item in '+opt.name+'. Pending: '+pending.map(i=>i.title).join(', '),true);
+        }else{
+          if(!Number(opt.package_total_amount||0)) return toast('Enter the TRV package total for '+opt.name+' before publishing.',true);
+          if(opt.comparison_option_id){
+            const compare=(currentQuote.travel_quote_options||[]).find(x=>x.option_id===opt.comparison_option_id);
+            if(compare?.total_amount>0&&Number(opt.package_total_amount)>=Number(compare.total_amount)) return toast(opt.name+' must be priced below its itemized comparison option.',true);
+          }
+        }
       }
     }
   }
   const options=parseOptions(); if(!$('#quoteTitle').value.trim()||!options.length) return toast('Add a quote title and at least one option.',true);
   const valid=$('#quoteValidUntil').value ? new Date($('#quoteValidUntil').value+'T23:59:59').toISOString() : null;
-  const pricingDisplayMode=$('#quotePricingDisplayMode')?.value||'itemized';
-  const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',workflow_status:publish?'published':(currentQuote?.workflow_status==='admin_review'?'admin_review':'draft'),valid_until:valid,ready_at:publish?new Date().toISOString():null,pricing_display_mode:pricingDisplayMode};
+  const qPayload={request_id:currentRequest.request_id,title:$('#quoteTitle').value.trim(),summary:$('#quoteSummary').value.trim()||null,status:publish?'ready':'draft',workflow_status:publish?'published':(currentQuote?.workflow_status==='admin_review'?'admin_review':'draft'),valid_until:valid,ready_at:publish?new Date().toISOString():null};
   let quoteId=$('#quoteId').value;
   let existingOptions=[];
   if(quoteId){
@@ -649,21 +725,17 @@ async function saveQuote(publish=false){
     const {data,error}=await supabase.from('travel_quotes').insert({...qPayload,total_amount:0,deposit_amount:null}).select('quote_id').single(); if(error) return toast(error.message,true);
     quoteId=data.quote_id; $('#quoteId').value=quoteId;
   }
-  const selectedPackageOptionId=currentOptionId();
   for(let i=0;i<options.length;i++){
     const existingOption=existingOptions[i]||null;
-    const isSelectedPackageOption=existingOption?.option_id
-      ? existingOption.option_id===selectedPackageOptionId
-      : (!selectedPackageOptionId && i===0);
-    const packageRaw=isSelectedPackageOption?($('#quotePackageTotal')?.value.trim()||''):'';
-    const enteredPackageTotal=packageRaw===''?null:Math.round(Number(packageRaw)*100);
-    if(pricingDisplayMode==='package' && isSelectedPackageOption && enteredPackageTotal!=null && (!Number.isFinite(enteredPackageTotal)||enteredPackageTotal<=0)) return toast('Enter a valid package total.',true);
-    const packageTotal=pricingDisplayMode==='package'
-      ? (isSelectedPackageOption ? enteredPackageTotal : (existingOption?.package_total_amount??null))
-      : null;
-    const payload={...options[i],quote_id:quoteId,package_total_amount:packageTotal};
-    if(existingOptions[i]?.option_id){
-      const {error}=await supabase.from('travel_quote_options').update(payload).eq('option_id',existingOptions[i].option_id);
+    const payload={
+      ...options[i],
+      quote_id:quoteId,
+      pricing_display_mode:existingOption?.pricing_display_mode||'itemized',
+      package_total_amount:existingOption?.package_total_amount??null,
+      comparison_option_id:existingOption?.comparison_option_id??null
+    };
+    if(existingOption?.option_id){
+      const {error}=await supabase.from('travel_quote_options').update(payload).eq('option_id',existingOption.option_id);
       if(error) return toast(error.message,true);
     }else{
       const {error}=await supabase.from('travel_quote_options').insert({...payload,total_amount:0,deposit_amount:null});
@@ -762,7 +834,6 @@ $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
   window.dispatchEvent(new CustomEvent('trv:request-cleared'));
   ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','memberAccountNewEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','quotePackageTotal','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
-  if($('#quotePricingDisplayMode')) $('#quotePricingDisplayMode').value='itemized';
   if($('#fulfillmentFee')) $('#fulfillmentFee').value='0.00';
   if($('#fulfillmentStatus')) $('#fulfillmentStatus').textContent='Select a request to view payment readiness.';
   if($('#openConfirmedPaymentLink')){$('#openConfirmedPaymentLink').style.display='none';$('#openConfirmedPaymentLink').href='#';}
