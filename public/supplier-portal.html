@@ -43,14 +43,30 @@ if(!user){location.replace('/login?next='+encodeURIComponent('/supplier-portal')
     else if(!rows?.length){document.getElementById('assignments').innerHTML='<p class="muted">No assignments have been shared with you yet.</p>';}
     else {
       document.getElementById('assignments').innerHTML=rows.map(r=>
-        '<div class="record"><strong>'+esc(r.service_type||'Supplier assignment')+'</strong><br>'+
+        '<form class="record supplier-assignment-form" data-id="'+r.assignment_id+'"><strong>'+esc(r.service_type||'Supplier assignment')+'</strong><br>'+
         (r.description?'<span>'+esc(r.description)+'</span><br>':'')+
-        '<span>Status: '+esc(r.status)+'</span><br>'+
         '<span>Supplier amount: '+money(r.supplier_subtotal)+'</span>'+
-        (r.confirmation_details?'<br><span>Confirmation: '+esc(r.confirmation_details)+'</span>':'')+
-        (r.supplier_reference?'<br><span>Reference: '+esc(r.supplier_reference)+'</span>':'')+
-        '</div>'
+        (r.taxes_fees?'<br><span>Taxes/fees: '+money(r.taxes_fees)+'</span>':'')+
+        '<div class="field"><label>Status</label><select name="status"><option value="planned">Planned</option><option value="quoted">Quoted</option><option value="confirmed">Confirmed</option><option value="paid">Paid</option><option value="cancelled">Cancelled</option></select></div>'+
+        '<div class="field"><label>Confirmation details / number</label><textarea name="confirmation_details" placeholder="Confirmation number, ticket/reference details, supplier confirmation notes...">'+esc(r.confirmation_details||'')+'</textarea></div>'+
+        '<div class="field"><label>Supplier reference</label><input name="supplier_reference" value="'+esc(r.supplier_reference||'')+'" placeholder="Supplier cart, reservation, invoice, or booking reference"></div>'+
+        '<button type="submit">Save Assignment Update</button><p class="muted save-msg"></p>'+
+        '</form>'
       ).join('');
+      rows.forEach(r=>{const form=document.querySelector('.supplier-assignment-form[data-id="'+r.assignment_id+'"]');if(form)form.elements.status.value=r.status||'planned';});
+      document.querySelectorAll('.supplier-assignment-form').forEach(form=>form.addEventListener('submit',async e=>{
+        e.preventDefault();const btn=form.querySelector('button'),msg=form.querySelector('.save-msg');btn.disabled=true;msg.textContent='Saving…';
+        const {data:{session}}=await supabase.auth.getSession();
+        const values=Object.fromEntries(new FormData(form).entries());
+        const response=await fetch('https://lqdflvnkiskzmvvknmmh.supabase.co/functions/v1/supplier-update-assignment',{
+          method:'POST',
+          headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+          body:JSON.stringify({assignment_id:form.dataset.id,status:values.status,confirmation_details:values.confirmation_details,supplier_reference:values.supplier_reference})
+        });
+        const data=await response.json().catch(()=>({}));
+        msg.textContent=response.ok?'Saved ✓':(data.error||'Update could not be saved.');
+        btn.disabled=false;
+      }));
     }
   }
 }
