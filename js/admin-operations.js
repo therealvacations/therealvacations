@@ -29,9 +29,9 @@ async function loadWheel(){
   renderWheelPreview();
 }
 function renderWheelPreview(){
-  const active=[]; for(let i=1;i<=8;i++){const v=$('#wheelPrize'+i)?.value.trim(); if(v)active.push(v);}
+  const active=[]; for(let i=1;i<=8;i++){const v=$('#wheelPrize'+i)?.value.trim(); if(v)active.push({slot:i,label:v,inventory:$('#wheelInventory'+i)?.value??''});}
   const box=$('#wheelPreview'); if(!box)return;
-  box.innerHTML='<div class="admin-record"><h3>'+(($('#wheelActive')?.checked)?'Wheel is active':'Wheel is OFF')+'</h3><p class="record-summary">'+(active.length?active.map((v,i)=>{const inv=$('#wheelInventory'+(i+1))?.value;return (i+1)+'. '+esc(v)+' · '+(inv===''?'Unlimited':esc(inv)+' remaining');}).join('<br>'):'No active prize slices.')+'</p><p>'+active.length+' configured prize'+(active.length===1?'':'s')+'</p></div>';
+  box.innerHTML='<div class="admin-record"><h3>'+(($('#wheelActive')?.checked)?'Wheel is active':'Wheel is OFF')+'</h3><p class="record-summary">'+(active.length?active.map(x=>x.slot+'. '+esc(x.label)+' · '+(x.inventory===''?'Unlimited':esc(x.inventory)+' remaining')).join('<br>'):'No active prize slices.')+'</p><p>'+active.length+' configured prize'+(active.length===1?'':'s')+'</p></div>';
 }
 $('#wheelForm')?.addEventListener('input',renderWheelPreview);
 $('#wheelForm')?.addEventListener('submit',async e=>{
