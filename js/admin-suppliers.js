@@ -112,10 +112,6 @@ $('#supplierForm')?.addEventListener('submit',async e=>{
   resetSupplier(); await loadSuppliers();
 });
 $('#supplierReset')?.addEventListener('click',resetSupplier);
-document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.tab==='suppliers')loadSuppliers();}));
-if(new URLSearchParams(location.search).get('tab')==='suppliers') loadSuppliers();
-
-
 function resetAssignment(){
   $('#supplierAssignmentForm')?.reset();
   if($('#supplierAssignmentId')) $('#supplierAssignmentId').value='';
