@@ -79,9 +79,18 @@ export default async function handler(req, res) {
       if (clean(body.authorization_signer_name).length < 2) {
         return res.status(422).json({ error: 'Type your full legal name as your electronic signature.' });
       }
-      if (/within-72-hours|within-5-days/i.test(clean(body.urgency)) &&
-          !truthy(body.expedited_fee_acknowledged)) {
+      const expedited=/within-72-hours|within-5-days/i.test(clean(body.urgency));
+      if (expedited && !truthy(body.expedited_fee_acknowledged)) {
         return res.status(422).json({ error: 'Please acknowledge the expedited-service fee policy for last-minute travel.' });
+      }
+      if (expedited) {
+        const allowed=new Set(['Flight','Hotel','Rental Car']);
+        const disallowed=(body.services_needed||[]).map(clean).filter(Boolean).filter(service=>!allowed.has(service));
+        if (disallowed.length) {
+          return res.status(422).json({
+            error: 'Expedited requests are limited to Flight, Hotel, and Rental Car. Choose Standard for cruise, tickets/attractions, or full custom/group planning.'
+          });
+        }
       }
     }
 
