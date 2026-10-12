@@ -80,14 +80,16 @@ if (user) {
   const money = (value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format((Number(value) || 0) / 100);
 
   const vipContainer=document.getElementById('vipMembershipContainer');
-  const {data:vipMembership,error:vipMembershipError}=await supabase.from('vip_memberships').select('status,billing_plan,trial_ends_at,paid_through,stripe_customer_id,stripe_subscription_id').eq('user_id',user.id).maybeSingle();
+  const {data:vipMembership,error:vipMembershipError}=await supabase.from('vip_memberships').select('status,billing_plan,trial_ends_at,paid_through,stripe_customer_id,stripe_subscription_id,qualifying_booking_id').eq('user_id',user.id).maybeSingle();
   if(vipMembershipError){
     vipContainer.innerHTML='<div class="request-card"><p>Your VIP membership status is temporarily unavailable.</p></div>';
   }else if(!vipMembership||!['active','trialing'].includes(vipMembership.status)){
     vipContainer.innerHTML='<div class="request-card"><div class="trip-header"><div><h3>TRV Vacationers VIP</h3><p>Private travel perks, member-only offers, and VIP experiences.</p></div><span class="status status-pending">Not active</span></div><a class="btn" href="/vip">View VIP Membership →</a></div>';
   }else{
     const plan=vipMembership.billing_plan==='annual'?'Annual · $129.99/year':'Monthly · $15.99/month';
-    const status=vipMembership.status==='trialing'?'7-day trial active':'VIP active';
+    const status=vipMembership.status==='trialing'
+      ? (vipMembership.billing_plan==='annual'&&vipMembership.qualifying_booking_id?'2-month Group Trip VIP benefit active':'VIP trial active')
+      : 'VIP active';
     const date=vipMembership.status==='trialing'&&vipMembership.trial_ends_at
       ? 'Trial ends '+new Date(vipMembership.trial_ends_at).toLocaleDateString()
       : vipMembership.paid_through ? 'Current period through '+new Date(vipMembership.paid_through).toLocaleDateString() : '';
