@@ -159,3 +159,132 @@ if (settings) {
   const aboutCta = document.querySelector('#aboutCtaButton')
   if (aboutCta) { if (about.cta_label) aboutCta.textContent = about.cta_label; if (about.cta_url) aboutCta.href = about.cta_url }
 }
+
+
+if (session) {
+  let lastClientError = null;
+  const rememberError = (message, source = 'browser') => {
+    const safe = String(message || '').slice(0, 1000);
+    if (!safe) return;
+    lastClientError = { message: safe, source, at: new Date().toISOString() };
+    try { sessionStorage.setItem('trv_last_client_error', JSON.stringify(lastClientError)); } catch {}
+  };
+  window.addEventListener('error', (event) => rememberError(event.message, 'window.error'));
+  window.addEventListener('unhandledrejection', (event) => rememberError(event.reason?.message || event.reason || 'Unhandled promise rejection', 'unhandledrejection'));
+  try {
+    const stored = sessionStorage.getItem('trv_last_client_error');
+    if (stored) lastClientError = JSON.parse(stored);
+  } catch {}
+
+  const style = document.createElement('style');
+  style.textContent = `
+    #trvReportProblemButton{position:fixed;right:18px;bottom:18px;z-index:9998;border:0;background:#1a0533;color:#fff;border-radius:999px;padding:11px 16px;font:700 13px/1.2 'DM Sans',sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.22);cursor:pointer}
+    #trvIssueBackdrop{position:fixed;inset:0;z-index:9999;background:rgba(15,6,32,.72);display:none;align-items:center;justify-content:center;padding:18px}
+    #trvIssueBackdrop.open{display:flex}
+    #trvIssueDialog{width:min(620px,100%);background:#fff;color:#2f2540;border-radius:20px;padding:24px;box-shadow:0 28px 80px rgba(0,0,0,.4)}
+    #trvIssueDialog h2{margin:0 0 6px;color:#1a0533;font-size:24px}
+    #trvIssueDialog p{color:#6d6377;font-size:13px;line-height:1.5}
+    #trvIssueDialog label{display:block;font-weight:800;font-size:12px;color:#1a0533;margin:14px 0 6px}
+    #trvIssueDialog input,#trvIssueDialog textarea{width:100%;border:1px solid #d9cfe2;border-radius:10px;padding:11px 12px;font:inherit;color:#2f2540;background:#fff}
+    #trvIssueDialog textarea{min-height:135px;resize:vertical}
+    #trvIssueActions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+    #trvIssueActions button{border:0;border-radius:999px;padding:10px 16px;font-weight:800;cursor:pointer}
+    #trvIssueCancel{background:#eee8f3;color:#4a3a57}
+    #trvIssueSubmit{background:#7c3aed;color:#fff}
+    #trvIssueStatus{min-height:20px;margin-top:10px;font-size:13px;font-weight:700}
+    @media(max-width:600px){#trvReportProblemButton{right:12px;bottom:12px}#trvIssueDialog{padding:20px}}
+  `;
+  document.head.appendChild(style);
+
+  const button = document.createElement('button');
+  button.id = 'trvReportProblemButton';
+  button.type = 'button';
+  button.textContent = 'Report a Problem';
+
+  const backdrop = document.createElement('div');
+  backdrop.id = 'trvIssueBackdrop';
+  backdrop.innerHTML = `
+    <div id="trvIssueDialog" role="dialog" aria-modal="true" aria-labelledby="trvIssueTitleText">
+      <h2 id="trvIssueTitleText">Report a Problem</h2>
+      <p>Tell TRV what you were trying to do and what happened. The current page and technical context are attached automatically.</p>
+      <label for="trvIssueTitle">Short title</label>
+      <input id="trvIssueTitle" maxlength="180" placeholder="Example: Publish & Email did not send">
+      <label for="trvIssueDescription">What happened?</label>
+      <textarea id="trvIssueDescription" maxlength="5000" placeholder="What did you click, what did you expect, and what happened instead?"></textarea>
+      <div id="trvIssueStatus" aria-live="polite"></div>
+      <div id="trvIssueActions">
+        <button id="trvIssueCancel" type="button">Cancel</button>
+        <button id="trvIssueSubmit" type="button">Submit Report</button>
+      </div>
+    </div>
+  `;
+  document.body.append(button, backdrop);
+
+  const closeIssue = () => backdrop.classList.remove('open');
+  button.addEventListener('click', () => {
+    document.getElementById('trvIssueStatus').textContent = '';
+    backdrop.classList.add('open');
+    setTimeout(() => document.getElementById('trvIssueTitle')?.focus(), 30);
+  });
+  document.getElementById('trvIssueCancel')?.addEventListener('click', closeIssue);
+  backdrop.addEventListener('click', (event) => { if (event.target === backdrop) closeIssue(); });
+
+  document.getElementById('trvIssueSubmit')?.addEventListener('click', async () => {
+    const title = document.getElementById('trvIssueTitle').value.trim();
+    const description = document.getElementById('trvIssueDescription').value.trim();
+    const status = document.getElementById('trvIssueStatus');
+    const submit = document.getElementById('trvIssueSubmit');
+    if (title.length < 3 || description.length < 5) {
+      status.textContent = 'Add a short title and describe what happened.';
+      return;
+    }
+
+    const url = new URL(location.href);
+    const allowedKeys = new Set(['quote','request','booking','trip','package','group','tab','option']);
+    const related = {};
+    for (const [key,value] of url.searchParams.entries()) {
+      if (allowedKeys.has(key) && value.length <= 200) related[key] = value;
+    }
+    const pathParts = location.pathname.split('/').filter(Boolean);
+    if (pathParts[0] === 'hosts' && pathParts[1]) related.host_slug = pathParts[1];
+
+    submit.disabled = true;
+    submit.textContent = 'Submitting…';
+    status.textContent = '';
+    const { data: { session: freshSession } } = await supabase.auth.getSession();
+    try {
+      const response = await fetch('/api/report-problem', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          'authorization': 'Bearer ' + (freshSession?.access_token || '')
+        },
+        body: JSON.stringify({
+          title,
+          description,
+          page_url: location.href,
+          page_path: location.pathname,
+          page_title: document.title,
+          browser_context: {
+            user_agent: navigator.userAgent,
+            language: navigator.language,
+            viewport: { width: innerWidth, height: innerHeight },
+            last_client_error: lastClientError
+          },
+          related_context: related
+        })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Report could not be saved.');
+      status.textContent = 'Report saved ✓ Issue ' + String(data.issue_id).slice(0,8) + ' is in the TRV Issues queue.';
+      document.getElementById('trvIssueTitle').value = '';
+      document.getElementById('trvIssueDescription').value = '';
+      setTimeout(closeIssue, 1700);
+    } catch (error) {
+      status.textContent = error.message || 'Report could not be saved.';
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Submit Report';
+    }
+  });
+}
