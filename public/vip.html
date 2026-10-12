@@ -24,13 +24,22 @@ if(user){
   const {data:membership}=await supabase.from('vip_memberships').select('*').eq('user_id',user.id).maybeSingle();
   const active=membership && ((membership.status==='trialing'&&membership.trial_ends_at&&new Date(membership.trial_ends_at)>new Date()) || (membership.status==='active'&&(!membership.paid_through||new Date(membership.paid_through)>new Date())));
   if(!active){
+    const {data:qualifyingBooking}=await supabase.from('bookings')
+      .select('booking_id,status,payment_plan')
+      .eq('user_id',user.id)
+      .eq('payment_plan','installments')
+      .in('status',['pending','confirmed','partial','payment_due','overdue'])
+      .order('created_at',{ascending:false})
+      .limit(1)
+      .maybeSingle();
+    const groupAnnualBenefit=!!qualifyingBooking?.booking_id;
     statusEl.textContent='Choose your VIP plan';
     content.innerHTML=
       '<div class="card" style="margin-bottom:18px"><small>WELCOME GIFT DETAILS</small><h3>Tell us where to send your TRV welcome item.</h3><p>Every VIP member receives a TRV / The Real Vacations branded travel or lifestyle item. Your item may be a T-shirt, hat, cup/tumbler, or another nice branded item. The exact item varies.</p>'+
       '<form id="vipJoinForm"><input name="name" placeholder="Full name" required style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><input name="address1" placeholder="Street address" required style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><input name="address2" placeholder="Apt / suite (optional)" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><div style="display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px"><input name="city" placeholder="City" required style="padding:10px;border:1px solid #ddd;border-radius:8px"><input name="state" placeholder="State" required style="padding:10px;border:1px solid #ddd;border-radius:8px"><input name="postal_code" placeholder="ZIP" required style="padding:10px;border:1px solid #ddd;border-radius:8px"></div><select name="size" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"><option value="">T-shirt size — used if your welcome gift is apparel</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option></select><textarea name="note" placeholder="Delivery note (optional)" style="width:100%;padding:10px;margin:5px 0;border:1px solid #ddd;border-radius:8px"></textarea></form></div>'+
       '<div class="grid">'+
       '<article class="card"><small>MONTHLY · 7-DAY FREE TRIAL</small><h3>TRV VIP Monthly</h3><div class="price">7 days free, then $15.99/month</div><p>Private travel offers, member-only perks, popup opportunities, VIP travel content, and your TRV welcome travel/lifestyle item.</p><button class="btn join-vip" data-plan="monthly" type="button" style="border:0;cursor:pointer">Start My 7-Day Trial →</button></article>'+
-      '<article class="card"><small>ANNUAL VIP</small><h3>TRV VIP Annual</h3><div class="price">$129.99/year</div><p>Everything in TRV VIP for a full year, plus your TRV welcome travel/lifestyle item. Save $61.89 compared with paying monthly.</p><button class="btn join-vip" data-plan="annual" type="button" style="border:0;cursor:pointer">Join Annual VIP →</button></article>'+
+      '<article class="card"><small>ANNUAL VIP</small><h3>TRV VIP Annual</h3><div class="price">$129.99/year</div><p>Everything in TRV VIP for a full year, plus your TRV welcome travel/lifestyle item.'+(groupAnnualBenefit?' As an eligible Group Trip installment traveler, you receive 2 months free before annual billing begins.':' Save $61.89 compared with paying monthly.')+'</p><button class="btn join-vip" data-plan="annual" type="button" style="border:0;cursor:pointer">'+(groupAnnualBenefit?'Claim Annual VIP + 2 Free Months →':'Join Annual VIP →')+'</button></article>'+
       '<article class="card"><small>WELCOME GIFT</small><h3>A little TRV for the road.</h3><p>Both Monthly and Annual VIP members receive a branded welcome item. If your item is apparel, we’ll use the T-shirt size you entered above.</p></article>'+
       '</div>';
     document.querySelectorAll('.join-vip').forEach(button=>button.addEventListener('click',async()=>{
