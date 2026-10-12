@@ -117,6 +117,31 @@
         <div id="quoteItemList" style="margin-top:16px"></div>
 
         <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
+        <h2 style="font-size:18px">Permanent Admin Client History</h2>
+        <p class="hint"><strong>Admin only.</strong> This is the person's permanent case/account timeline. Entries stay with the client account even when a quote or request changes, is superseded, or is removed. Entries are append-only.</p>
+        <div class="field-grid">
+          <div class="field"><label for="clientHistoryType">Entry type</label><select id="clientHistoryType">
+            <option value="note">Admin Note</option>
+            <option value="client_request">Client Request / Change</option>
+            <option value="quote_created">Quote Created</option>
+            <option value="quote_revised">Quote Revised</option>
+            <option value="quote_sent">Quote Sent</option>
+            <option value="approval">Approval / Decision</option>
+            <option value="payment">Payment</option>
+            <option value="supplier_booking">Supplier Booking</option>
+            <option value="confirmation">Confirmation</option>
+            <option value="call">Call</option>
+            <option value="email">Email</option>
+            <option value="refund">Refund / Credit</option>
+          </select></div>
+          <div class="field"><label for="clientHistoryOccurredAt">Occurred at</label><input id="clientHistoryOccurredAt" type="datetime-local"/><p class="hint">Leave blank to use the current time. Use this when reconstructing older history.</p></div>
+        </div>
+        <div class="field"><label for="clientHistoryNote">Permanent case/history note</label><textarea id="clientHistoryNote" placeholder="What happened, what the client requested, what TRV changed, what was sent/approved/paid, supplier context, or why a revision was made..."></textarea></div>
+        <div class="form-actions"><button class="primary-button" id="addClientHistoryButton" type="button" disabled>Add Permanent History Entry</button></div>
+        <div id="clientHistoryStatus" class="hint">Select a client request.</div>
+        <div id="clientHistoryList" style="margin-top:16px"><div class="empty-state">Select a client request to view permanent Admin history.</div></div>
+
+        <hr style="border:0;border-top:1px solid #e8e1ef;margin:26px 0">
         <h2 style="font-size:18px">Travelers</h2>
         <p class="hint">Add the legal traveler roster for this request. Date of birth stays in Admin and the traveler record.</p>
         <input id="travelerId" type="hidden"/>
@@ -336,4 +361,4 @@
 
   window.TRVOpenAdminTab=openAdminTab;
 })();
-</script><script type="module" src="/js/admin-content.js"></script><script type="module" src="/js/admin-quotes.js"></script><script type="module" src="/js/admin-suppliers.js"></script><script type="module" src="/js/admin-hosts.js"></script><script type="module" src="/js/admin-stories.js"></script><script type="module" src="/js/admin-vip.js"></script><script type="module" src="/js/admin-operations.js"></script><script type="module" src="/js/admin-promos.js"></script></body></html>
+</script><script type="module" src="/js/admin-content.js"></script><script type="module" src="/js/admin-quotes.js"></script><script type="module" src="/js/admin-client-history.js"></script><script type="module" src="/js/admin-suppliers.js"></script><script type="module" src="/js/admin-hosts.js"></script><script type="module" src="/js/admin-stories.js"></script><script type="module" src="/js/admin-vip.js"></script><script type="module" src="/js/admin-operations.js"></script><script type="module" src="/js/admin-promos.js"></script></body></html>
