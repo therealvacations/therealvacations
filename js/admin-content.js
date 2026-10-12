@@ -570,10 +570,10 @@ async function loadCustomInvoices() {
 
   const [customResult, tripResult] = await Promise.all([
     supabase.from('custom_bookings')
-      .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
+      .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,refunded_amount,stripe_charge_id,refunded_at,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
       .order('created_at', { ascending: false }),
     supabase.from('bookings')
-      .select('booking_id,user_id,trip_id,package_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,final_payment_deadline,created_at,updated_at,trips(title,dates_start,dates_end,location),trip_packages(name),users(first_name,last_name),booking_payments(payment_id,scheduled_amount,scheduled_for,status,paid_amount,paid_at,kind,stripe_checkout_session_id,stripe_payment_intent_id,created_at),travel_group_members(membership_id,display_name,invited_email,role,status,share_total,share_paid,share_status,deposit_required,deposit_paid_at)')
+      .select('booking_id,user_id,trip_id,package_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,final_payment_deadline,created_at,updated_at,trips(title,dates_start,dates_end,location),trip_packages(name),users(first_name,last_name),booking_payments(payment_id,scheduled_amount,scheduled_for,status,paid_amount,refunded_amount,stripe_charge_id,refunded_at,paid_at,kind,stripe_checkout_session_id,stripe_payment_intent_id,created_at),travel_group_members(membership_id,display_name,invited_email,role,status,share_total,share_paid,share_status,deposit_required,deposit_paid_at)')
       .order('created_at', { ascending: false })
   ])
 
@@ -597,8 +597,10 @@ async function loadCustomInvoices() {
     const payments = (b.booking_payments || []).sort((a, d) => new Date(d.created_at) - new Date(a.created_at))
     const paymentRows = payments.length ? payments.map((p) => {
       const when = p.paid_at ? new Date(p.paid_at).toLocaleString() : (p.scheduled_for || new Date(p.created_at).toLocaleString())
-      const amount = p.status === 'succeeded' && p.paid_amount != null ? p.paid_amount : p.scheduled_amount
-      return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+esc(String(p.kind||'payment').replaceAll('_',' '))+'</strong> · '+money(amount)+' · '+esc(p.status||'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
+      const gross = p.paid_amount != null && p.paid_amount > 0 ? p.paid_amount : p.scheduled_amount
+      const refunded = Number(p.refunded_amount||0)
+      const net = Math.max(0, Number(gross||0)-refunded)
+      return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+esc(String(p.kind||'payment').replaceAll('_',' '))+'</strong> · '+money(net)+' net · '+esc(p.status||'')+(refunded?'<br><span class="hint">Gross '+money(gross)+' · Refunded '+money(refunded)+'</span>':'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
     }).join('') : '<p class="hint" style="margin-top:10px">No Stripe payment attempts recorded yet.</p>'
 
     const memberSummary = members.length
@@ -619,7 +621,8 @@ async function loadCustomInvoices() {
     const payments = (b.custom_booking_payments || []).sort((a, d) => new Date(d.created_at) - new Date(a.created_at))
     const paymentRows = payments.length ? payments.map((p) => {
       const when = p.paid_at ? new Date(p.paid_at).toLocaleString() : new Date(p.created_at).toLocaleString()
-      return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+String(p.kind||'payment').replaceAll('_',' ')+'</strong> · '+money(p.amount)+' · '+esc(p.status||'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
+      const refunded=Number(p.refunded_amount||0), net=Math.max(0,Number(p.amount||0)-refunded)
+      return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+String(p.kind||'payment').replaceAll('_',' ')+'</strong> · '+money(net)+' net · '+esc(p.status||'')+(refunded?'<br><span class="hint">Gross '+money(p.amount)+' · Refunded '+money(refunded)+'</span>':'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
     }).join('') : '<p class="hint" style="margin-top:10px">No Stripe payment attempts recorded yet.</p>'
     return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(quote.title||req.destination||'Custom quote')+(opt.name?' · '+esc(opt.name):'')+'</p></div><span class="status-badge '+esc(b.status||'')+'">'+esc(String(b.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Invoice total</span><br><strong>'+money(b.total_amount)+'</strong></div><div><span class="hint">Deposit</span><br><strong>'+(b.deposit_amount?money(b.deposit_amount):'—')+'</strong></div><div><span class="hint">Paid</span><br><strong>'+money(b.amount_paid)+'</strong></div><div><span class="hint">Balance</span><br><strong>'+money(b.balance_due)+'</strong></div></div><p class="record-summary">'+esc(req.requester_email||'')+(req.destination?' · '+esc(req.destination):'')+'</p>'+paymentRows+'<div class="record-actions" style="margin-top:12px"><a class="secondary-button" href="/proposal?quote='+encodeURIComponent(b.quote_id)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Approved Proposal</a></div></article>'
   }).join('')
