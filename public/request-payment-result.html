@@ -14,11 +14,66 @@ h1{color:#1a0533;margin:0 0 12px;font-size:34px}p{line-height:1.65;color:#6c6175
 </head>
 <body><main class="wrap"><section class="card">
 <img class="logo" src="/logo.jpeg" alt="The Real Vacations">
-<div class="check">✓</div>
-<h1>Payment submitted.</h1>
-<p>Stripe has received your secure payment. The Real Vacations is confirming the payment status now. Once confirmed, your official supplier confirmation numbers and travel credentials will be sent to the email on your TRV account.</p>
-<p>For time-sensitive travel, we may also call or text you so you have everything needed before departure.</p>
+<div class="check" id="paymentIcon">…</div>
+<h1 id="paymentTitle">Confirming payment…</h1>
+<p id="paymentDetail">TRV is securely verifying this Stripe checkout and your fulfillment record.</p>
+<div id="paymentFacts"></div>
 <a class="button" href="/my-trips">Open My TRV Trips →</a>
-<p class="note">Please do not submit the payment again unless TRV tells you the first payment did not complete.</p>
-</section></main></body>
+<p class="note" id="paymentNote">Please do not submit the payment again while this status is being verified.</p>
+</section></main>
+<script type="module">
+import { supabase } from '/js/supabase-client.js';
+
+const params=new URLSearchParams(location.search);
+const sessionId=params.get('session_id')||'';
+const icon=document.getElementById('paymentIcon');
+const title=document.getElementById('paymentTitle');
+const detail=document.getElementById('paymentDetail');
+const facts=document.getElementById('paymentFacts');
+const note=document.getElementById('paymentNote');
+const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
+
+const {data:{session}}=await supabase.auth.getSession();
+if(!session){
+  location.replace('/login?next='+encodeURIComponent(location.pathname+location.search));
+}else if(!sessionId){
+  icon.textContent='!';
+  title.textContent='Payment session missing';
+  detail.textContent='Open My TRV Trips to check your current payment and confirmation status.';
+}else{
+  try{
+    const response=await fetch('/api/confirm-request-payment',{
+      method:'POST',
+      headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+      body:JSON.stringify({session_id:sessionId})
+    });
+    const data=await response.json().catch(()=>({}));
+    if(!response.ok) throw new Error(data.error||'Payment status could not be verified.');
+    const f=data.fulfillment||{};
+    if(data.payment_status==='paid'||f.status==='paid'){
+      icon.textContent='✓';
+      title.textContent='Payment confirmed.';
+      detail.textContent='TRV received the confirmed payment. Your supplier confirmation details and travel credentials will be delivered through the normal TRV confirmation workflow.';
+      facts.innerHTML='<p><strong>Amount:</strong> '+money(f.total_amount)+'</p>'+(f.supplier_name?'<p><strong>Travel component:</strong> '+String(f.supplier_name).replace(/[<>&]/g,'')+'</p>':'');
+      note.textContent='Your payment record is now reflected in TRV. Open My TRV Trips for the current request and confirmation status.';
+    }else if(data.payment_status==='unpaid'&&data.stripe_status==='open'){
+      icon.textContent='…';
+      title.textContent='Payment is still pending.';
+      detail.textContent='Stripe has not reported this checkout as paid yet. Do not submit another payment from this page.';
+      note.textContent='Return to My TRV Trips to continue from the current payment record if needed.';
+    }else{
+      icon.textContent='↩';
+      title.textContent='Payment was not completed.';
+      detail.textContent=f.failure_message||'Stripe did not confirm a completed payment for this session.';
+      note.textContent='No new payment is being treated as paid. Open My TRV Trips for the current request status.';
+    }
+  }catch(error){
+    icon.textContent='!';
+    title.textContent='We could not confirm the payment yet.';
+    detail.textContent=error.message||'Open My TRV Trips and check the current payment status.';
+    note.textContent='Do not submit another payment unless the TRV portal shows that payment is still due.';
+  }
+}
+</script>
+</body>
 </html>
