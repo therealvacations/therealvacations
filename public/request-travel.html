@@ -321,15 +321,41 @@ saveCardButton.addEventListener('click',async()=>{
   finally{saveCardButton.disabled=false;saveCardButton.textContent='Save Secure Payment Method';}
 });
 
+const choices=[...document.querySelectorAll('[data-section]')];
+const expeditedAllowed=new Set(['Flight','Hotel','Rental Car']);
+let expeditedNotice=document.getElementById('expeditedServiceNotice');
+if(!expeditedNotice){
+  expeditedNotice=document.createElement('div');
+  expeditedNotice.id='expeditedServiceNotice';
+  expeditedNotice.className='urgent';
+  expeditedNotice.style.display='none';
+  expeditedNotice.innerHTML='<strong>Expedited request options:</strong> Travel within 5 days is limited to Flight, Hotel, and Rental Car. Choose Standard for cruises, tickets/attractions, or full custom/group planning.';
+  document.querySelector('.service-grid')?.insertAdjacentElement('afterend',expeditedNotice);
+}
+
 function syncUrgency(){
   const expedited=['within-5-days','within-72-hours'].includes(urgency.value);
   feeAck.classList.toggle('show',expedited);
   expeditedFeeAck.required=expedited;
   if(!expedited) expeditedFeeAck.checked=false;
-}
-urgency.addEventListener('change',syncUrgency);syncUrgency();
+  expeditedNotice.style.display=expedited?'block':'none';
 
-const choices=[...document.querySelectorAll('[data-section]')];
+  choices.forEach(box=>{
+    const allowed=!expedited||expeditedAllowed.has(box.value);
+    box.disabled=!allowed;
+    const label=box.closest('.service-choice');
+    if(label){
+      label.style.display=allowed?'flex':'none';
+      label.setAttribute('aria-hidden',allowed?'false':'true');
+    }
+    if(!allowed&&box.checked){
+      box.checked=false;
+    }
+  });
+  sync();
+}
+urgency.addEventListener('change',syncUrgency);
+
 function sync(){
   choices.forEach(box=>{
     const section=document.getElementById(box.dataset.section);
@@ -340,7 +366,7 @@ function sync(){
     section.querySelectorAll('[data-required]').forEach(input=>input.required=box.checked);
   });
 }
-choices.forEach(box=>box.addEventListener('change',sync));sync();
+choices.forEach(box=>box.addEventListener('change',sync));sync();syncUrgency();
 
 const customLodgingType=document.getElementById('customLodgingType');
 const customHotelBlock=document.getElementById('customHotelBlock');
@@ -369,6 +395,9 @@ form.addEventListener('submit',async e=>{
   e.preventDefault();clearError();
   const selected=choices.filter(x=>x.checked);
   if(!selected.length){showError('Choose at least one travel service so we know what you need.');return;}
+  const expedited=['within-5-days','within-72-hours'].includes(urgency.value);
+  const invalidExpedited=expedited&&selected.some(x=>!expeditedAllowed.has(x.value));
+  if(invalidExpedited){showError('Expedited requests are limited to Flight, Hotel, and Rental Car. Choose Standard for full custom/group, cruise, or ticket planning.');return;}
   if(!activeSession){showError('Sign in to your TRV account before securing this request.');return;}
   if(!savedMethod){showError('Add a secure payment method before securing this booking request.');return;}
 
