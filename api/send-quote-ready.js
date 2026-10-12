@@ -21,7 +21,7 @@ export default async function handler(req,res){
   if(!quoteId) return res.status(400).json({error:'Quote ID is required'});
 
   const {data:quote,error:quoteError}=await admin.from('travel_quotes')
-    .select('quote_id,status,travel_requests!inner(requester_email)')
+    .select('quote_id,title,request_id,status,travel_requests!inner(user_id,requester_email)')
     .eq('quote_id',quoteId).maybeSingle();
   if(quoteError||!quote) return res.status(404).json({error:'Quote not found'});
   if(quote.status!=='ready') return res.status(409).json({error:'Quote is not published'});
@@ -45,6 +45,23 @@ export default async function handler(req,res){
   if(!response.ok){
     console.error('Supabase send-email quote failure',response.status,result);
     return res.status(502).json({error:result?.error||'Quote email could not be sent'});
+  }
+
+  const request=Array.isArray(quote.travel_requests)?quote.travel_requests[0]:quote.travel_requests;
+  if(request?.user_id){
+    await admin.from('admin_client_history').insert({
+      user_id:request.user_id,
+      request_id:quote.request_id,
+      quote_id:quote.quote_id,
+      entry_type:'quote_sent',
+      note:'TRV sent the published quote to the traveler by email: '+(quote.title||'Travel Quote')+'.',
+      metadata:{channel:'email',event_id:eventId,recipient:request.requester_email},
+      occurred_at:new Date().toISOString(),
+      created_by:user.id,
+      actor_type:'admin',
+      actor_user_id:user.id,
+      actor_label:'TRV Admin'
+    });
   }
 
   return res.status(200).json({ok:true,delivered:true,duplicate:result?.duplicate===true});
