@@ -131,6 +131,19 @@ if (user) {
     }).join('');
   }
 
+  const { data: travelerPayments, error: travelerPaymentsError } = await supabase
+    .from('travel_group_member_payments')
+    .select('group_member_payment_id,membership_id,group_id,booking_id,kind,amount,currency,status,refunded_amount,scheduled_for,payment_number,paid_at,refunded_at,failure_code,failure_message')
+    .eq('user_id', user.id)
+    .order('scheduled_for', { ascending: true, nullsFirst: false });
+
+  if (travelerPaymentsError) console.error('Unable to load traveler payment schedule:', travelerPaymentsError.message);
+  const travelerPaymentsByMember = (travelerPayments || []).reduce((map, payment) => {
+    if (!map[payment.membership_id]) map[payment.membership_id] = [];
+    map[payment.membership_id].push(payment);
+    return map;
+  }, {});
+
   const { data: groups, error: groupsError } = await supabase
     .from('travel_groups')
     .select('*, travel_group_members(*)')
@@ -153,8 +166,36 @@ if (user) {
         return '<div class="member-row"><div><strong>' + escapeHtml(label) + '</strong><small>' + escapeHtml(member.role) + ' · ' + escapeHtml(member.status) + '</small></div><div><strong>' + escapeHtml(member.share_status.replaceAll('_', ' ')) + '</strong><small>' + escapeHtml(share) + '</small></div></div>';
       }).join('');
       const inviteForm = isLeader ? '<form class="invite-form" data-group-id="' + group.group_id + '"><input name="display_name" maxlength="120" placeholder="Traveler name (optional)"><input name="invited_email" type="email" placeholder="Traveler email (optional)"><button type="submit">Create Invite Link</button></form><div class="invite-result" hidden><input readonly aria-label="Private invitation link"><button type="button" class="copy-invite">Copy</button></div><p class="group-message" aria-live="polite"></p>' : '';
-      const ownShare = !isLeader && currentMember ? '<div class="member-row"><div><strong>Your individual share</strong><small>' + escapeHtml(currentMember.share_status.replaceAll('_', ' ')) + '</small></div><div><strong>' + (currentMember.share_total == null ? 'Not assigned' : money(currentMember.share_total)) + '</strong><small>' + money(currentMember.share_paid) + ' paid</small></div></div>' : '';
-      return '<div class="group-card"><div class="trip-header"><div><h3>' + escapeHtml(group.name) + '</h3><p>' + escapeHtml(group.group_type || 'Group travel') + '</p></div><span class="status status-confirmed">' + escapeHtml(group.status) + '</span></div><div class="group-summary"><div class="group-stat"><strong>' + (isLeader ? joined + (group.target_travelers ? ' / ' + group.target_travelers : '') : 'Joined') + '</strong><span>' + (isLeader ? 'Travelers joined' : 'Membership status') + '</span></div><div class="group-stat"><strong>' + (group.target_rooms || '—') + '</strong><span>Planned rooms</span></div><div class="group-stat"><strong>' + (group.separate_payments ? 'Individual' : 'Combined') + '</strong><span>Payment setup</span></div></div>' + (isLeader ? '<div class="section-title">Traveler status & shares</div>' + memberRows : ownShare) + inviteForm + '</div>';
+      const ownShare = currentMember ? '<div class="member-row"><div><strong>Your individual share</strong><small>' + escapeHtml(String(currentMember.share_status||'pending').replaceAll('_', ' ')) + '</small></div><div><strong>' + (currentMember.share_total == null ? 'Not assigned' : money(currentMember.share_total)) + '</strong><small>' + money(currentMember.share_paid) + ' paid · ' + money(Math.max(0,Number(currentMember.share_total||0)-Number(currentMember.share_paid||0))) + ' remaining</small></div></div>' : '';
+
+      const ownPayments = currentMember ? (travelerPaymentsByMember[currentMember.membership_id] || []) : [];
+      const nextPayable = ownPayments.find(payment => ['scheduled','failed','expired'].includes(payment.status));
+      const travelerPaymentRows = ownPayments.map(payment => {
+        const refunded = Number(payment.refunded_amount || 0);
+        const net = Math.max(0, Number(payment.amount || 0) - refunded);
+        const paid = ['succeeded','partially_refunded','refunded'].includes(payment.status);
+        const label = payment.kind === 'deposit' ? 'Traveler deposit' : 'Traveler payment ' + (payment.payment_number || '');
+        const dateText = payment.scheduled_for ? 'Due ' + escapeHtml(payment.scheduled_for) : (payment.paid_at ? 'Paid ' + new Date(payment.paid_at).toLocaleDateString() : '');
+        const canPay = nextPayable?.group_member_payment_id === payment.group_member_payment_id && payment.kind === 'installment';
+        let action = '';
+        if (paid) {
+          action = '<span class="pending-lbl">' + (refunded >= Number(payment.amount||0) ? 'Refunded' : refunded > 0 ? 'Partially refunded' : 'Paid') + '</span>';
+        } else if (payment.status === 'scheduled') {
+          action = '<span class="pending-lbl">' + (currentMember?.autopay_authorized ? 'Automatic charge scheduled' : 'Scheduled') + '</span>' + (canPay ? '<br><button class="pay-button traveler-pay-button" data-group-member-payment-id="' + payment.group_member_payment_id + '">Pay early</button>' : '');
+        } else if (payment.status === 'open' || payment.status === 'processing' || payment.status === 'pending') {
+          action = '<span class="pending-lbl">Processing</span>';
+        } else if (canPay) {
+          action = '<button class="pay-button traveler-pay-button" data-group-member-payment-id="' + payment.group_member_payment_id + '">Retry securely</button>';
+        } else {
+          action = '<span class="pending-lbl">' + escapeHtml(String(payment.status||'pending').replaceAll('_',' ')) + '</span>';
+        }
+        return '<div class="schedule-item"><div><span class="date">' + escapeHtml(label) + '</span><br><span style="font-size:12px;color:#999;">' + dateText + '</span></div><div style="text-align:right"><span class="amount ' + (paid ? 'done' : '') + '">' + money(net) + (paid && !refunded ? ' ✓' : '') + '</span>' + (refunded ? '<br><span style="font-size:11px;color:#777">Gross ' + money(payment.amount) + ' · Refunded ' + money(refunded) + '</span>' : '') + '<br>' + action + '</div></div>';
+      }).join('');
+      const paymentSchedule = group.separate_payments && currentMember
+        ? '<div class="section-title">Your traveler payment schedule</div>' + (travelerPaymentRows || '<p class="payment-message">Your traveler payment schedule will appear after your first required payment is confirmed.</p>') + (currentMember.autopay_authorized ? '<p class="payment-message"><strong>Automatic monthly payments are authorized.</strong> You can pay an installment early at any time before its automatic charge date.</p>' : '') + '<p class="group-message traveler-payment-message" aria-live="polite"></p>'
+        : '';
+
+      return '<div class="group-card"><div class="trip-header"><div><h3>' + escapeHtml(group.name) + '</h3><p>' + escapeHtml(group.group_type || 'Group travel') + '</p></div><span class="status status-confirmed">' + escapeHtml(group.status) + '</span></div><div class="group-summary"><div class="group-stat"><strong>' + (isLeader ? joined + (group.target_travelers ? ' / ' + group.target_travelers : '') : 'Joined') + '</strong><span>' + (isLeader ? 'Travelers joined' : 'Membership status') + '</span></div><div class="group-stat"><strong>' + (group.target_rooms || '—') + '</strong><span>Planned rooms</span></div><div class="group-stat"><strong>' + (group.separate_payments ? 'Individual' : 'Combined') + '</strong><span>Payment setup</span></div></div>' + (isLeader ? '<div class="section-title">Traveler status & shares</div>' + memberRows : '') + ownShare + paymentSchedule + inviteForm + '</div>';
     }).join('');
 
     document.querySelectorAll('.invite-form').forEach(form => {
@@ -194,6 +235,35 @@ if (user) {
         button.textContent = 'Copied ✓';
       });
     });
+
+    document.querySelectorAll('.traveler-pay-button').forEach(button => {
+      button.addEventListener('click', async () => {
+        const card = button.closest('.group-card');
+        const message = card?.querySelector('.traveler-payment-message');
+        button.disabled = true;
+        const original = button.textContent;
+        button.textContent = 'Opening Stripe…';
+        if (message) message.textContent = '';
+        const {data,error} = await supabase.functions.invoke('create-group-member-payment-checkout', {
+          body: { group_member_payment_id: button.dataset.groupMemberPaymentId }
+        });
+        if (error || !data?.url) {
+          if (message) message.textContent = data?.error || error?.message || 'Traveler checkout could not be started.';
+          button.disabled = false;
+          button.textContent = original;
+          return;
+        }
+        location.assign(data.url);
+      });
+    });
+
+    const travelerResult = new URLSearchParams(location.search).get('traveler_payment');
+    if (travelerResult === 'success' || travelerResult === 'cancelled') {
+      const firstMessage = document.querySelector('.traveler-payment-message');
+      if (firstMessage) firstMessage.textContent = travelerResult === 'success'
+        ? 'Stripe returned successfully. TRV is confirming your traveler payment now.'
+        : 'The traveler payment was not completed. Your current schedule remains in My Trips.';
+    }
   }
 
   const { data: requests, error: requestsError } = await supabase
