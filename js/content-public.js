@@ -217,6 +217,12 @@ async function loadTripDetail() {
   const heroImage = safeUrl(trip.cover_image_url, '')
   if (heroImage) hero.style.backgroundImage = `linear-gradient(135deg,rgba(26,5,51,.65),rgba(59,16,102,.85)),url("${heroImage.replaceAll('"', '%22')}")`
   hero.append(node('div', 'eyebrow', trip.hero_kicker || 'The Real Vacations Group Trip'), node('h1', '', trip.title), node('p', 'detail-meta', `${dateRange(trip.dates_start, trip.dates_end)} · ${trip.location}`))
+  if (trip.booking_deadline || trip.max_spots) {
+    const bookingMeta = []
+    if (trip.booking_deadline) bookingMeta.push('Booking closes ' + formatDate(trip.booking_deadline))
+    if (trip.max_spots) bookingMeta.push('Limited to ' + trip.max_spots + ' travelers')
+    hero.append(node('p', 'detail-meta', bookingMeta.join(' · ')))
+  }
 
   const overview = node('section', 'detail-section')
   overview.append(node('h2', '', 'The Experience'), node('p', 'lead', trip.description_full || trip.description_short || 'A thoughtfully curated group travel experience.'))
