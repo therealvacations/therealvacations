@@ -649,11 +649,19 @@ async function saveQuote(publish=false){
     const {data,error}=await supabase.from('travel_quotes').insert({...qPayload,total_amount:0,deposit_amount:null}).select('quote_id').single(); if(error) return toast(error.message,true);
     quoteId=data.quote_id; $('#quoteId').value=quoteId;
   }
+  const selectedPackageOptionId=currentOptionId();
   for(let i=0;i<options.length;i++){
-    const packageRaw=i===0?($('#quotePackageTotal')?.value.trim()||''):'';
-    const packageTotal=packageRaw===''?null:Math.round(Number(packageRaw)*100);
-    if(pricingDisplayMode==='package' && i===0 && (!Number.isFinite(packageTotal)||packageTotal<=0)) return toast('Enter the package total before saving a Package-mode quote.',true);
-    const payload={...options[i],quote_id:quoteId,package_total_amount:pricingDisplayMode==='package'&&i===0?packageTotal:null};
+    const existingOption=existingOptions[i]||null;
+    const isSelectedPackageOption=existingOption?.option_id
+      ? existingOption.option_id===selectedPackageOptionId
+      : (!selectedPackageOptionId && i===0);
+    const packageRaw=isSelectedPackageOption?($('#quotePackageTotal')?.value.trim()||''):'';
+    const enteredPackageTotal=packageRaw===''?null:Math.round(Number(packageRaw)*100);
+    if(pricingDisplayMode==='package' && isSelectedPackageOption && enteredPackageTotal!=null && (!Number.isFinite(enteredPackageTotal)||enteredPackageTotal<=0)) return toast('Enter a valid package total.',true);
+    const packageTotal=pricingDisplayMode==='package'
+      ? (isSelectedPackageOption ? enteredPackageTotal : (existingOption?.package_total_amount??null))
+      : null;
+    const payload={...options[i],quote_id:quoteId,package_total_amount:packageTotal};
     if(existingOptions[i]?.option_id){
       const {error}=await supabase.from('travel_quote_options').update(payload).eq('option_id',existingOptions[i].option_id);
       if(error) return toast(error.message,true);
