@@ -5,6 +5,7 @@
 <body><nav><a href="/my-trips"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"></a><div class="links"><a href="/my-trips">Member Home</a><a href="/my-trips#travel-groups">My Trips</a><a href="/request-travel">Request a Trip</a><a href="/member-book">Search & Book</a><a href="/update-payment-method">Payment Method</a><button id="logout">Logout</button></div></nav>
 <main class="wrap"><section class="card"><h1>My Profile</h1><p class="lead">Keep your contact details current so trip requests, quotes and confirmations stay connected to the right account.</p>
 <form id="profileForm"><div class="grid"><div class="field"><label for="first">First name</label><input id="first" required></div><div class="field"><label for="last">Last name</label><input id="last" required></div><div class="field"><label for="phone">Phone</label><input id="phone" type="tel"></div><div class="field"><label for="email">Current login email</label><input id="email" type="email" disabled></div><div class="field"><label for="city">City</label><input id="city"></div><div class="field"><label for="state">State</label><input id="state"></div></div>
+<div class="field"><label for="tripInterests">Travel interests</label><textarea id="tripInterests" style="width:100%;min-height:110px;padding:12px;border:1px solid #cfc4d9;border-radius:10px;font:inherit" placeholder="One per line: beach vacations, cruises, family trips..."></textarea><p class="lead" style="font-size:12px;margin:6px 0 16px">These preferences help TRV keep future recommendations relevant. They do not enroll you in marketing by themselves.</p></div>
 <button class="button" id="save" type="submit">Save Profile</button><div class="message" id="msg"></div></form>
 
 <hr style="border:0;border-top:1px solid #e3d9ec;margin:28px 0">
@@ -22,9 +23,9 @@ const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent('/member-profile'));}
 else{
   document.getElementById('email').value=user.email||'';
-  const {data,error}=await supabase.from('users').select('first_name,last_name,phone,city,state').eq('user_id',user.id).maybeSingle();
+  const {data,error}=await supabase.from('users').select('first_name,last_name,phone,city,state,trip_interests').eq('user_id',user.id).maybeSingle();
   if(error) document.getElementById('msg').textContent='Profile could not be loaded.';
-  if(data){first.value=data.first_name||'';last.value=data.last_name||'';phone.value=data.phone||'';city.value=data.city||'';state.value=data.state||'';}
+  if(data){first.value=data.first_name||'';last.value=data.last_name||'';phone.value=data.phone||'';city.value=data.city||'';state.value=data.state||'';tripInterests.value=Array.isArray(data.trip_interests)?data.trip_interests.join('\n'):'';}
 }
 const requestedEmail=new URLSearchParams(location.search).get('new_email');
 if(requestedEmail) document.getElementById('newEmail').value=requestedEmail;
@@ -59,7 +60,8 @@ document.getElementById('changeEmailButton').addEventListener('click',async()=>{
 document.getElementById('profileForm').addEventListener('submit',async e=>{
  e.preventDefault(); const btn=document.getElementById('save'),msg=document.getElementById('msg'); btn.disabled=true;msg.textContent='';
  const {data:{user}}=await supabase.auth.getUser(); if(!user){location.replace('/login?next='+encodeURIComponent('/member-profile'));return;}
- const payload={first_name:first.value.trim(),last_name:last.value.trim(),phone:phone.value.trim()||null,city:city.value.trim()||null,state:state.value.trim()||null,updated_at:new Date().toISOString()};
+ const interests=tripInterests.value.split('\n').map(v=>v.trim()).filter(Boolean).slice(0,20);
+ const payload={first_name:first.value.trim(),last_name:last.value.trim(),phone:phone.value.trim()||null,city:city.value.trim()||null,state:state.value.trim()||null,trip_interests:interests.length?interests:null,updated_at:new Date().toISOString()};
  const {error}=await supabase.from('users').update(payload).eq('user_id',user.id);
  msg.textContent=error?'Unable to save profile: '+error.message:'Profile updated successfully.'; btn.disabled=false;
 });
