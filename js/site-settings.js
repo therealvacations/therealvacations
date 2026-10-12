@@ -2,6 +2,8 @@ import { supabase } from './supabase-client.js'
 
 const { data: { session } } = await supabase.auth.getSession()
 const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
+const hostReferral = new URLSearchParams(window.location.search).get('host') || ''
+if (/^[a-z0-9-]{3,120}$/.test(hostReferral)) sessionStorage.setItem('trv_host_referral', hostReferral)
 
 const { data: settings } = await supabase.from('site_settings')
   .select('contact_email,contact_phone,contact_heading,contact_intro,business_hours,home_content,about_content,branding_content,page_content')
