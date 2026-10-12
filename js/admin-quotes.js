@@ -588,7 +588,9 @@ async function createPackageFromCurrentOption(){
   if(!source) return toast('Choose the itemized option you want to package.',true);
   if((source.pricing_display_mode||'itemized')!=='itemized') return toast('Start from an itemized comparison option.',true);
 
-  const {data:items,error:itemError}=await supabase.from('travel_quote_items').select('*').eq('option_id',sourceId).eq('builder_managed',true).order('sort_order');
+  const {data:items,error:itemError}=await supabase.from('travel_quote_items')
+    .select('*,travel_quote_item_variants(*,travel_quote_item_variant_admin(*))')
+    .eq('option_id',sourceId).eq('builder_managed',true).order('sort_order');
   if(itemError) return toast(itemError.message,true);
   if(!(items||[]).length) return toast('Add the comparison items first.',true);
 
@@ -617,10 +619,40 @@ async function createPackageFromCurrentOption(){
   }).select('*').single();
   if(error) return toast(error.message,true);
 
-  const copies=(items||[]).map(({item_id,created_at,updated_at,...i})=>({...i,option_id:newOption.option_id,builder_managed:true}));
-  if(copies.length){
-    const {error:copyError}=await supabase.from('travel_quote_items').insert(copies);
-    if(copyError) return toast('Package option created, but its component records could not be copied: '+copyError.message,true);
+  try{
+    for(const sourceItem of items||[]){
+      const {item_id:sourceItemId,created_at,updated_at,travel_quote_item_variants:sourceVariants,...itemFields}=sourceItem;
+      const {data:newItem,error:copyError}=await supabase.from('travel_quote_items').insert({
+        ...itemFields,
+        option_id:newOption.option_id,
+        builder_managed:true
+      }).select('item_id').single();
+      if(copyError||!newItem?.item_id) throw copyError||new Error('Component copy failed.');
+
+      if(itemFields.supplier_id) await syncSupplierAssignment(newItem.item_id,{...itemFields,option_id:newOption.option_id});
+
+      for(const sourceVariant of sourceVariants||[]){
+        const {variant_id:sourceVariantId,item_id,created_at:variantCreated,updated_at:variantUpdated,travel_quote_item_variant_admin:variantAdminRows,...variantFields}=sourceVariant;
+        const {data:newVariant,error:variantError}=await supabase.from('travel_quote_item_variants').insert({
+          ...variantFields,
+          item_id:newItem.item_id
+        }).select('variant_id').single();
+        if(variantError||!newVariant?.variant_id) throw variantError||new Error('Variant copy failed.');
+
+        const adminRows=Array.isArray(variantAdminRows)?variantAdminRows:(variantAdminRows?[variantAdminRows]:[]);
+        for(const adminRow of adminRows){
+          const {variant_id,created_at:adminCreated,updated_at:adminUpdated,...adminFields}=adminRow;
+          const {error:adminCopyError}=await supabase.from('travel_quote_item_variant_admin').insert({
+            ...adminFields,
+            variant_id:newVariant.variant_id
+          });
+          if(adminCopyError) throw adminCopyError;
+        }
+      }
+    }
+  }catch(copyFailure){
+    await supabase.from('travel_quote_options').delete().eq('option_id',newOption.option_id);
+    return toast('The TRV package could not be created completely, so the partial package was removed: '+(copyFailure?.message||'copy failed'),true);
   }
 
   await supabase.rpc('recalculate_quote_option_totals',{p_option_id:newOption.option_id});
