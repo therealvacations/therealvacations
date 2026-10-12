@@ -22,7 +22,7 @@ export default async function handler(req,res){
   if(!quoteId||!optionId) return res.status(422).json({error:'Quote and option are required.'});
 
   const {data:quote,error:quoteError}=await admin.from('travel_quotes')
-    .select('quote_id,request_id,status,valid_until,currency,travel_requests!inner(user_id),travel_quote_options(option_id,total_amount,deposit_amount,travel_quote_items(item_id,category,title,amount,client_visible,builder_managed,travel_quote_item_variants(variant_id,item_id,label,amount,active,is_default)))')
+    .select('quote_id,request_id,status,valid_until,currency,travel_requests!inner(user_id),travel_quote_options(option_id,total_amount,deposit_amount,pricing_display_mode,package_total_amount,travel_quote_items(item_id,category,title,amount,client_visible,builder_managed,travel_quote_item_variants(variant_id,item_id,label,amount,active,is_default)))')
     .eq('quote_id',quoteId).maybeSingle();
   if(quoteError||!quote) return res.status(404).json({error:'Quote not found'});
   const request=Array.isArray(quote.travel_requests)?quote.travel_requests[0]:quote.travel_requests;
@@ -53,7 +53,10 @@ export default async function handler(req,res){
     return sum+Math.max(0,Number(chosen?.amount??item.amount)||0);
   },0);
   const processingFee=Math.round(subtotal*0.035);
-  const total=subtotal+processingFee;
+  const calculatedItemizedTotal=subtotal+processingFee;
+  const total=(option.pricing_display_mode==='package')
+    ? Math.max(0,Number(option.package_total_amount??option.total_amount)||0)
+    : calculatedItemizedTotal;
   if(total<=0) return res.status(422).json({error:'This option does not have a valid total.'});
 
   const snapshot={};
