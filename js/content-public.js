@@ -199,7 +199,7 @@ async function loadTripDetail() {
   if (!slug) return showState(container, 'This trip link is incomplete.', 'error')
 
   const { data: trip, error } = await supabase.from('trips')
-    .select('trip_id,title,slug,hero_kicker,dates_start,dates_end,location,description_short,description_full,cover_image_url,itinerary,booking_deadline,max_spots')
+    .select('trip_id,title,slug,hero_kicker,dates_start,dates_end,location,description_short,description_full,cover_image_url,itinerary,booking_deadline,max_spots,external_info_url,external_info_label')
     .eq('slug', slug).eq('status', 'active').maybeSingle()
   if (error || !trip) return showState(container, 'This trip is not currently available.', 'error')
 
@@ -226,6 +226,22 @@ async function loadTripDetail() {
 
   const overview = node('section', 'detail-section')
   overview.append(node('h2', '', 'The Experience'), node('p', 'lead', trip.description_full || trip.description_short || 'A thoughtfully curated group travel experience.'))
+
+  const tripActions = node('div', 'trip-actions')
+  const spinLink = node('a', 'book-btn', 'Spin & Save →')
+  spinLink.href = '/spin?trip=' + encodeURIComponent(trip.slug)
+  tripActions.append(spinLink)
+  const externalUrl = safeUrl(trip.external_info_url, '')
+  if (externalUrl) {
+    const externalLink = node('a', 'book-btn secondary', trip.external_info_label || 'View Official Details →')
+    externalLink.href = externalUrl
+    if (new URL(externalUrl).origin !== window.location.origin) {
+      externalLink.target = '_blank'
+      externalLink.rel = 'noopener sponsored'
+    }
+    tripActions.append(externalLink)
+  }
+  overview.append(tripActions)
 
   const itineraryItems = renderItinerary(trip.itinerary)
   if (itineraryItems.length) {
