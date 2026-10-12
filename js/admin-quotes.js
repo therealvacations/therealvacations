@@ -788,6 +788,20 @@ async function saveQuote(publish=false){
     if(empty.length) return toast('Each quote option must contain saved client-facing proposal items before publishing. Empty: '+empty.map(o=>o.name).join(', '),true);
   }
   await supabase.from('travel_requests').update({status:publish?'quote_ready':'quote_in_progress'}).eq('request_id',currentRequest.request_id);
+  if(publish && currentRequest.user_id){
+    await supabase.from('admin_client_history').insert({
+      user_id:currentRequest.user_id,
+      request_id:currentRequest.request_id,
+      quote_id:quoteId,
+      entry_type:'quote_created',
+      note:'TRV published '+($('#quoteTitle').value.trim()||'a travel quote')+' and made it ready for traveler review.',
+      metadata:{status:'ready',workflow_status:'published',option_count:(verifiedOptions||[]).length},
+      occurred_at:new Date().toISOString(),
+      actor_type:'admin',
+      actor_user_id:(await supabase.auth.getUser()).data.user?.id||null,
+      actor_label:'TRV Admin'
+    });
+  }
   if(publish) toast('Quote published. Review it, then use Send to Client when you are ready.');
   else toast('Quote draft saved.');
   await loadRequests();
