@@ -87,6 +87,8 @@
         <div id="quoteOptionCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin:14px 0 18px"></div>
         <div class="field-grid">
           <div class="field"><label for="quoteOptionSelect">Editing option</label><select id="quoteOptionSelect"></select><p class="hint">The highlighted option card above is the option receiving any item you add or edit below.</p></div>
+          <div class="field"><label for="quoteOptionDeposit">Deposit due on approval ($)</label><input id="quoteOptionDeposit" type="number" min="0" step="0.01" placeholder="Leave blank for pay in full"/><p class="hint">This controls the initial payment only. Proposal Item pricing still controls the option total.</p></div>
+          <div class="field" style="align-self:end"><button class="secondary-button" id="saveOptionDepositButton" type="button">Save Deposit</button></div>
           <div class="field" style="align-self:end"><button class="secondary-button" id="duplicateQuoteOptionButton" type="button">Duplicate This Option</button></div>
         </div>
         <input id="quoteItemId" type="hidden"/>
