@@ -123,3 +123,84 @@ document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click
 }));
 
 buildWheelFields();
+
+
+function healthBadge(ok,labelOk='Healthy',labelBad='Needs attention'){
+  return '<span class="status-badge '+(ok?'active':'archived')+'">'+esc(ok?labelOk:labelBad)+'</span>';
+}
+
+async function loadSystemHealth(){
+  const summary=$('#systemHealthSummary');
+  const configBox=$('#systemConfigList');
+  const cronBox=$('#systemCronList');
+  const emailBox=$('#systemEmailList');
+  const webhookBox=$('#systemWebhookList');
+  if(!summary||!configBox||!cronBox||!emailBox||!webhookBox)return;
+
+  summary.innerHTML='<p>Loading live TRV system status…</p>';
+  configBox.innerHTML='<p>Loading configuration and Stripe status…</p>';
+  cronBox.innerHTML='<p>Loading scheduled jobs…</p>';
+  emailBox.innerHTML='<p>Loading email delivery…</p>';
+  webhookBox.innerHTML='<p>Loading Stripe webhook events…</p>';
+
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session){
+    summary.innerHTML='<div class="admin-record"><h3>Admin session expired</h3><p class="record-summary">Sign in again to load system health.</p></div>';
+    return;
+  }
+
+  const headers={authorization:'Bearer '+session.access_token,accept:'application/json'};
+  const [healthResponse,stripeResponse]=await Promise.all([
+    fetch('/api/config-health',{headers}),
+    fetch('/api/admin-stripe-account',{headers})
+  ]);
+  const health=await healthResponse.json().catch(()=>({}));
+  const stripe=await stripeResponse.json().catch(()=>({}));
+
+  if(!healthResponse.ok){
+    const message=health.error||'System health could not be loaded.';
+    summary.innerHTML='<div class="admin-record"><h3>Health check failed</h3><p class="record-summary">'+esc(message)+'</p></div>';
+    configBox.innerHTML=cronBox.innerHTML=emailBox.innerHTML=webhookBox.innerHTML='<div class="empty-state">Unavailable until the health endpoint responds.</div>';
+    return;
+  }
+
+  const configEntries=Object.entries(health.config||{});
+  const missingConfig=configEntries.filter(([,present])=>!present).map(([name])=>name);
+  const stripeHealthy=stripeResponse.ok&&stripe.charges_enabled===true&&stripe.payouts_enabled===true;
+  const cronRows=health.cron||[];
+  const cronHealthy=cronRows.length>0&&cronRows.every(row=>row.active===true&&row.last_status==='succeeded');
+  const emailFailed=Number(health.email_summary?.failed||0);
+  const emailHealthy=!health.email_error&&emailFailed===0;
+  const webhookHealthy=!health.stripe_webhook_error;
+  const overall=missingConfig.length===0&&stripeHealthy&&cronHealthy&&emailHealthy&&webhookHealthy;
+
+  summary.innerHTML='<div class="record-heading"><div><h3>'+esc(overall?'TRV production systems are healthy':'TRV system needs attention')+'</h3><p>Live operational snapshot · '+esc(new Date().toLocaleString())+'</p></div>'+healthBadge(overall,'Healthy','Review')+'</div>'+
+    '<p class="record-summary">Configuration: '+(missingConfig.length?'Missing '+esc(missingConfig.join(', ')):'Complete')+
+    '<br>Stripe: '+(stripeResponse.ok?(stripeHealthy?'Charges and payouts enabled':'Review Stripe account status'):'Stripe health check failed')+
+    '<br>Scheduled jobs: '+(cronHealthy?'Recent runs succeeded':'Review cron status')+
+    '<br>Recent email failures: '+emailFailed+
+    '<br>Webhook monitor: '+(webhookHealthy?'Available':'Unavailable')+'</p>';
+
+  const configCards=configEntries.map(([name,present])=>
+    '<div class="admin-record compact"><div class="record-heading"><div><h3>'+esc(name.replaceAll('_',' '))+'</h3><p>Required production configuration</p></div>'+healthBadge(!!present,'Present','Missing')+'</div></div>'
+  ).join('');
+  const stripeCard='<div class="admin-record"><div class="record-heading"><div><h3>Stripe '+esc(stripe.business_name||stripe.account_id||'Account')+'</h3><p>'+(stripeResponse.ok?esc((stripe.country||'')+' · '+(stripe.default_currency||'').toUpperCase()):esc(stripe.error||'Could not verify Stripe'))+'</p></div>'+healthBadge(stripeHealthy,'Ready','Review')+'</div>'+
+    (stripeResponse.ok?'<p class="record-summary">Account: '+esc(stripe.account_id||'—')+'<br>Charges: '+(stripe.charges_enabled?'Enabled':'Disabled')+' · Payouts: '+(stripe.payouts_enabled?'Enabled':'Disabled')+' · Mode: '+(stripe.livemode?'LIVE':'TEST')+'</p>':'')+'</div>';
+  configBox.innerHTML=stripeCard+configCards;
+
+  cronBox.innerHTML=cronRows.map(row=>{
+    const ok=row.active===true&&row.last_status==='succeeded';
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(row.jobname||('Job '+row.jobid))+'</h3><p>'+esc(row.schedule||'No schedule')+'</p></div>'+healthBadge(ok,'Succeeded','Review')+'</div><p class="record-summary">Active: '+(row.active?'Yes':'No')+'<br>Last run: '+esc(dt(row.last_start))+' → '+esc(dt(row.last_end))+(row.return_message?'<br>Result: '+esc(row.return_message):'')+'</p></div>';
+  }).join('')||'<div class="empty-state">No scheduled jobs were returned.</div>';
+
+  const emails=health.emails||[];
+  emailBox.innerHTML='<div class="admin-record"><h3>'+Number(health.email_summary?.recent||0)+' recent email deliveries</h3><p class="record-summary">Sent: '+Number(health.email_summary?.sent||0)+' · Failed: '+emailFailed+' · Pending/other: '+Number(health.email_summary?.pending||0)+'</p></div>'+
+    emails.map(row=>'<div class="admin-record compact"><div class="record-heading"><div><h3>'+esc(row.recipient_email||'Unknown recipient')+'</h3><p>'+esc(row.template_type||'email')+' · '+esc(row.subject||'')+'</p></div>'+healthBadge(row.status==='sent',row.status||'sent',row.status||'review')+'</div><p class="record-summary">Attempts: '+Number(row.attempt_count||0)+' · '+esc(dt(row.sent_at||row.attempted_at||row.created_at))+(row.last_error?'<br><strong>Error:</strong> '+esc(row.last_error):'')+'</p></div>').join('');
+
+  const webhooks=health.stripe_webhooks||[];
+  webhookBox.innerHTML=webhooks.map(row=>'<div class="admin-record compact"><div class="record-heading"><div><h3>'+esc(row.event_type||'Stripe event')+'</h3><p>'+esc(row.event_id||'')+'</p></div>'+healthBadge(true,row.livemode?'LIVE':'TEST','')+'</div><p class="record-summary">Processed: '+esc(dt(row.processed_at))+(row.payment_id?'<br>Payment: '+esc(row.payment_id):'')+'</p></div>').join('')||'<div class="empty-state">No Stripe webhook events are recorded yet.</div>';
+}
+
+$('#systemHealthRefresh')?.addEventListener('click',loadSystemHealth);
+document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.tab==='system')loadSystemHealth();}));
+if(new URLSearchParams(location.search).get('tab')==='system')loadSystemHealth();
