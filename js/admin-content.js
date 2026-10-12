@@ -805,4 +805,150 @@ $('#contactInboxForm')?.addEventListener('submit',async e=>{
 $('#contactInboxReset')?.addEventListener('click',resetContactInbox);
 document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.tab==='contact')loadContactInbox();}));
 
+
+let adminDeals=[];
+let triviaEntries=[];
+
+function resetDealForm(){
+  $('#dealForm')?.reset();
+  if($('#dealId')) $('#dealId').value='';
+  if($('#dealFormTitle')) $('#dealFormTitle').textContent='Add Deal';
+  if($('#dealCategory')) $('#dealCategory').value='flights';
+  if($('#dealIcon')) $('#dealIcon').value='✈️';
+  if($('#dealLabel')) $('#dealLabel').value='View Deal →';
+  if($('#dealSort')) $('#dealSort').value='0';
+  if($('#dealActive')) $('#dealActive').value='true';
+}
+
+function renderDealsAdmin(){
+  const list=$('#dealList'); if(!list) return;
+  list.innerHTML=adminDeals.map(d=>'<div class="admin-record"><div class="record-heading"><div><h3>'+esc(d.icon||'✨')+' '+esc(d.title)+'</h3><p>'+esc(d.category||'other')+' · order '+Number(d.sort_order||0)+'</p></div><span class="status-badge '+(d.is_active?'active':'archived')+'">'+(d.is_active?'Active':'Hidden')+'</span></div><p class="record-summary">'+esc(d.description||'')+(d.link_url?'<br><span class="hint">'+esc(d.link_url)+'</span>':'')+'</p><div class="record-actions"><button class="secondary-button edit-deal" data-id="'+d.deal_id+'" type="button">Edit</button><button class="secondary-button toggle-deal" data-id="'+d.deal_id+'" data-next="'+(!d.is_active)+'" type="button">'+(d.is_active?'Hide':'Publish')+'</button><button class="danger-button delete-deal" data-id="'+d.deal_id+'" type="button">Remove</button></div></div>').join('')||'<div class="empty-state">No deals yet.</div>';
+  document.querySelectorAll('.edit-deal').forEach(btn=>btn.onclick=()=>{
+    const d=adminDeals.find(x=>x.deal_id===btn.dataset.id); if(!d) return;
+    $('#dealId').value=d.deal_id;
+    $('#dealFormTitle').textContent='Edit Deal';
+    $('#dealTitle').value=d.title||'';
+    $('#dealDescription').value=d.description||'';
+    $('#dealCategory').value=d.category||'other';
+    $('#dealIcon').value=d.icon||'✨';
+    $('#dealUrl').value=d.link_url||'';
+    $('#dealLabel').value=d.link_label||'View Deal →';
+    $('#dealSort').value=Number(d.sort_order||0);
+    $('#dealActive').value=String(d.is_active!==false);
+    $('#dealForm').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  document.querySelectorAll('.toggle-deal').forEach(btn=>btn.onclick=async()=>{
+    const next=btn.dataset.next==='true';
+    const {error}=await supabase.from('deals').update({is_active:next}).eq('deal_id',btn.dataset.id);
+    if(error) return showMessage(error.message,'error');
+    showMessage(next?'Deal published.':'Deal hidden.');
+    await loadDealsAdmin();
+  });
+  document.querySelectorAll('.delete-deal').forEach(btn=>btn.onclick=async()=>{
+    const d=adminDeals.find(x=>x.deal_id===btn.dataset.id); if(!d) return;
+    if(!confirm('Remove deal “'+d.title+'”?')) return;
+    const {error}=await supabase.from('deals').delete().eq('deal_id',d.deal_id);
+    if(error) return showMessage(error.message,'error');
+    showMessage('Deal removed.');
+    await loadDealsAdmin();
+  });
+}
+
+async function loadDealsAdmin(){
+  const list=$('#dealList'); if(!list) return;
+  const {data,error}=await supabase.from('deals').select('*').order('sort_order').order('created_at',{ascending:false});
+  if(error){list.innerHTML='<p>'+esc(error.message)+'</p>';return;}
+  adminDeals=data||[];
+  renderDealsAdmin();
+}
+
+$('#dealForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const title=$('#dealTitle').value.trim();
+  if(!title) return showMessage('Deal title is required.','error');
+  const payload={
+    title,
+    description:$('#dealDescription').value.trim()||null,
+    category:$('#dealCategory').value||'other',
+    icon:$('#dealIcon').value.trim()||'✨',
+    link_url:$('#dealUrl').value.trim()||null,
+    link_label:$('#dealLabel').value.trim()||'View Deal →',
+    sort_order:Number($('#dealSort').value||0),
+    is_active:$('#dealActive').value==='true'
+  };
+  const id=$('#dealId').value;
+  const q=id?supabase.from('deals').update(payload).eq('deal_id',id):supabase.from('deals').insert(payload);
+  const {error}=await q;
+  if(error) return showMessage(error.message,'error');
+  showMessage(id?'Deal updated.':'Deal created.');
+  resetDealForm();
+  await loadDealsAdmin();
+});
+$('#dealReset')?.addEventListener('click',resetDealForm);
+
+function resetTriviaReview(){
+  $('#triviaReviewForm')?.reset();
+  if($('#triviaEntryId')) $('#triviaEntryId').value='';
+  if($('#triviaEntrant')) $('#triviaEntrant').value='';
+  if($('#triviaScores')) $('#triviaScores').value='';
+  if($('#triviaReviewStatus')) $('#triviaReviewStatus').value='submitted';
+}
+
+function renderTriviaEntries(){
+  const list=$('#triviaEntryList'),summary=$('#triviaSummary');
+  if(!list||!summary) return;
+  const counts=triviaEntries.reduce((m,e)=>{m[e.status]=(m[e.status]||0)+1;return m;},{});
+  summary.innerHTML='<h3>'+triviaEntries.length+' total entr'+(triviaEntries.length===1?'y':'ies')+'</h3><p class="record-summary">Submitted '+(counts.submitted||0)+' · Eligible '+(counts.eligible||0)+' · Winners '+(counts.winner||0)+' · Ineligible '+(counts.ineligible||0)+' · Disqualified '+(counts.disqualified||0)+'</p>';
+  list.innerHTML=triviaEntries.map(e=>{
+    const scores=[e.quiz_1_score,e.quiz_2_score,e.quiz_3_score].join(' / ');
+    const eligibility=[e.completed_consecutively,e.age_eligible,e.residency_eligible,e.certification_ack].every(Boolean)?'Certifications complete':'Certification issue';
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(e.full_name)+'</h3><p>'+esc(e.email)+' · '+esc(e.state_or_dc||'')+'</p></div><span class="status-badge '+(e.status==='winner'||e.status==='eligible'?'active':e.status==='ineligible'||e.status==='disqualified'?'archived':'draft')+'">'+esc(e.status)+'</span></div><p class="record-summary"><strong>Scores:</strong> '+esc(scores)+' · '+esc(eligibility)+(e.admin_notes?'<br><strong>Admin notes:</strong> '+esc(e.admin_notes):'')+'<br><span class="hint">Submitted '+esc(dt(e.submitted_at))+(e.reviewed_at?' · Reviewed '+esc(dt(e.reviewed_at)):'')+'</span></p><div class="record-actions"><button class="secondary-button review-trivia" data-id="'+e.entry_id+'" type="button">Review Entry</button><a class="secondary-button" href="mailto:'+encodeURIComponent(e.email)+'" style="text-decoration:none">Email Entrant</a></div></div>';
+  }).join('')||'<div class="empty-state">No official Travel Trivia entries yet.</div>';
+  document.querySelectorAll('.review-trivia').forEach(btn=>btn.onclick=()=>{
+    const e=triviaEntries.find(x=>x.entry_id===btn.dataset.id); if(!e) return;
+    $('#triviaEntryId').value=e.entry_id;
+    $('#triviaEntrant').value=e.full_name+' · '+e.email+' · '+(e.state_or_dc||'');
+    $('#triviaReviewStatus').value=e.status||'submitted';
+    $('#triviaScores').value=[e.quiz_1_score,e.quiz_2_score,e.quiz_3_score].join(' / ');
+    $('#triviaAdminNotes').value=e.admin_notes||'';
+    $('#triviaReviewForm').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+
+async function loadTriviaEntries(){
+  const list=$('#triviaEntryList'); if(!list) return;
+  const {data,error}=await supabase.from('travel_trivia_entries').select('*').order('submitted_at',{ascending:false});
+  if(error){list.innerHTML='<p>'+esc(error.message)+'</p>';return;}
+  triviaEntries=data||[];
+  renderTriviaEntries();
+}
+
+$('#triviaReviewForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=$('#triviaEntryId').value;
+  if(!id) return showMessage('Choose a Travel Trivia entry first.','error');
+  const status=$('#triviaReviewStatus').value;
+  const notes=$('#triviaAdminNotes').value.trim()||null;
+  const payload={
+    status,
+    admin_notes:notes,
+    reviewed_at:new Date().toISOString(),
+    reviewed_by:state.user?.id||null
+  };
+  const {error}=await supabase.from('travel_trivia_entries').update(payload).eq('entry_id',id);
+  if(error) return showMessage(error.message,'error');
+  showMessage(status==='winner'?'Travel Trivia winner recorded.':'Travel Trivia review saved.');
+  resetTriviaReview();
+  await loadTriviaEntries();
+});
+$('#triviaReviewReset')?.addEventListener('click',resetTriviaReview);
+
+document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{
+  if(btn.dataset.tab==='deals') loadDealsAdmin();
+  if(btn.dataset.tab==='trivia') loadTriviaEntries();
+}));
+const initialAdminTab=new URLSearchParams(location.search).get('tab');
+if(initialAdminTab==='deals') loadDealsAdmin();
+if(initialAdminTab==='trivia') loadTriviaEntries();
+
 initialize()
