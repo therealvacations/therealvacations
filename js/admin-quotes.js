@@ -277,7 +277,7 @@ async function syncSupplierAssignment(itemId,itemPayload){
   const assignment={
     supplier_id:itemPayload.supplier_id,
     context_type:'travel_quote',
-    request_id:currentRequest?.request_id||null,
+    request_id:null,
     quote_id:currentQuote?.quote_id||$('#quoteId')?.value||null,
     quote_item_id:itemId,
     service_type:itemPayload.category||null,
