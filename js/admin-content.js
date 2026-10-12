@@ -568,17 +568,20 @@ async function loadCustomInvoices() {
   if (!box) return
   box.innerHTML = '<p>Loading approved quote invoices and group-trip bookings…</p>'
 
-  const [customResult, tripResult] = await Promise.all([
+  const [customResult, tripResult, travelerPaymentResult] = await Promise.all([
     supabase.from('custom_bookings')
       .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,refunded_amount,stripe_charge_id,refunded_at,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
       .order('created_at', { ascending: false }),
     supabase.from('bookings')
       .select('booking_id,user_id,trip_id,package_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,final_payment_deadline,created_at,updated_at,trips(title,dates_start,dates_end,location),trip_packages(name),users(first_name,last_name),booking_payments(payment_id,scheduled_amount,scheduled_for,status,paid_amount,refunded_amount,stripe_charge_id,refunded_at,paid_at,kind,stripe_checkout_session_id,stripe_payment_intent_id,created_at),travel_group_members(membership_id,display_name,invited_email,role,status,share_total,share_paid,share_status,deposit_required,deposit_paid_at)')
+      .order('created_at', { ascending: false }),
+    supabase.from('travel_group_member_payments')
+      .select('group_member_payment_id,membership_id,group_id,booking_id,user_id,kind,amount,currency,status,refunded_amount,scheduled_for,payment_number,stripe_checkout_session_id,stripe_payment_intent_id,stripe_charge_id,paid_at,refunded_at,failure_code,failure_message,created_at,travel_group_members(display_name,invited_email,role,share_total,share_paid,share_status,travel_groups(name,trips(title)))')
       .order('created_at', { ascending: false })
   ])
 
-  if (customResult.error || tripResult.error) {
-    const message = customResult.error?.message || tripResult.error?.message || 'Payments could not be loaded.'
+  if (customResult.error || tripResult.error || travelerPaymentResult.error) {
+    const message = customResult.error?.message || tripResult.error?.message || travelerPaymentResult.error?.message || 'Payments could not be loaded.'
     box.innerHTML = '<div class="admin-record"><h3>Payments could not be loaded</h3><p class="record-summary">'+esc(message)+'</p></div>'
     return
   }
@@ -611,6 +614,21 @@ async function loadCustomInvoices() {
   }).join('')
 
   sections.push('<div style="margin-bottom:24px"><h2 style="font-size:18px;margin:0 0 12px">Group Trip Bookings</h2>'+(tripHtml||'<div class="empty-state">No group-trip bookings yet.</div>')+'</div>')
+
+  const travelerPayments = travelerPaymentResult.data || []
+  const travelerPaymentHtml = travelerPayments.map((p) => {
+    const member = Array.isArray(p.travel_group_members) ? p.travel_group_members[0] : p.travel_group_members || {}
+    const group = Array.isArray(member.travel_groups) ? member.travel_groups[0] : member.travel_groups || {}
+    const trip = Array.isArray(group.trips) ? group.trips[0] : group.trips || {}
+    const traveler = member.display_name || member.invited_email || 'Traveler'
+    const refunded = Number(p.refunded_amount || 0)
+    const net = Math.max(0, Number(p.amount || 0) - refunded)
+    const timing = p.paid_at ? 'Paid '+new Date(p.paid_at).toLocaleString() : p.scheduled_for ? 'Due '+p.scheduled_for : 'Created '+new Date(p.created_at).toLocaleString()
+    const stripeRef = p.stripe_payment_intent_id || p.stripe_charge_id || p.stripe_checkout_session_id || ''
+    return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(traveler)+'</h3><p>'+esc(trip.title||group.name||'Group Trip')+' · '+esc(String(p.kind||'payment').replaceAll('_',' '))+(p.payment_number?' '+esc(p.payment_number):'')+'</p></div><span class="status-badge '+esc(p.status||'')+'">'+esc(String(p.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Payment</span><br><strong>'+money(p.amount)+'</strong></div><div><span class="hint">Refunded</span><br><strong>'+money(refunded)+'</strong></div><div><span class="hint">Net</span><br><strong>'+money(net)+'</strong></div><div><span class="hint">Traveler share</span><br><strong>'+money(member.share_paid||0)+' / '+money(member.share_total||0)+'</strong></div></div><p class="record-summary">'+esc(timing)+(stripeRef?'<br><strong>Stripe:</strong> '+esc(stripeRef):'')+(p.failure_message?'<br><strong>Failure:</strong> '+esc(p.failure_message):'')+'<br><strong>Payment ID:</strong> '+esc(p.group_member_payment_id)+'</p></article>'
+  }).join('')
+
+  sections.push('<div style="margin-bottom:24px"><h2 style="font-size:18px;margin:0 0 12px">Individual Traveler Payment Ledger</h2>'+(travelerPaymentHtml||'<div class="empty-state">No individual traveler payment rows yet.</div>')+'</div>')
 
   const bookings = customResult.data || []
   const customHtml = bookings.map((b) => {
