@@ -13,8 +13,7 @@ export function safePortalPath(value) {
     '/update-payment-method',
     '/supplier-portal',
     '/host',
-    '/host-center',
-    '/admin'
+    '/host-center'
   ]).has(value)) return value
   try {
     const parsed = new URL(value, window.location.origin)
