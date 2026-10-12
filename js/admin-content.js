@@ -806,6 +806,7 @@ $('#contactInboxReset')?.addEventListener('click',resetContactInbox);
 document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.tab==='contact')loadContactInbox();}));
 
 
+// Deals and Travel Trivia Admin workflows
 let adminDeals=[];
 let triviaEntries=[];
 
