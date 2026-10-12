@@ -723,4 +723,61 @@ $('#logoutButton').addEventListener('click', async () => { await supabase.auth.s
 $('#tripTitle').addEventListener('blur', () => { if (!$('#tripSlug').value) $('#tripSlug').value = slugify($('#tripTitle').value) })
 $('#blogTitle').addEventListener('blur', () => { if (!$('#blogSlug').value) $('#blogSlug').value = slugify($('#blogTitle').value) })
 
+
+let contactInbox=[];
+
+function resetContactInbox(){
+  if(!$('#contactInboxForm')) return;
+  $('#contactInboxForm').reset();
+  $('#contactSubmissionId').value='';
+  $('#contactSubmissionFrom').value='';
+  $('#contactSubmissionStatus').value='new';
+}
+
+function renderContactInbox(){
+  const list=$('#contactInboxList'); if(!list) return;
+  list.innerHTML=contactInbox.map(row=>{
+    const who=row.full_name||row.email||'Website visitor';
+    const meta=[row.email,row.phone,row.trip_interest,row.num_travelers?row.num_travelers+' traveler'+(row.num_travelers===1?'':'s'):null].filter(Boolean).join(' · ');
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(who)+'</h3><p>'+esc(meta)+'</p></div><span class="status-badge '+(row.status==='resolved'?'active':row.status==='archived'?'archived':'draft')+'">'+esc(String(row.status||'new').replaceAll('_',' '))+'</span></div><p class="record-summary" style="white-space:pre-wrap">'+esc(row.message||'')+(row.internal_notes?'<br><br><strong>Admin notes:</strong> '+esc(row.internal_notes):'')+'<br><span class="hint">Received '+esc(dt(row.created_at))+(row.resolved_at?' · Resolved '+esc(dt(row.resolved_at)):'')+'</span></p><div class="record-actions"><button class="secondary-button edit-contact-message" data-id="'+row.submission_id+'" type="button">Manage Message</button><a class="secondary-button" href="mailto:'+encodeURIComponent(row.email)+'" style="text-decoration:none">Reply by Email</a></div></div>';
+  }).join('')||'<div class="empty-state">No website messages yet.</div>';
+  document.querySelectorAll('.edit-contact-message').forEach(btn=>btn.onclick=()=>{
+    const row=contactInbox.find(x=>x.submission_id===btn.dataset.id); if(!row) return;
+    $('#contactSubmissionId').value=row.submission_id;
+    $('#contactSubmissionFrom').value=(row.full_name||'')+' · '+(row.email||'');
+    $('#contactSubmissionStatus').value=row.status||'new';
+    $('#contactSubmissionNotes').value=row.internal_notes||'';
+    $('#contactInboxForm').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+}
+
+async function loadContactInbox(){
+  const list=$('#contactInboxList'); if(!list) return;
+  const {data,error}=await supabase.from('contact_submissions').select('*').order('created_at',{ascending:false}).limit(200);
+  if(error){list.innerHTML='<p>'+esc(error.message)+'</p>';return;}
+  contactInbox=data||[];
+  renderContactInbox();
+}
+
+$('#contactInboxForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=$('#contactSubmissionId').value;
+  if(!id) return showMessage('Choose a contact message first.','error');
+  const existing=contactInbox.find(x=>x.submission_id===id);
+  const status=$('#contactSubmissionStatus').value;
+  const payload={
+    status,
+    internal_notes:$('#contactSubmissionNotes').value.trim()||null,
+    updated_at:new Date().toISOString(),
+    resolved_at:status==='resolved'?(existing?.resolved_at||new Date().toISOString()):null
+  };
+  const {error}=await supabase.from('contact_submissions').update(payload).eq('submission_id',id);
+  if(error) return showMessage(error.message,'error');
+  showMessage('Contact inbox updated.');
+  resetContactInbox();
+  await loadContactInbox();
+});
+$('#contactInboxReset')?.addEventListener('click',resetContactInbox);
+document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.tab==='contact')loadContactInbox();}));
+
 initialize()
