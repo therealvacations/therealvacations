@@ -88,6 +88,36 @@
       "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027.html",
       "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": false
+    },
+    {
+      "source": "/quote-builder.html",
+      "destination": "/admin?tab=quotes",
+      "permanent": true
+    },
+    {
+      "source": "/real_vacations_quote_tool.html",
+      "destination": "/admin?tab=quotes",
+      "permanent": true
+    },
+    {
+      "source": "/travel-quote-builder.jsx",
+      "destination": "/admin?tab=quotes",
+      "permanent": true
+    },
+    {
+      "source": "/trv-travel-system.jsx",
+      "destination": "/admin?tab=quotes",
+      "permanent": true
+    },
+    {
+      "source": "/forms-custom-trips.html",
+      "destination": "/custom-trip-form",
+      "permanent": true
+    },
+    {
+      "source": "/forms-last-minute-travel.html",
+      "destination": "/request-travel",
+      "permanent": true
     }
   ],
   "headers": [
