@@ -76,12 +76,23 @@ const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
 if (user) {
-  const { data: trip, error } = await supabase.from('trips').select('trip_id,title,dates_start,trip_packages(*)').eq('slug', slug).eq('status', 'active').maybeSingle();
+  const { data: trip, error } = await supabase.from('trips').select('trip_id,title,dates_start,booking_deadline,max_spots,trip_packages(*)').eq('slug', slug).eq('status', 'active').maybeSingle();
   const packages = (trip?.trip_packages || []).filter(item => item.is_active).sort((a,b) => a.sort_order - b.sort_order);
   if (error || !trip || packages.length === 0) {
     intro.textContent = 'This trip is not currently available for online booking.';
   } else {
     intro.textContent = trip.title + ' · ' + new Date(trip.dates_start + 'T12:00:00').toLocaleDateString(undefined, {year:'numeric',month:'long',day:'numeric'});
+    if (trip.booking_deadline) {
+      const deadline = new Date(trip.booking_deadline + 'T23:59:59');
+      if (deadline < new Date()) {
+        intro.textContent += ' · Online booking is closed';
+        bookingForm.hidden = true;
+        errorBox.textContent = 'Online booking for this trip has closed. Contact The Real Vacations for assistance.';
+        throw new Error('booking_closed');
+      }
+      intro.textContent += ' · Book by ' + deadline.toLocaleDateString();
+    }
+    if (trip.max_spots) intro.textContent += ' · Limited to ' + trip.max_spots + ' travelers';
     finalPaymentDeadline = new Date(trip.dates_start + 'T12:00:00');
     finalPaymentDeadline.setDate(finalPaymentDeadline.getDate() - 60);
     const installmentsAvailable = finalPaymentDeadline > new Date();
