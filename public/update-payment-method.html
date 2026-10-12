@@ -144,7 +144,10 @@ form.addEventListener('submit', async (event) => {
     current.textContent = brand + ' ending in ' + (method.last4 || '••••') + ' · expires ' + String(method.exp_month || '').padStart(2,'0') + '/' + (method.exp_year || '');
     cardElement.clear();
     form.reset();
-    showMessage('Your payment method was updated successfully.', 'success');
+    const scheduleCount=Number(saved.updated_booking_schedules||0)+Number(saved.updated_traveler_schedules||0);
+    showMessage(scheduleCount
+      ? 'Your payment method was updated successfully and applied to '+scheduleCount+' authorized installment schedule'+(scheduleCount===1?'':'s')+'.'
+      : 'Your payment method was updated successfully.', 'success');
   } catch (error) {
     showMessage(error.message || 'Payment method could not be updated.', 'error');
   } finally {
