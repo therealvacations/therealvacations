@@ -252,7 +252,8 @@ form.addEventListener('submit', async event => {
     party_size:travelerCount,
     payment_responsibility:responsibility,
     roommates,
-    selected_addons:selectedAddons()
+    selected_addons:selectedAddons(),
+    host_referral:sessionStorage.getItem('trv_host_referral')||''
   }});
   if (error || !data?.url) {
     message.textContent = data?.error || 'Checkout could not be started. Please try again.';
