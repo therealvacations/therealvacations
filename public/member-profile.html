@@ -47,11 +47,14 @@ document.getElementById('changeEmailButton').addEventListener('click',async()=>{
   }
   button.disabled=true;
   button.textContent='Sending confirmation…';
-  const {error}=await supabase.auth.updateUser({email:newEmail});
+  const {error}=await supabase.auth.updateUser(
+    {email:newEmail},
+    {emailRedirectTo:location.origin+'/account-confirmed?next='+encodeURIComponent('/member-profile')}
+  );
   if(error){
     msg.textContent='Unable to start email change: '+error.message;
   }else{
-    msg.textContent='Confirmation sent. Your login email will change only after the required email confirmation is completed.';
+    msg.textContent='Confirmation sent. Complete the email confirmation link, then TRV will return you to My Profile.';
   }
   button.disabled=false;
   button.textContent='Send Email Change Confirmation';
