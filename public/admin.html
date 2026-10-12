@@ -221,6 +221,34 @@
     <p class="hint">Create each supplier once, then reuse that profile on any proposal, requested trip, or group trip. Supplier assignments are unlimited.</p>
     <div id="supplierList"><p>Loading suppliers…</p></div>
   </div>
+
+  <div style="grid-column:1/-1;display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr);gap:22px;align-items:start">
+    <form class="editor" id="supplierAssignmentForm">
+      <h2>Supplier Assignment / Fulfillment</h2>
+      <p class="hint">Assignments are created from quotes, requests, and group trips. Update supplier cost, taxes/fees, confirmation, and what TRV has paid the supplier here.</p>
+      <input id="supplierAssignmentId" type="hidden"/>
+      <div class="field"><label for="supplierAssignmentSummary">Assignment</label><input id="supplierAssignmentSummary" readonly placeholder="Choose an assignment from the list"/></div>
+      <div class="field-grid">
+        <div class="field"><label for="supplierAssignmentStatus">Booking status</label><select id="supplierAssignmentStatus"><option value="planned">Planned</option><option value="quoted">Quoted</option><option value="confirmed">Confirmed</option><option value="paid">Paid / ticketed</option><option value="cancelled">Cancelled</option></select></div>
+        <div class="field"><label for="supplierAssignmentVisible">Supplier visibility</label><select id="supplierAssignmentVisible"><option value="true">Visible in Supplier Portal</option><option value="false">Admin only</option></select></div>
+      </div>
+      <div class="field-grid">
+        <div class="field"><label for="supplierAssignmentSubtotal">Supplier subtotal ($)</label><input id="supplierAssignmentSubtotal" type="number" min="0" step="0.01"/></div>
+        <div class="field"><label for="supplierAssignmentTaxes">Taxes / supplier fees ($)</label><input id="supplierAssignmentTaxes" type="number" min="0" step="0.01"/></div>
+      </div>
+      <div class="field"><label for="supplierAssignmentServiceFee">TRV / service fee tracked on assignment ($)</label><input id="supplierAssignmentServiceFee" type="number" min="0" step="0.01"/></div>
+      <div class="field"><label for="supplierAssignmentConfirmation">Confirmation details</label><textarea id="supplierAssignmentConfirmation" placeholder="Confirmation number, ticket details, supplier confirmation notes..."></textarea></div>
+      <div class="field"><label for="supplierAssignmentReference">Supplier reference</label><input id="supplierAssignmentReference" placeholder="Cart, reservation, invoice, or booking reference"/></div>
+      <h3 style="color:var(--ink);margin:22px 0 12px">TRV → Supplier Payment</h3>
+      <div class="field-grid">
+        <div class="field"><label for="supplierPaymentStatus">Payment status</label><select id="supplierPaymentStatus"><option value="unpaid">Unpaid</option><option value="partial">Partially paid</option><option value="paid">Paid</option><option value="refunded">Refunded</option></select></div>
+        <div class="field"><label for="supplierAmountPaid">Amount paid to supplier ($)</label><input id="supplierAmountPaid" type="number" min="0" step="0.01"/></div>
+      </div>
+      <div class="field"><label for="supplierPaymentReference">Supplier payment reference</label><input id="supplierPaymentReference" placeholder="Transaction, invoice, card, ACH, or payment reference"/></div>
+      <div class="form-actions"><button class="primary-button" type="submit">Save Assignment</button><button class="secondary-button" id="supplierAssignmentReset" type="button">Clear</button></div>
+    </form>
+    <div class="records"><h2>Supplier Assignment Ledger</h2><p class="hint">This is Admin-only operational history. Supplier portal users see only assignments explicitly marked visible and cannot change financial fields.</p><div id="supplierAssignmentList"><p>Loading supplier assignments…</p></div></div>
+  </div>
 </section>
 <section class="admin-panel" id="hostsPanel" hidden><div class="editor"><h2>TRV Host Program</h2><p class="hint">Review Host applications, approve eligible leaders, and see membership/proposal activity. Approval creates the public Host profile; billing begins only when the approved Host activates the add-on.</p><div class="admin-record"><h3>Host membership</h3><p>$19.99/month or $149.99/year, added to active TRV VIP membership.</p></div><a class="secondary-button" href="/host" style="text-decoration:none">Open Host recruitment page →</a></div><div class="records"><h2>Host Applications</h2><div id="hostAdminList"><p>Loading Host applications…</p></div></div></section><section class="admin-panel" id="paymentsPanel" hidden>
       <div class="editor">
