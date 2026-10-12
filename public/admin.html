@@ -59,7 +59,20 @@
   <div class="records"><h2>Gallery Photos</h2><div id="galleryList"></div></div>
 </section>
 
-<section class="admin-panel" id="contactPanel" hidden><form class="editor" id="contactForm"><h2>Contact Page</h2><p class="hint">Leave the phone blank to hide it from the public site.</p><div class="field"><label for="contactEmail">Contact email</label><input id="contactEmail" type="email" required/></div><div class="field"><label for="contactPhone">Phone number</label><input id="contactPhone" type="tel" placeholder="Add when activated"/></div><div class="field"><label for="contactHeading">Page heading</label><input id="contactHeading" required/></div><div class="field"><label for="contactIntro">Intro message</label><textarea id="contactIntro" required></textarea></div><div class="field"><label for="contactHours">Business hours — one line each</label><textarea id="contactHours"></textarea></div><div class="form-actions"><button class="primary-button" type="submit">Save contact settings</button></div></form><div class="records"><h2>Current Public Contact</h2><div id="contactPreview" class="admin-record"></div></div></section><section class="admin-panel" id="quotesPanel" hidden>
+<section class="admin-panel" id="contactPanel" hidden>
+    <form class="editor" id="contactForm"><h2>Contact Page</h2><p class="hint">Leave the phone blank to hide it from the public site.</p><div class="field"><label for="contactEmail">Contact email</label><input id="contactEmail" type="email" required/></div><div class="field"><label for="contactPhone">Phone number</label><input id="contactPhone" type="tel" placeholder="Add when activated"/></div><div class="field"><label for="contactHeading">Page heading</label><input id="contactHeading" required/></div><div class="field"><label for="contactIntro">Intro message</label><textarea id="contactIntro" required></textarea></div><div class="field"><label for="contactHours">Business hours — one line each</label><textarea id="contactHours"></textarea></div><div class="form-actions"><button class="primary-button" type="submit">Save contact settings</button></div></form>
+    <div class="records"><h2>Current Public Contact</h2><div id="contactPreview" class="admin-record"></div></div>
+
+    <form class="editor" id="contactInboxForm">
+      <h2>Contact Inbox</h2>
+      <input id="contactSubmissionId" type="hidden"/>
+      <div class="field"><label for="contactSubmissionFrom">Traveler</label><input id="contactSubmissionFrom" readonly placeholder="Choose a message"/></div>
+      <div class="field"><label for="contactSubmissionStatus">Status</label><select id="contactSubmissionStatus"><option value="new">New</option><option value="in_progress">In progress</option><option value="resolved">Resolved</option><option value="archived">Archived</option></select></div>
+      <div class="field"><label for="contactSubmissionNotes">Admin-only notes</label><textarea id="contactSubmissionNotes" placeholder="Call notes, follow-up, what was answered, next step..."></textarea></div>
+      <div class="form-actions"><button class="primary-button" type="submit">Save Inbox Update</button><button class="secondary-button" id="contactInboxReset" type="button">Clear</button></div>
+    </form>
+    <div class="records"><h2>Website Messages</h2><div id="contactInboxList"><p>Loading contact messages…</p></div></div>
+  </section><section class="admin-panel" id="quotesPanel" hidden>
       <div class="editor">
         <h2 id="quoteEditorTitle">Create Client Quote</h2>
         <p class="hint">Open a travel request, add one or more client-facing options, then publish the quote to My Trips.</p>
