@@ -247,6 +247,30 @@ export default async function handler(req, res) {
       }
     }
 
+    if (bookingFlow && authenticatedUser?.id) {
+      const selectedServices=(body.services_needed||[]).map((value)=>clean(value)).filter(Boolean);
+      const note=[
+        'Traveler submitted a new TRV travel request.',
+        selectedServices.length ? 'Services: '+selectedServices.join(', ')+'.' : null,
+        clean(body.destination) ? 'Destination: '+clean(body.destination)+'.' : null,
+        clean(body.preferred_dates) ? 'Dates: '+clean(body.preferred_dates)+'.' : null,
+        clean(body.urgency) ? 'Urgency: '+clean(body.urgency)+'.' : null
+      ].filter(Boolean).join(' ');
+      await supabase.from('admin_client_history').insert({
+        user_id:authenticatedUser.id,
+        request_id:inserted.request_id,
+        quote_id:null,
+        entry_type:'client_request',
+        note,
+        metadata:{source:'request_travel',services:selectedServices,urgency:clean(body.urgency)||null},
+        occurred_at:new Date().toISOString(),
+        created_by:null,
+        actor_type:'client',
+        actor_user_id:authenticatedUser.id,
+        actor_label:fullName||'Traveler'
+      });
+    }
+
     try {
       await fetch(`${supabaseUrl}/functions/v1/send-email`, {
         method: 'POST',
