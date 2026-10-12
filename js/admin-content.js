@@ -232,7 +232,6 @@ async function saveTrip(event) {
     const packageRows = parsePackages($('#tripPackages').value)
     ensureTripAddonsField()
     const addonRows = parseAddons($('#tripAddons')?.value || '')
-    if (!packageRows.length) throw new Error('Add at least one package.')
     const itinerary = $('#tripItinerary').value.split('\n').map((line) => line.trim()).filter(Boolean)
     const payload = {
       title: $('#tripTitle').value.trim(),
@@ -250,8 +249,8 @@ async function saveTrip(event) {
       status: $('#tripStatus').value,
       is_featured: $('#tripFeatured').checked,
       sort_order: Number($('#tripSortOrder').value) || 0,
-      total_cost: Math.min(...packageRows.map((item) => item.total_amount)),
-      deposit_amount: Math.min(...packageRows.map((item) => item.deposit_amount)),
+      total_cost: packageRows.length ? Math.min(...packageRows.map((item) => item.total_amount)) : 0,
+      deposit_amount: packageRows.length ? Math.min(...packageRows.map((item) => item.deposit_amount)) : 0,
     }
     if (!payload.title || !payload.slug || !payload.dates_start || !payload.dates_end || !payload.location) throw new Error('Title, dates, and location are required.')
     if (payload.dates_end < payload.dates_start) throw new Error('End date cannot be before start date.')
@@ -275,8 +274,13 @@ async function saveTrip(event) {
       const { error } = await supabase.from('trip_packages').update({ is_active: false }).in('package_id', removedPackageIds)
       if (error) throw error
     }
-    const { error: packageError } = await supabase.from('trip_packages').upsert(packageRows.map((item) => ({ ...item, trip_id: trip.trip_id })), { onConflict: 'trip_id,code' })
-    if (packageError) throw packageError
+    if (packageRows.length) {
+      const { error: packageError } = await supabase.from('trip_packages').upsert(
+        packageRows.map((item) => ({ ...item, trip_id: trip.trip_id })),
+        { onConflict: 'trip_id,code' }
+      )
+      if (packageError) throw packageError
+    }
 
     const existingAddons = state.addons.filter((item) => item.trip_id === trip.trip_id)
     const incomingAddonCodes = new Set(addonRows.map((item) => item.code))
