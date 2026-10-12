@@ -335,14 +335,14 @@ async function saveResource(event) {
 }
 
 function resetBlogForm() {
-  $('#blogForm').reset(); $('#blogId').value = ''; $('#blogPublished').checked = false; $('#blogFormTitle').textContent = 'Add Blog Post'
+  $('#blogForm').reset(); $('#blogId').value = ''; $('#blogPublished').checked = false; $('#blogPostType').value='article'; $('#blogTripEndDate').value=''; $('#blogFormTitle').textContent = 'Add Blog Post'
 }
 
 function renderPosts() {
   const list = $('#blogList')
   list.replaceChildren(...state.posts.map((post) => {
     const card = textNode('article', 'admin-record compact')
-    card.append(textNode('h3', '', post.title), textNode('p', '', `${post.category || 'Travel'} · ${post.is_published ? 'Published' : 'Draft'}`))
+    card.append(textNode('h3', '', post.title), textNode('p', '', `${post.post_type==='trip_recap'?'Trip Recap':(post.category || 'Travel')} · ${post.is_published ? 'Published' : 'Draft'}`))
     const actions = textNode('div', 'record-actions')
     const edit = textNode('button', 'secondary-button', 'Edit'); edit.type = 'button'; edit.onclick = () => editPost(post.id)
     const remove = textNode('button', 'danger-button', 'Delete'); remove.type = 'button'; remove.onclick = () => deleteRecord('blog_posts', 'id', post.id, post.title)
@@ -352,14 +352,21 @@ function renderPosts() {
 
 function editPost(id) {
   const post = state.posts.find((item) => String(item.id) === String(id)); if (!post) return
-  $('#blogFormTitle').textContent = 'Edit Blog Post'; $('#blogId').value = post.id; $('#blogTitle').value = post.title || ''; $('#blogSlug').value = post.slug || ''; $('#blogCategory').value = post.category || ''; $('#blogExcerpt').value = post.excerpt || ''; $('#blogContent').value = post.content || ''; $('#blogImage').value = post.featured_image_url || ''; $('#blogLink').value = post.link_url || ''; $('#blogPublished').checked = Boolean(post.is_published)
+  $('#blogFormTitle').textContent = 'Edit Blog Post'; $('#blogId').value = post.id; $('#blogTitle').value = post.title || ''; $('#blogSlug').value = post.slug || ''; $('#blogPostType').value=post.post_type||'article'; $('#blogTripEndDate').value=post.trip_end_date||''; $('#blogCategory').value = post.category || ''; $('#blogExcerpt').value = post.excerpt || ''; $('#blogContent').value = post.content || ''; $('#blogImage').value = post.featured_image_url || ''; $('#blogLink').value = post.link_url || ''; $('#blogPublished').checked = Boolean(post.is_published)
   $('#blogForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 async function savePost(event) {
   event.preventDefault(); const id = $('#blogId').value; const published = $('#blogPublished').checked
-  const payload = { title: $('#blogTitle').value.trim(), slug: slugify($('#blogSlug').value || $('#blogTitle').value), category: $('#blogCategory').value.trim() || 'Travel', excerpt: $('#blogExcerpt').value.trim() || null, content: $('#blogContent').value.trim(), featured_image_url: $('#blogImage').value.trim() || null, link_url: $('#blogLink').value.trim() || null, is_published: published, published_at: published ? new Date().toISOString() : null, updated_by: state.user.id }
+  const postType=$('#blogPostType').value||'article';
+  const tripEndDate=$('#blogTripEndDate').value||null;
+  const payload = { title: $('#blogTitle').value.trim(), slug: slugify($('#blogSlug').value || $('#blogTitle').value), post_type:postType, trip_end_date:tripEndDate, category: $('#blogCategory').value.trim() || 'Travel', excerpt: $('#blogExcerpt').value.trim() || null, content: $('#blogContent').value.trim(), featured_image_url: $('#blogImage').value.trim() || null, link_url: $('#blogLink').value.trim() || null, is_published: published, published_at: published ? new Date().toISOString() : null, updated_by: state.user.id }
   if (!payload.title || !payload.slug || !payload.content) return showMessage('Blog title and content are required.', 'error')
+  if(postType==='trip_recap'&&published){
+    if(!tripEndDate) return showMessage('Add the trip end date before publishing a Past Trip Recap.', 'error')
+    const futureLanguage=/\b(join us|book now|reserve now|will be|will include|coming up|upcoming trip|spots available|secure your spot)\b/i;
+    if(futureLanguage.test((payload.title+' '+(payload.excerpt||'')+' '+payload.content))) return showMessage('This Past Trip Recap still contains future-facing booking language. Rewrite it in past tense before publishing.', 'error')
+  }
   const query = id ? supabase.from('blog_posts').update(payload).eq('id', id) : supabase.from('blog_posts').insert({ ...payload, created_by: state.user.id })
   const { error } = await query
   if (error) return showMessage(error.message, 'error')
