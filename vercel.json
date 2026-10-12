@@ -123,6 +123,21 @@
       "source": "/dashboard.html",
       "destination": "/admin",
       "permanent": true
+    },
+    {
+      "source": "/napa-juneteenth-june-17-20-2027.html",
+      "destination": "/trip?slug=napa-valley-juneteenth-2027",
+      "permanent": true
+    },
+    {
+      "source": "/napa-juneteenth-june-17-20-2027",
+      "destination": "/trip?slug=napa-valley-juneteenth-2027",
+      "permanent": true
+    },
+    {
+      "source": "/on-tour-travel-management-form.html",
+      "destination": "/services/on-tour-travel-management",
+      "permanent": true
     }
   ],
   "headers": [
