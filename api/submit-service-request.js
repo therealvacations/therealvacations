@@ -282,6 +282,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           template_type: 'request_received',
           tally_submission_id: submissionId,
+          secured_request: bookingFlow,
           event_id: submissionId,
         }),
       });
@@ -294,11 +295,11 @@ export default async function handler(req, res) {
       return res.status(200).json({
         ok: true,
         request_id: inserted.request_id,
-        redirect: '/request-received',
+        redirect: bookingFlow ? '/request-received?mode=secured' : '/request-received?mode=inquiry',
       });
     }
 
-    res.writeHead(303, { Location: '/request-received' });
+    res.writeHead(303, { Location: bookingFlow ? '/request-received?mode=secured' : '/request-received?mode=inquiry' });
     return res.end();
   } catch (error) {
     console.error('Service request handler failed', error);
