@@ -108,5 +108,23 @@ export default async function handler(req, res) {
     method = data;
   }
 
-  return res.status(200).json({ saved: true, method });
+  const { data: autopayUpdates, error: autopayError } = await admin.rpc('replace_user_autopay_payment_method', {
+    p_user_id: user.id,
+    p_customer_id: customerId,
+    p_payment_method_id: paymentMethodId,
+    p_stripe_account_id: null
+  });
+  if (autopayError) {
+    console.error('Unable to replace authorized autopay method', autopayError.message);
+    return res.status(500).json({ error: 'The card was saved, but authorized installment schedules could not be updated. Please contact TRV before the next payment date.' });
+  }
+
+  const updateSummary = Array.isArray(autopayUpdates) ? (autopayUpdates[0] || {}) : (autopayUpdates || {});
+  return res.status(200).json({
+    saved: true,
+    method,
+    autopay_updated: true,
+    updated_booking_schedules: Number(updateSummary.updated_bookings || 0),
+    updated_traveler_schedules: Number(updateSummary.updated_group_members || 0)
+  });
 }
