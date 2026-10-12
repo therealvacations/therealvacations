@@ -170,6 +170,12 @@ if(user){
 
     const recalcOptionTotal=optionId=>{
       const option=opts.find(x=>x.option_id===optionId); if(!option)return 0;
+      if(q.pricing_display_mode==='package'){
+        const total=Number(option.total_amount||0);
+        const totalEl=document.querySelector('.option-total[data-option="'+optionId+'"]');
+        if(totalEl) totalEl.textContent=money(total);
+        return total;
+      }
       const items=(option.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false);
       let subtotal=0;
       items.forEach(i=>{
