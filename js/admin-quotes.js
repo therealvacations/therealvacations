@@ -514,6 +514,7 @@ function openRequest(r,quoteId=null){
   renderQuoteOptionChoices();
   loadQuoteItems();
   loadClientSelectionReview();
+  window.dispatchEvent(new CustomEvent('trv:request-opened',{detail:{request_id:r.request_id,user_id:r.user_id||null}}));
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function duplicateCurrentOption(){
@@ -731,6 +732,7 @@ $('#resetQuoteResponseButton')?.addEventListener('click',async()=>{
 });
 $('#clearQuoteButton')?.addEventListener('click',()=>{
   currentRequest=null;currentQuote=null;
+  window.dispatchEvent(new CustomEvent('trv:request-cleared'));
   ['quoteRequestId','quoteId','quoteClient','quoteRequesterEmail','memberAccountNewEmail','quoteTitle','quoteSummary','quoteValidUntil','quoteOptions','fulfillmentSupplier','fulfillmentSubtotal','fulfillmentConfirmation'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#fulfillmentFee')) $('#fulfillmentFee').value='0.00';
   if($('#fulfillmentStatus')) $('#fulfillmentStatus').textContent='Select a request to view payment readiness.';
