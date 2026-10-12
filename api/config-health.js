@@ -17,8 +17,12 @@ export default async function handler(req,res){
   const {data:isAdmin}=await admin.from('admin_users').select('id').eq('id',user.id).maybeSingle();
   if(!isAdmin) return res.status(403).json({error:'Administrator access required'});
 
-  const [cronResult,emailResult,webhookResult] = await Promise.all([
+  const [cronResult,jobRunResult,emailResult,webhookResult] = await Promise.all([
     admin.rpc('get_system_cron_health'),
+    admin.from('system_job_runs')
+      .select('run_id,job_name,status,processed_count,sent_count,error_message,details,started_at,finished_at')
+      .order('started_at',{ascending:false})
+      .limit(30),
     admin.from('email_deliveries')
       .select('delivery_id,template_type,recipient_email,subject,status,attempt_count,attempted_at,sent_at,last_error,created_at')
       .order('created_at',{ascending:false})
@@ -47,6 +51,8 @@ export default async function handler(req,res){
     config_ready:Object.values(config).every(Boolean),
     cron:cronResult.data||[],
     cron_error:cronResult.error?.message||null,
+    job_runs:jobRunResult.data||[],
+    job_run_error:jobRunResult.error?.message||null,
     emails:emailRows,
     email_error:emailResult.error?.message||null,
     email_summary:{
