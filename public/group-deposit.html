@@ -7,13 +7,18 @@
 <h1>Your traveler deposit</h1>
 <p class="muted" id="intro">Loading your group booking…</p>
 <div class="summary" id="summary" hidden></div>
+<div id="autopayBox" hidden style="margin:18px 0;padding:16px;border:1px solid #d8cce4;border-radius:12px;background:#faf5ff">
+  <label style="display:flex;gap:10px;align-items:flex-start;font-weight:700"><input id="autopayConsent" type="checkbox" style="margin-top:4px"> I authorize The Real Vacations to automatically charge the card I use today for my remaining monthly traveler installments according to the schedule shown in My Trips, with my balance reaching $0 by the final payment deadline.</label>
+  <p class="muted" id="autopayDeadline" style="font-size:12px;margin:10px 0 0"></p>
+</div>
 <button class="btn" id="payButton" type="button" hidden>Pay my deposit securely</button>
 <div class="status" id="status" hidden></div>
 </section></main>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
 const params=new URLSearchParams(location.search),groupId=params.get('group')||'',result=params.get('status')||'';
-const intro=document.getElementById('intro'),summary=document.getElementById('summary'),payButton=document.getElementById('payButton'),status=document.getElementById('status');
+const intro=document.getElementById('intro'),summary=document.getElementById('summary'),payButton=document.getElementById('payButton'),status=document.getElementById('status'),autopayBox=document.getElementById('autopayBox'),autopayConsent=document.getElementById('autopayConsent'),autopayDeadline=document.getElementById('autopayDeadline');
+let paymentPreview=null;
 const money=n=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(n)||0)/100);
 const {data:{user}}=await supabase.auth.getUser();
 if(!user){location.replace('/login?next='+encodeURIComponent(location.pathname+location.search))}
@@ -26,7 +31,14 @@ if(user){
    const g=member.travel_groups||{},trip=g.trips||{};
    intro.textContent=(trip.title||g.name||'Your TRV group trip')+' · individual traveler deposit';
    summary.hidden=false;
-   summary.innerHTML='<div class="row"><strong>Trip</strong><span>'+String(trip.title||g.name||'TRV Group Trip')+'</span></div><div class="row"><strong>Deposit due</strong><span>'+money(member.deposit_required)+'</span></div>'+(member.deposit_due_at?'<div class="row"><strong>Pay by</strong><span>'+new Date(member.deposit_due_at).toLocaleString()+'</span></div>':'')+'<div class="row"><strong>Deposit policy</strong><span>Non-refundable</span></div>';
+   const {data:preview,error:previewError}=await supabase.functions.invoke('create-group-deposit-checkout',{body:{group_id:groupId,preview:true}});
+   if(!previewError&&preview?.preview) paymentPreview=preview;
+   summary.innerHTML='<div class="row"><strong>Trip</strong><span>'+String(trip.title||g.name||'TRV Group Trip')+'</span></div><div class="row"><strong>Deposit due</strong><span>'+money(member.deposit_required)+'</span></div>'+(member.deposit_due_at?'<div class="row"><strong>Pay by</strong><span>'+new Date(member.deposit_due_at).toLocaleString()+'</span></div>':'')+(paymentPreview?'<div class="row"><strong>Your trip share</strong><span>'+money(paymentPreview.share_total)+'</span></div><div class="row"><strong>Already paid</strong><span>'+money(paymentPreview.share_paid)+'</span></div>':'')+'<div class="row"><strong>Deposit policy</strong><span>Non-refundable</span></div>';
+   if(paymentPreview?.installment_plan&&!member.deposit_paid_at){
+     autopayBox.hidden=false;
+     autopayConsent.checked=paymentPreview.autopay_authorized===true;
+     autopayDeadline.textContent=paymentPreview.final_payment_deadline?'Remaining automatic monthly installments will finish by '+new Date(paymentPreview.final_payment_deadline+'T12:00:00').toLocaleDateString()+'.':'Remaining automatic monthly installments will follow the schedule shown in My Trips.';
+   }
    if(member.deposit_paid_at){
      status.hidden=false;status.className='status success';status.textContent='Your deposit has been received. Thank you — your payment is attached to this group booking.';
    }else if(member.deposit_due_at&&new Date(member.deposit_due_at)<new Date()){
@@ -39,8 +51,12 @@ if(user){
  }
 }
 payButton.addEventListener('click',async()=>{
+ if(paymentPreview?.installment_plan&&!autopayConsent.checked){
+   status.hidden=false;status.className='status error';status.textContent='Please authorize the automatic monthly installment schedule before continuing.';
+   return;
+ }
  payButton.disabled=true;payButton.textContent='Opening secure checkout…';
- const {data,error}=await supabase.functions.invoke('create-group-deposit-checkout',{body:{group_id:groupId}});
+ const {data,error}=await supabase.functions.invoke('create-group-deposit-checkout',{body:{group_id:groupId,auto_pay_consent:paymentPreview?.installment_plan?autopayConsent.checked:false}});
  if(error||!data?.url){status.hidden=false;status.className='status error';status.textContent=data?.error||'Checkout could not be started.';payButton.disabled=false;payButton.textContent='Pay my deposit securely';return}
  location.assign(data.url);
 });
