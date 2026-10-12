@@ -3,8 +3,11 @@ import { supabase } from './supabase-client.js';
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 const toast=(msg,error=false)=>{const box=$('#adminMessage');if(!box)return;box.textContent=msg;box.className='admin-message '+(error?'error':'success');setTimeout(()=>box.className='admin-message',4000);};
+const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format((Number(v)||0)/100);
+const dollars=v=>v==null?'':(Number(v)/100).toFixed(2);
+const cents=v=>{const n=Number(v);return Number.isFinite(n)&&n>=0?Math.round(n*100):0;};
 
-let suppliers=[];
+let suppliers=[], assignments=[];
 
 function resetSupplier(){
   $('#supplierForm')?.reset();
@@ -111,3 +114,92 @@ $('#supplierForm')?.addEventListener('submit',async e=>{
 $('#supplierReset')?.addEventListener('click',resetSupplier);
 document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{if(btn.dataset.tab==='suppliers')loadSuppliers();}));
 if(new URLSearchParams(location.search).get('tab')==='suppliers') loadSuppliers();
+
+
+function resetAssignment(){
+  $('#supplierAssignmentForm')?.reset();
+  if($('#supplierAssignmentId')) $('#supplierAssignmentId').value='';
+  if($('#supplierAssignmentSummary')) $('#supplierAssignmentSummary').value='';
+  if($('#supplierAssignmentStatus')) $('#supplierAssignmentStatus').value='planned';
+  if($('#supplierAssignmentVisible')) $('#supplierAssignmentVisible').value='true';
+  if($('#supplierPaymentStatus')) $('#supplierPaymentStatus').value='unpaid';
+}
+
+function editAssignment(id){
+  const a=assignments.find(x=>x.assignment_id===id); if(!a)return;
+  const s=suppliers.find(x=>x.supplier_id===a.supplier_id);
+  $('#supplierAssignmentId').value=a.assignment_id;
+  $('#supplierAssignmentSummary').value=(s?.display_name||s?.company_name||'Supplier')+' · '+(a.description||a.service_type||'Assignment');
+  $('#supplierAssignmentStatus').value=a.status||'planned';
+  $('#supplierAssignmentVisible').value=String(a.visible_to_supplier!==false);
+  $('#supplierAssignmentSubtotal').value=dollars(a.supplier_subtotal);
+  $('#supplierAssignmentTaxes').value=dollars(a.taxes_fees);
+  $('#supplierAssignmentServiceFee').value=dollars(a.service_fee);
+  $('#supplierAssignmentConfirmation').value=a.confirmation_details||'';
+  $('#supplierAssignmentReference').value=a.supplier_reference||'';
+  $('#supplierPaymentStatus').value=a.supplier_payment_status||'unpaid';
+  $('#supplierAmountPaid').value=dollars(a.supplier_amount_paid);
+  $('#supplierPaymentReference').value=a.supplier_payment_reference||'';
+  $('#supplierAssignmentForm').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderAssignments(){
+  const list=$('#supplierAssignmentList'); if(!list)return;
+  list.innerHTML=assignments.map(a=>{
+    const s=suppliers.find(x=>x.supplier_id===a.supplier_id);
+    const supplier=s?.display_name||s?.company_name||'Supplier';
+    const context=a.context_type==='travel_quote'?'Quote':a.context_type==='travel_request'?'Request':'Group Trip';
+    const payment=a.supplier_payment_status||'unpaid';
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(supplier)+'</h3><p>'+esc(a.description||a.service_type||'Supplier assignment')+' · '+esc(context)+'</p></div><span class="status-badge '+(a.status==='confirmed'||a.status==='paid'?'active':a.status==='cancelled'?'archived':'draft')+'">'+esc(a.status||'planned')+'</span></div>'+
+      '<p class="record-summary"><strong>Supplier total:</strong> '+money(a.total_amount)+' · subtotal '+money(a.supplier_subtotal)+' · taxes/fees '+money(a.taxes_fees)+
+      '<br><strong>TRV→Supplier:</strong> '+money(a.supplier_amount_paid)+' · '+esc(payment)+
+      (a.confirmation_details?'<br><strong>Confirmation:</strong> '+esc(a.confirmation_details):'')+
+      (a.supplier_reference?'<br><strong>Supplier ref:</strong> '+esc(a.supplier_reference):'')+
+      (a.supplier_payment_reference?'<br><strong>Payment ref:</strong> '+esc(a.supplier_payment_reference):'')+
+      '<br><strong>Portal:</strong> '+(a.visible_to_supplier?'Visible':'Admin only')+'</p>'+
+      '<div class="record-actions"><button class="secondary-button edit-assignment" data-id="'+a.assignment_id+'" type="button">Manage Assignment</button></div></div>';
+  }).join('')||'<div class="empty-state">No supplier assignments yet.</div>';
+  document.querySelectorAll('.edit-assignment').forEach(b=>b.onclick=()=>editAssignment(b.dataset.id));
+}
+
+async function loadAssignments(){
+  if(!$('#supplierAssignmentList')) return;
+  const {data,error}=await supabase.from('supplier_assignments').select('*').order('created_at',{ascending:false});
+  if(error){toast(error.message,true);return;}
+  assignments=data||[];
+  renderAssignments();
+}
+
+$('#supplierAssignmentForm')?.addEventListener('submit',async e=>{
+  e.preventDefault();
+  const id=$('#supplierAssignmentId').value;
+  if(!id) return toast('Choose a supplier assignment from the ledger first.',true);
+  const existing=assignments.find(x=>x.assignment_id===id);
+  const paymentStatus=$('#supplierPaymentStatus').value;
+  const amountPaid=cents($('#supplierAmountPaid').value);
+  const payload={
+    status:$('#supplierAssignmentStatus').value,
+    visible_to_supplier:$('#supplierAssignmentVisible').value==='true',
+    supplier_subtotal:cents($('#supplierAssignmentSubtotal').value),
+    taxes_fees:cents($('#supplierAssignmentTaxes').value),
+    service_fee:cents($('#supplierAssignmentServiceFee').value),
+    confirmation_details:$('#supplierAssignmentConfirmation').value.trim()||null,
+    supplier_reference:$('#supplierAssignmentReference').value.trim()||null,
+    supplier_payment_status:paymentStatus,
+    supplier_amount_paid:amountPaid,
+    supplier_payment_reference:$('#supplierPaymentReference').value.trim()||null,
+    supplier_paid_at:paymentStatus==='paid' ? (existing?.supplier_paid_at||new Date().toISOString()) : null,
+    updated_at:new Date().toISOString()
+  };
+  const {error}=await supabase.from('supplier_assignments').update(payload).eq('assignment_id',id);
+  if(error)return toast(error.message,true);
+  toast('Supplier assignment updated.');
+  resetAssignment();
+  await loadAssignments();
+});
+$('#supplierAssignmentReset')?.addEventListener('click',resetAssignment);
+
+document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{
+  if(btn.dataset.tab==='suppliers'){loadSuppliers().then(loadAssignments);}
+}));
+if(new URLSearchParams(location.search).get('tab')==='suppliers') loadSuppliers().then(loadAssignments());
