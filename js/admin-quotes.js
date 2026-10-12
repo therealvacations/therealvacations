@@ -157,6 +157,7 @@ function renderQuoteOptionChoices(){
   if(current&&opts.some(o=>o.option_id===current)) select.value=current;
   else if(opts[0]) select.value=opts[0].option_id;
   renderQuoteOptionCards();
+  loadOptionDeposit();
 }
 async function renderQuoteOptionCards(){
   const box=$('#quoteOptionCards'); if(!box) return;
@@ -171,7 +172,7 @@ async function renderQuoteOptionCards(){
   const selected=currentOptionId();
   box.innerHTML=opts.map((o,index)=>{
     const active=o.option_id===selected;
-    return '<button type="button" class="quote-option-card" data-option-id="'+esc(o.option_id)+'" style="text-align:left;padding:14px;border-radius:12px;border:2px solid '+(active?'#7c3aed':'#e5dcec')+';background:'+(active?'#f5f3ff':'#fff')+';cursor:pointer"><strong style="display:block;color:#4A1D6A">Option '+(index+1)+'</strong><span style="display:block;font-weight:700;margin-top:3px">'+esc(o.name)+'</span><span class="hint" style="display:block;margin-top:6px">'+(counts[o.option_id]||0)+' saved item(s) · '+money(o.total_amount||0)+'</span></button>';
+    return '<button type="button" class="quote-option-card" data-option-id="'+esc(o.option_id)+'" style="text-align:left;padding:14px;border-radius:12px;border:2px solid '+(active?'#7c3aed':'#e5dcec')+';background:'+(active?'#f5f3ff':'#fff')+';cursor:pointer"><strong style="display:block;color:#4A1D6A">Option '+(index+1)+'</strong><span style="display:block;font-weight:700;margin-top:3px">'+esc(o.name)+'</span><span class="hint" style="display:block;margin-top:6px">'+(counts[o.option_id]||0)+' saved item(s) · '+money(o.total_amount||0)+(o.deposit_amount!=null?' · Deposit '+money(o.deposit_amount):' · Pay in full')+'</span></button>';
   }).join('');
   box.querySelectorAll('.quote-option-card').forEach(btn=>btn.onclick=()=>{
     $('#quoteOptionSelect').value=btn.dataset.optionId;
@@ -193,7 +194,27 @@ async function refreshQuoteOptionsFromDatabase(preferredOptionId=null){
   renderQuoteOptionChoices();
   if(preferredOptionId && (data||[]).some(o=>o.option_id===preferredOptionId)) $('#quoteOptionSelect').value=preferredOptionId;
 }
-$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();renderQuoteOptionCards();loadQuoteItems();});
+async function loadOptionDeposit(){
+  const option=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===currentOptionId());
+  const input=$('#quoteOptionDeposit');
+  if(input) input.value=option?.deposit_amount==null?'':(Number(option.deposit_amount)/100).toFixed(2);
+}
+async function saveOptionDeposit(){
+  const optionId=currentOptionId();
+  if(!optionId) return toast('Choose a quote option first.',true);
+  const raw=$('#quoteOptionDeposit')?.value.trim()||'';
+  const cents=raw===''?null:Math.round(Number(raw)*100);
+  const option=(currentQuote?.travel_quote_options||[]).find(o=>o.option_id===optionId);
+  if(cents!=null && (!Number.isFinite(cents)||cents<0)) return toast('Enter a valid deposit amount.',true);
+  if(cents!=null && Number(option?.total_amount||0)>0 && cents>Number(option.total_amount)) return toast('Deposit cannot be greater than the option total.',true);
+  const {error}=await supabase.from('travel_quote_options').update({deposit_amount:cents,updated_at:new Date().toISOString()}).eq('option_id',optionId);
+  if(error) return toast(error.message,true);
+  await refreshQuoteOptionsFromDatabase(optionId);
+  await loadOptionDeposit();
+  toast(cents==null?'Deposit cleared. This option will require payment in full.':'Option deposit saved.');
+}
+$('#saveOptionDepositButton')?.addEventListener('click',saveOptionDeposit);
+$('#quoteOptionSelect')?.addEventListener('change',()=>{clearQuoteItemForm();renderQuoteOptionCards();loadQuoteItems();loadOptionDeposit();});
 async function loadQuoteItems(){
   const list=$('#quoteItemList'); if(!list) return;
   const optionId=currentOptionId();
