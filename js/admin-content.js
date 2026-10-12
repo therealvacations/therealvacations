@@ -205,6 +205,8 @@ function editTrip(id) {
   $('#tripShort').value = trip.description_short || ''
   $('#tripFull').value = trip.description_full || ''
   $('#tripImage').value = trip.cover_image_url || ''
+  if ($('#tripExternalUrl')) $('#tripExternalUrl').value = trip.external_info_url || ''
+  if ($('#tripExternalLabel')) $('#tripExternalLabel').value = trip.external_info_label || ''
   $('#tripSpots').value = trip.max_spots || ''
   $('#tripStatus').value = trip.status || 'draft'
   $('#tripFeatured').checked = Boolean(trip.is_featured)
@@ -244,6 +246,8 @@ async function saveTrip(event) {
       description_short: $('#tripShort').value.trim() || null,
       description_full: $('#tripFull').value.trim() || null,
       cover_image_url: $('#tripImage').value.trim() || null,
+      external_info_url: $('#tripExternalUrl')?.value.trim() || null,
+      external_info_label: $('#tripExternalLabel')?.value.trim() || null,
       itinerary: itinerary.length ? itinerary : null,
       max_spots: Number($('#tripSpots').value) || null,
       status: $('#tripStatus').value,
