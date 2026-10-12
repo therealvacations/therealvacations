@@ -140,7 +140,7 @@ async function uploadQuoteItemFiles(input){
 $('#quoteItemUpload')?.addEventListener('change',e=>uploadQuoteItemFiles(e.target));
 
 function clearQuoteItemForm(){
-  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemImage','quoteItemSelectionGroup','quoteItemVariants'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
+  ['quoteItemId','quoteItemTitle','quoteItemAmount','quoteItemDescription','quoteItemDetails','quoteItemAdminNotes','quoteItemSupplierPaymentUrl','quoteItemImage','quoteItemSelectionGroup','quoteItemVariants'].forEach(id=>{const e=$('#'+id);if(e)e.value='';});
   if($('#quoteItemSupplier')) $('#quoteItemSupplier').value='';
   if($('#quoteItemCategory')) $('#quoteItemCategory').value='flight';
   if($('#quoteItemQuantity')) $('#quoteItemQuantity').value='1';
@@ -243,7 +243,7 @@ async function loadQuoteItems(){
     const variantHtml=itemVariants.length
       ? '<div style="margin:10px 0;padding:10px 12px;background:#f5f3ff;border:1px solid #ddd6fe;border-radius:9px;font-size:12px"><strong style="display:block;margin-bottom:6px">Client-selectable variants</strong>'+itemVariants.map(v=>'<div>'+esc(v.label)+' · '+money(v.amount)+(v.is_default?' · Default':'')+'</div>').join('')+'</div>'
       : '';
-    return '<div class="admin-record" data-quote-item-id="'+esc(i.item_id)+'"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p>'+detailHtml+variantHtml+'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px;white-space:pre-wrap"><strong style="display:block;margin-bottom:6px">Admin-only notes for this item</strong>'+esc(adminNoteDisplay||'No private note saved for this item.')+'</div><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit This Item</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete This Item</button></div></div>';
+    return '<div class="admin-record" data-quote-item-id="'+esc(i.item_id)+'"><div class="record-heading"><div><h3>'+esc(i.title)+'</h3><p>'+esc(String(i.category||'').replaceAll('_',' '))+' · '+amount+(i.quantity>1?' · Qty '+i.quantity:'')+(supplier?' · '+esc(supplier.display_name||supplier.company_name):'')+'</p></div></div>'+(i.image_url?'<img src="'+esc(i.image_url)+'" alt="" style="width:100%;max-width:280px;border-radius:12px;margin:8px 0">':'')+'<p class="record-summary">'+esc(i.description||'')+'</p>'+detailHtml+variantHtml+'<div style="margin:10px 0;padding:10px 12px;background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;font-size:12px;white-space:pre-wrap"><strong style="display:block;margin-bottom:6px">Admin-only notes for this item</strong>'+esc(adminNoteDisplay||'No private note saved for this item.')+(i.supplier_payment_url?'<div style="margin-top:8px"><strong>Supplier cart/payment:</strong> <a href="'+esc(i.supplier_payment_url)+'" target="_blank" rel="noopener">Open exact supplier pay page ↗</a></div>':'')+'</div><div class="record-actions"><button class="secondary-button edit-quote-item" data-id="'+i.item_id+'">Edit This Item</button><button class="danger-button delete-quote-item" data-id="'+i.item_id+'">Delete This Item</button></div></div>';
   }).join('') || '<div class="empty-state">No proposal items yet. Add an item above; nothing will appear on the client proposal until it is saved here.</div>';
   document.querySelectorAll('.edit-quote-item').forEach(btn=>btn.onclick=()=>{
     const i=(data||[]).find(x=>x.item_id===btn.dataset.id); if(!i)return;
@@ -251,6 +251,7 @@ async function loadQuoteItems(){
     $('#quoteItemAmount').value=i.amount==null?'':(i.amount/100).toFixed(2); $('#quoteItemQuantity').value=i.quantity||1;
     $('#quoteItemDescription').value=i.description||'';
     $('#quoteItemSupplier').value=i.supplier_id||'';
+    $('#quoteItemSupplierPaymentUrl').value=i.supplier_payment_url||'';
     $('#quoteItemImage').value=i.image_url||'';
     $('#quoteItemAdminNotes').value=mergeSupplierIntoAdminNotes(i.admin_notes,i.supplier_id);
     $('#quoteItemDetails').value=Object.entries(i.details||{}).map(([k,v])=>k+' | '+v).join('\n');
@@ -282,6 +283,8 @@ async function syncSupplierAssignment(itemId,itemPayload){
     quote_item_id:itemId,
     service_type:itemPayload.category||null,
     description:[itemPayload.title,itemPayload.description].filter(Boolean).join(' — '),
+    supplier_reference:itemPayload.supplier_payment_url||null,
+    internal_notes:itemPayload.supplier_payment_url ? '[Supplier payment URL] '+itemPayload.supplier_payment_url : null,
     supplier_subtotal:itemPayload.amount==null?0:itemPayload.amount,
     service_fee:0,
     taxes_fees:0,
@@ -308,6 +311,8 @@ async function saveQuoteItem(){
   let parsedVariants=[];
   try{parsedVariants=parseItemVariants();}catch(error){return toast(error.message,true);}
   if(!supplierId && !isInternalFeeItem(category,title) && !parsedVariants.some(v=>v.supplier_id)) return toast('Select the supplier/source for this quote item, or assign suppliers to its variants.',true);
+  const supplierPaymentUrl=$('#quoteItemSupplierPaymentUrl')?.value.trim()||'';
+  if(supplierId && !isInternalFeeItem(category,title) && !supplierPaymentUrl) return toast('Paste the exact supplier cart/payment URL for this item before saving.',true);
   const amountRaw=$('#quoteItemAmount')?.value;
   const payload={
     option_id:optionId,
@@ -318,6 +323,7 @@ async function saveQuoteItem(){
     quantity:Math.max(1,Number($('#quoteItemQuantity')?.value||1)),
     details:parseItemDetails(),
     supplier_id:supplierId,
+    supplier_payment_url:$('#quoteItemSupplierPaymentUrl')?.value.trim()||null,
     image_url:$('#quoteItemImage')?.value.trim()||null,
     admin_notes:isInternalFeeItem(category,title)
       ? String($('#quoteItemAdminNotes')?.value||'').replace(/^\[Supplier\][^\n]*(?:\n|$)/i,'').trim()
