@@ -29,16 +29,52 @@ const next=safePortalPath(params.get('next'));
 const btn=document.getElementById('continueButton');
 const status=document.getElementById('status');
 
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-  status.textContent='Account confirmed successfully. You are signed in and ready to continue.';
-  btn.href=next;
-  btn.textContent=next.startsWith('/book-trip')?'Continue Booking':'Continue to My Trips';
-} else {
-  status.textContent='Account confirmed successfully. Sign in to continue to your TRV account.';
-  btn.href='/login?next='+encodeURIComponent(next);
-  btn.textContent='Sign In to Continue';
+async function finishAuthCallback(){
+  const code=params.get('code');
+  const tokenHash=params.get('token_hash')||params.get('token');
+  const type=params.get('type');
+
+  if(code){
+    const {error}=await supabase.auth.exchangeCodeForSession(code);
+    if(error){
+      status.textContent='This confirmation link could not be completed. It may have expired or already been used.';
+      btn.href='/login?next='+encodeURIComponent(next);
+      btn.textContent='Sign In to Continue';
+      return;
+    }
+  } else if(tokenHash && ['signup','email_change','recovery','magiclink','invite'].includes(type||'')){
+    const {error}=await supabase.auth.verifyOtp({token_hash:tokenHash,type});
+    if(error){
+      status.textContent='This confirmation link could not be completed. It may have expired or already been used.';
+      btn.href='/login?next='+encodeURIComponent(next);
+      btn.textContent='Sign In to Continue';
+      return;
+    }
+  }
+
+  const {data:{session}}=await supabase.auth.getSession();
+  if(session){
+    status.textContent=type==='email_change'
+      ? 'Your TRV login email was confirmed successfully.'
+      : 'Account confirmed successfully. You are signed in and ready to continue.';
+    btn.href=next;
+    btn.textContent=next.startsWith('/book-trip')?'Continue Booking':(next==='/member-profile'?'Return to My Profile':'Continue to My Trips');
+  }else{
+    status.textContent='Your confirmation was accepted. Sign in to continue to your TRV account.';
+    btn.href='/login?next='+encodeURIComponent(next);
+    btn.textContent='Sign In to Continue';
+  }
+
+  if(code||tokenHash){
+    const clean=new URL(location.href);
+    clean.searchParams.delete('code');
+    clean.searchParams.delete('token');
+    clean.searchParams.delete('token_hash');
+    clean.searchParams.delete('type');
+    history.replaceState({},'',clean.pathname+clean.search);
+  }
 }
+await finishAuthCallback();
 </script>
 </body>
 </html>
