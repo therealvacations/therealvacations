@@ -21,6 +21,15 @@ export default async function handler(req,res){
   const {data:{user},error:userError}=await admin.auth.getUser(token);
   if(userError||!user) return res.status(401).json({error:'Unauthorized'});
 
+  const {data:qualifyingBooking}=await admin.from('bookings')
+    .select('booking_id,status,payment_plan,balance_due,created_at')
+    .eq('user_id',user.id)
+    .eq('payment_plan','installments')
+    .in('status',['pending','confirmed','partial','payment_due','overdue'])
+    .order('created_at',{ascending:false})
+    .limit(1)
+    .maybeSingle();
+
   const plan=String(req.body?.plan||'');
   if(!['monthly','annual'].includes(plan)) return res.status(422).json({error:'Choose a valid VIP plan'});
 
@@ -64,6 +73,7 @@ export default async function handler(req,res){
     welcome_gift_shipping:shipping,
     welcome_gift_size:size||null,
     welcome_gift_note:note,
+    qualifying_booking_id:plan==='annual'&&qualifyingBooking?.booking_id?qualifyingBooking.booking_id:null,
     updated_at:new Date().toISOString()
   },{onConflict:'user_id'});
   if(membershipError) return res.status(500).json({error:'VIP enrollment details could not be saved'});
@@ -91,7 +101,10 @@ export default async function handler(req,res){
     'subscription_data[metadata][checkout_type]':'vip_membership',
     'subscription_data[metadata][user_id]':user.id,
     'subscription_data[metadata][billing_plan]':plan,
-    ...(plan==='monthly' ? {'subscription_data[trial_period_days]':7} : {}),
+    ...(plan==='annual'&&qualifyingBooking?.booking_id ? {'subscription_data[metadata][qualifying_booking_id]':qualifyingBooking.booking_id} : {}),
+    ...(plan==='monthly'
+      ? {'subscription_data[trial_period_days]':7}
+      : (qualifyingBooking?.booking_id ? {'subscription_data[trial_period_days]':60} : {})),
     success_url:siteUrl+'/vip?joined=1',
     cancel_url:siteUrl+'/vip?cancelled=1'
   });
@@ -103,5 +116,9 @@ export default async function handler(req,res){
   });
   const session=await stripe.json().catch(()=>({}));
   if(!stripe.ok||!session.url) return res.status(502).json({error:'VIP checkout could not be started'});
-  return res.status(200).json({url:session.url});
+  return res.status(200).json({
+    url:session.url,
+    annual_group_benefit:plan==='annual'&&!!qualifyingBooking?.booking_id,
+    qualifying_booking_id:plan==='annual'?qualifyingBooking?.booking_id||null:null
+  });
 }
