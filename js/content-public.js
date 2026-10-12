@@ -159,7 +159,7 @@ async function loadBlog() {
   if (!container) return
   showState(container, 'Loading articles…')
   const { data, error } = await supabase.from('blog_posts')
-    .select('id,title,slug,category,excerpt,featured_image_url,link_url,published_at,created_at')
+    .select('id,title,slug,category,excerpt,featured_image_url,link_url,published_at,created_at,post_type,trip_end_date')
     .eq('is_published', true).order('published_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false })
 
   if (error) return showState(container, 'Articles could not be loaded. Please try again shortly.', 'error')
@@ -174,7 +174,7 @@ async function loadBlog() {
       card.append(image)
     }
     const body = node('div', 'blog-card-body')
-    body.append(node('div', 'blog-tag', post.category || 'Travel'), node('div', 'meta', formatDate((post.published_at || post.created_at || '').slice(0, 10))), node('h2', '', post.title), node('p', '', post.excerpt || 'Read the latest from The Real Vacations.'))
+    body.append(node('div', 'blog-tag', post.post_type==='trip_recap'?'Trip Recap':(post.category || 'Travel')), node('div', 'meta', post.post_type==='trip_recap'&&post.trip_end_date?'Trip completed '+formatDate(post.trip_end_date):formatDate((post.published_at || post.created_at || '').slice(0, 10))), node('h2', '', post.title), node('p', '', post.excerpt || (post.post_type==='trip_recap'?'A look back at this TRV experience.':'Read the latest from The Real Vacations.')))
     const link = node('a', 'read-btn', 'Read More →')
     link.href = safeUrl(post.link_url, `/blog-post?slug=${encodeURIComponent(post.slug)}`)
     body.append(link); card.append(body)
@@ -276,13 +276,13 @@ async function loadBlogDetail() {
   const slug = new URLSearchParams(location.search).get('slug') || ''
   if (!slug) return showState(container, 'This article link is incomplete.', 'error')
   const { data: post, error } = await supabase.from('blog_posts')
-    .select('title,category,content,excerpt,featured_image_url,published_at,created_at')
+    .select('title,category,content,excerpt,featured_image_url,published_at,created_at,post_type,trip_end_date')
     .eq('slug', slug).eq('is_published', true).maybeSingle()
   if (error || !post) return showState(container, 'This article is not currently available.', 'error')
 
   document.title = `${post.title} | The Real Vacations`
   const article = node('article', 'article-detail')
-  article.append(node('div', 'blog-tag', post.category || 'Travel'), node('h1', '', post.title), node('div', 'article-date', formatDate((post.published_at || post.created_at || '').slice(0, 10))))
+  article.append(node('div', 'blog-tag', post.post_type==='trip_recap'?'Trip Recap':(post.category || 'Travel')), node('h1', '', post.title), node('div', 'article-date', post.post_type==='trip_recap'&&post.trip_end_date?'Trip completed '+formatDate(post.trip_end_date):formatDate((post.published_at || post.created_at || '').slice(0, 10))))
   const imageUrl = safeUrl(post.featured_image_url, '')
   if (imageUrl) { const image = node('img', 'article-image'); image.src = imageUrl; image.alt = ''; article.append(image) }
   if (post.excerpt) article.append(node('p', 'article-lead', post.excerpt))
