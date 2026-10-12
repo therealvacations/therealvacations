@@ -250,7 +250,52 @@
     <div class="records"><h2>Supplier Assignment Ledger</h2><p class="hint">This is Admin-only operational history. Supplier portal users see only assignments explicitly marked visible and cannot change financial fields.</p><div id="supplierAssignmentList"><p>Loading supplier assignments…</p></div></div>
   </div>
 </section>
-<section class="admin-panel" id="hostsPanel" hidden><div class="editor"><h2>TRV Host Program</h2><p class="hint">Review Host applications, approve eligible leaders, and see membership/proposal activity. Approval creates the public Host profile; billing begins only when the approved Host activates the add-on.</p><div class="admin-record"><h3>Host membership</h3><p>$19.99/month or $149.99/year, added to active TRV VIP membership.</p></div><a class="secondary-button" href="/host" style="text-decoration:none">Open Host recruitment page →</a></div><div class="records"><h2>Host Applications</h2><div id="hostAdminList"><p>Loading Host applications…</p></div></div></section><section class="admin-panel" id="paymentsPanel" hidden>
+<section class="admin-panel" id="hostsPanel" hidden>
+  <div class="editor">
+    <h2>TRV Host Program</h2>
+    <p class="hint">Review applications, manage the public Host profile, link approved Host concepts to real TRV trips, track referrals, and record Host earnings. Approval creates or updates the public Host profile; billing begins only after the approved Host activates the add-on.</p>
+    <div class="admin-record"><h3>Host membership</h3><p>$19.99/month or $149.99/year, added to an active TRV VIP membership.</p></div>
+    <a class="secondary-button" href="/host" style="text-decoration:none">Open Host recruitment page →</a>
+  </div>
+  <div class="records"><h2>Host Applications & Profiles</h2><div id="hostAdminList"><p>Loading Host applications…</p></div></div>
+
+  <form class="editor" id="hostProfileForm">
+    <h2>Host Profile</h2>
+    <input id="hostProfileUserId" type="hidden"/>
+    <div class="field"><label for="hostProfileName">Display name</label><input id="hostProfileName"/></div>
+    <div class="field"><label for="hostProfileSlug">Public page address</label><input id="hostProfileSlug"/></div>
+    <div class="field"><label for="hostProfileCity">City / region</label><input id="hostProfileCity"/></div>
+    <div class="field"><label for="hostProfileBio">Bio</label><textarea id="hostProfileBio"></textarea></div>
+    <div class="field"><label for="hostProfileTravelStyle">Travel style / experience</label><textarea id="hostProfileTravelStyle"></textarea></div>
+    <div class="field"><label for="hostProfileDestinations">Destination specialties</label><textarea id="hostProfileDestinations"></textarea></div>
+    <div class="field"><label for="hostProfileAvatar">Avatar / photo URL</label><input id="hostProfileAvatar" type="url"/></div>
+    <div class="field-grid">
+      <div class="field"><label for="hostProfileTier">Tier</label><select id="hostProfileTier"><option value="host">Host</option><option value="verified">Verified</option><option value="premier">Premier</option></select></div>
+      <div class="field"><label for="hostProfileVerified">Verification</label><select id="hostProfileVerified"><option value="true">Verified</option><option value="false">Not verified</option></select></div>
+    </div>
+    <div class="field"><label for="hostProfilePublic">Public profile</label><select id="hostProfilePublic"><option value="true">Published</option><option value="false">Hidden</option></select></div>
+    <div class="form-actions"><button class="primary-button" type="submit">Save Host Profile</button><button class="secondary-button" id="hostProfileReset" type="button">Clear</button></div>
+  </form>
+  <div class="records"><h2>Hosted Trip Concepts</h2><div id="hostProposalList"><p>Loading Host trip concepts…</p></div></div>
+
+  <form class="editor" id="hostEarningForm">
+    <h2>Host Earning</h2>
+    <input id="hostEarningId" type="hidden"/>
+    <div class="field"><label for="hostEarningHost">Host</label><select id="hostEarningHost"><option value="">Choose host</option></select></div>
+    <div class="field"><label for="hostEarningTrip">Trip</label><select id="hostEarningTrip"><option value="">No linked trip</option></select></div>
+    <div class="field"><label for="hostEarningBooking">Booking ID</label><input id="hostEarningBooking" placeholder="Optional booking UUID"/></div>
+    <div class="field"><label for="hostEarningAmount">Amount ($)</label><input id="hostEarningAmount" type="number" min="0" step="0.01" required/></div>
+    <div class="field"><label for="hostEarningStatus">Status</label><select id="hostEarningStatus"><option value="pending">Pending</option><option value="eligible">Eligible</option><option value="approved">Approved</option><option value="paid">Paid</option><option value="reversed">Reversed</option></select></div>
+    <div class="field"><label for="hostEarningReason">Reason / calculation note</label><textarea id="hostEarningReason" placeholder="Explain what this earning is for and how it was calculated."></textarea></div>
+    <div class="form-actions"><button class="primary-button" type="submit">Save Host Earning</button><button class="secondary-button" id="hostEarningReset" type="button">Clear</button></div>
+  </form>
+  <div class="records">
+    <h2>Host Referrals & Earnings</h2>
+    <div id="hostReferralList"><p>Loading Host referrals…</p></div>
+    <h3 style="margin-top:24px">Earnings Ledger</h3>
+    <div id="hostEarningList"><p>Loading Host earnings…</p></div>
+  </div>
+</section><section class="admin-panel" id="paymentsPanel" hidden>
       <div class="editor">
         <h2>Invoices & Payments</h2>
         <p class="hint">Approved custom quotes appear here automatically. Track the client, approved option, invoice total, paid amount, remaining balance, and Stripe payment activity.</p>
