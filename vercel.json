@@ -6,8 +6,8 @@
   "redirects": [
     {
       "source": "/dashboard",
-      "destination": "/admin",
-      "permanent": false
+      "destination": "/my-trips",
+      "permanent": true
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
@@ -121,7 +121,7 @@
     },
     {
       "source": "/dashboard.html",
-      "destination": "/admin",
+      "destination": "/my-trips",
       "permanent": true
     },
     {
