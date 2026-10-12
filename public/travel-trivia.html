@@ -85,19 +85,42 @@ footer{background:#0f0620;color:#ccc;padding:42px 24px 24px;margin-top:56px}.foo
     <div class="form-head">
       <div class="eyebrow" style="color:#7c3aed">Official Qualification Form</div>
       <h2>Finished All 3 Quizzes?</h2>
-      <p>Use the form below to submit your official entry. Your submission will be reviewed for eligibility.</p>
+      <p>Submit one official entry after completing all 3 quizzes consecutively with at least 70% on each. Your submission will be reviewed for eligibility.</p>
     </div>
-    <iframe
-      data-tally-src="https://tally.so/embed/PdVO90?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-      loading="lazy"
-      width="100%"
-      height="1050"
-      frameborder="0"
-      marginheight="0"
-      marginwidth="0"
-      title="The Real Vacationers Travel Trivia Challenge — Official Qualification Form">
-    </iframe>
-    <div class="fallback">Form not showing? <a href="https://tally.so/r/PdVO90" target="_blank" rel="noopener">Open the official qualification form directly →</a></div>
+    <form id="triviaEntryForm" style="max-width:760px;margin:0 auto;padding:28px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <label style="display:block;font-weight:700">Full name
+          <input name="full_name" required autocomplete="name" style="display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d8cce4;border-radius:10px">
+        </label>
+        <label style="display:block;font-weight:700">Email
+          <input name="email" type="email" required autocomplete="email" style="display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d8cce4;border-radius:10px">
+        </label>
+      </div>
+      <label style="display:block;font-weight:700;margin-top:16px">State or Washington, D.C.
+        <input name="state_or_dc" required placeholder="Georgia" style="display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d8cce4;border-radius:10px">
+      </label>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px">
+        <label style="display:block;font-weight:700">Quiz #1 score
+          <input name="quiz_1_score" type="number" min="70" max="100" step="1" required placeholder="70–100" style="display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d8cce4;border-radius:10px">
+        </label>
+        <label style="display:block;font-weight:700">Quiz #2 score
+          <input name="quiz_2_score" type="number" min="70" max="100" step="1" required placeholder="70–100" style="display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d8cce4;border-radius:10px">
+        </label>
+        <label style="display:block;font-weight:700">Quiz #3 score
+          <input name="quiz_3_score" type="number" min="70" max="100" step="1" required placeholder="70–100" style="display:block;width:100%;margin-top:7px;padding:12px;border:1px solid #d8cce4;border-radius:10px">
+        </label>
+      </div>
+      <div style="margin-top:22px;display:grid;gap:12px">
+        <label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" name="completed_consecutively" required style="margin-top:4px"> I certify that I completed all 3 official quizzes consecutively and scored at least 70% on each.</label>
+        <label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" name="age_eligible" required style="margin-top:4px"> I certify that I am age 18 or older.</label>
+        <label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" name="residency_eligible" required style="margin-top:4px"> I certify that I am an eligible resident of one of the 50 U.S. states or Washington, D.C.</label>
+        <label style="display:flex;gap:10px;align-items:flex-start"><input type="checkbox" name="certification_ack" required style="margin-top:4px"> I certify that this information is accurate and understand that only one official entry per person/email is allowed.</label>
+      </div>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0">
+      <button id="triviaSubmitButton" class="btn btn-primary" type="submit" style="border:0;cursor:pointer;margin-top:22px">Submit Official Entry →</button>
+      <div id="triviaEntryStatus" role="status" aria-live="polite" style="margin-top:16px;font-weight:700"></div>
+      <p style="font-size:12px;color:#6b6270;margin-top:18px">Submitting an entry does not guarantee eligibility or prize selection. TRV reviews entries against the promotion requirements.</p>
+    </form>
   </section>
 </main>
 
@@ -110,8 +133,36 @@ footer{background:#0f0620;color:#ccc;padding:42px 24px 24px;margin-top:56px}.foo
 </footer>
 
 <script>
-var d=document,w="https://tally.so/widgets/embed.js",v=function(){if(typeof Tally!=="undefined"){Tally.loadEmbeds()}else{document.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){e.src=e.dataset.tallySrc})}};
-if(typeof Tally!=="undefined")v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w;s.onload=v;s.onerror=v;d.body.appendChild(s)}
+document.getElementById('triviaEntryForm')?.addEventListener('submit',async function(event){
+  event.preventDefault();
+  var form=event.currentTarget;
+  var button=document.getElementById('triviaSubmitButton');
+  var status=document.getElementById('triviaEntryStatus');
+  button.disabled=true;
+  button.textContent='Submitting…';
+  status.textContent='';
+  var values=Object.fromEntries(new FormData(form).entries());
+  values.completed_consecutively=values.completed_consecutively==='on';
+  values.age_eligible=values.age_eligible==='on';
+  values.residency_eligible=values.residency_eligible==='on';
+  values.certification_ack=values.certification_ack==='on';
+  try{
+    var response=await fetch('/api/submit-trivia-entry',{
+      method:'POST',
+      headers:{'content-type':'application/json','accept':'application/json'},
+      body:JSON.stringify(values)
+    });
+    var data=await response.json().catch(function(){return {};});
+    if(!response.ok) throw new Error(data.error||'Your entry could not be submitted.');
+    form.reset();
+    status.textContent='Official entry received ✓ Check your email for your TRV confirmation.';
+    button.textContent='Entry Submitted ✓';
+  }catch(error){
+    status.textContent=error.message||'Your entry could not be submitted.';
+    button.disabled=false;
+    button.textContent='Submit Official Entry →';
+  }
+});
 </script>
 </body>
 </html>
