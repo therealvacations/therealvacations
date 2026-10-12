@@ -236,7 +236,7 @@ async function loadTripDetail() {
   }
 
   const pricing = node('section', 'detail-section')
-  pricing.append(node('h2', '', 'Choose Your Package'))
+  pricing.append(node('h2', '', packages?.length ? 'Choose Your Package' : 'Package Details'))
   const packageGrid = node('div', 'package-grid')
   packageGrid.append(...(packages || []).map((item) => {
     const card = node('article', 'package-card')
