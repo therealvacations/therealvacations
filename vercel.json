@@ -11,8 +11,13 @@
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
-      "destination": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": true
+    },
+    {
+      "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "permanent": false
     },
     {
       "source": "/terms",
@@ -76,8 +81,13 @@
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html",
-      "destination": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": true
+    },
+    {
+      "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027.html",
+      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "permanent": false
     }
   ],
   "headers": [
