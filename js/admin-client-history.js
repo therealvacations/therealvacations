@@ -41,7 +41,7 @@ async function loadHistory(request=activeRequest){
   if(addButton) addButton.disabled=false;
   setStatus('Permanent Admin-only account history. Entries are append-only and are not deleted with quotes.');
   const {data,error}=await supabase.from('admin_client_history')
-    .select('history_id,user_id,request_id,quote_id,entry_type,note,metadata,occurred_at,created_at,created_by')
+    .select('history_id,user_id,request_id,quote_id,entry_type,note,metadata,occurred_at,created_at,created_by,actor_type,actor_user_id,actor_label,event_key')
     .eq('user_id',userId)
     .order('occurred_at',{ascending:false})
     .order('created_at',{ascending:false});
@@ -59,7 +59,7 @@ async function loadHistory(request=activeRequest){
       row.quote_id?'quote linked':null
     ].filter(Boolean).join(' · ');
     return '<div class="admin-record" style="border-left:4px solid #6b3fa0">'+
-      '<div class="record-heading"><div><h3>'+esc(formatType(row.entry_type))+'</h3><p>'+esc(when)+(context?' · '+esc(context):'')+'</p></div></div>'+
+      '<div class="record-heading"><div><h3>'+esc(formatType(row.entry_type))+'</h3><p>'+esc(when)+(row.actor_label?' · '+esc(row.actor_label):row.actor_type?' · '+esc(formatType(row.actor_type)):'')+(context?' · '+esc(context):'')+'</p></div></div>'+
       '<p class="record-summary" style="white-space:pre-wrap">'+esc(row.note)+'</p>'+
       '</div>';
   }).join('')||'<div class="empty-state">No permanent Admin history entries yet.</div>';
@@ -81,12 +81,16 @@ async function addHistory(){
   const button=$('#addClientHistoryButton');
   if(button){button.disabled=true;button.textContent='Adding…';}
   try{
+    const {data:{user}}=await supabase.auth.getUser();
     const payload={
       user_id:userId,
       request_id:activeRequest.request_id,
       quote_id:quoteId,
       entry_type:type,
       note,
+      actor_type:'admin',
+      actor_user_id:user?.id||null,
+      actor_label:'TRV Admin',
       metadata:{
         label:$('#quoteClient')?.value||null,
         quote_title:$('#quoteTitle')?.value||null
