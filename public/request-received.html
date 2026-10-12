@@ -21,16 +21,35 @@
   <main class="wrap">
     <section class="card">
       <div style="font-size:44px">💜</div>
-      <h1>Your TRV travel request is secured.</h1>
-      <p>The planning is moving now. Your request is with The Real Vacations and is <strong>awaiting live supplier confirmation</strong>.</p>
-      <p>We’ll confirm availability and final details with the airline, hotel or resort, rental-car company, cruise line, attraction, or other supplier included in your request. Once confirmed, we’ll finalize the reservation, arrange the authorized payment, and send your official confirmation numbers and travel credentials.</p>
-      <p>For time-sensitive travel, we may also call or text to make sure you received everything you need before departure.</p>
-      <p style="font-size:13px;color:#85778f"><strong>Important:</strong> Your TRV request is secured, but individual supplier reservations are not confirmed until you receive written confirmation from The Real Vacations.</p>
+      <h1 id="requestTitle">Your TRV request was received.</h1>
+      <div id="requestBody">
+        <p>Your request is now in the TRV system for review.</p>
+      </div>
       <div class="btns">
-        <a class="primary" href="/trips">Explore Group Trips</a>
-        <a class="secondary" href="/resources">Open the Travel Toolkit</a>
+        <a class="primary" id="requestPrimary" href="/trips">Explore Group Trips</a>
+        <a class="secondary" id="requestSecondary" href="/resources">Open the Travel Toolkit</a>
       </div>
     </section>
   </main>
+<script>
+(function(){
+  var mode=new URLSearchParams(location.search).get('mode')||'inquiry';
+  var title=document.getElementById('requestTitle');
+  var body=document.getElementById('requestBody');
+  var primary=document.getElementById('requestPrimary');
+  var secondary=document.getElementById('requestSecondary');
+  if(mode==='secured'){
+    title.textContent='Your TRV travel request is secured.';
+    body.innerHTML='<p>The planning is moving now. Your request is with The Real Vacations and is <strong>awaiting live supplier confirmation</strong>.</p><p>We’ll confirm availability and final details with the applicable airline, hotel or resort, rental-car company, cruise line, attraction, or other supplier. Once confirmed, TRV will complete the authorized next steps and send your official confirmation details.</p><p style="font-size:13px;color:#85778f"><strong>Important:</strong> Individual supplier reservations are not confirmed until you receive written confirmation from The Real Vacations.</p>';
+    primary.href='/my-trips';primary.textContent='Open My TRV Account';
+    secondary.href='/request-travel';secondary.textContent='View Request Travel';
+  }else{
+    title.textContent='TRV received your planning request.';
+    body.innerHTML='<p>Your information has been saved in the TRV system for review and proposal development.</p><p>TRV will follow up using the contact details you provided. This submission is a planning inquiry and is <strong>not yet a confirmed supplier reservation</strong>.</p><p style="font-size:13px;color:#85778f">If you create a TRV account using the same email address, this request will attach to your account automatically.</p>';
+    primary.href='/signup';primary.textContent='Create My TRV Account';
+    secondary.href='/trips';secondary.textContent='Explore Group Trips';
+  }
+})();
+</script>
 </body>
 </html>
