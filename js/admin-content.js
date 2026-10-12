@@ -559,30 +559,64 @@ async function saveContactSettings(event) {
 async function loadCustomInvoices() {
   const box = $('#customInvoiceList')
   if (!box) return
-  box.innerHTML = '<p>Loading approved quote invoices…</p>'
-  const { data: bookings, error } = await supabase.from('custom_bookings')
-    .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
-    .order('created_at', { ascending: false })
-  if (error) {
-    box.innerHTML = '<div class="admin-record"><h3>Invoices could not be loaded</h3><p class="record-summary">'+error.message+'</p></div>'
+  box.innerHTML = '<p>Loading approved quote invoices and group-trip bookings…</p>'
+
+  const [customResult, tripResult] = await Promise.all([
+    supabase.from('custom_bookings')
+      .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
+      .order('created_at', { ascending: false }),
+    supabase.from('bookings')
+      .select('booking_id,user_id,trip_id,package_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,final_payment_deadline,created_at,updated_at,trips(title,dates_start,dates_end,location),trip_packages(name),users(first_name,last_name,email),booking_payments(payment_id,scheduled_amount,scheduled_for,status,paid_amount,paid_at,kind,stripe_checkout_session_id,stripe_payment_intent_id,created_at),travel_group_members(membership_id,display_name,invited_email,role,status,share_total,share_paid,share_status,deposit_required,deposit_paid_at)')
+      .order('created_at', { ascending: false })
+  ])
+
+  if (customResult.error || tripResult.error) {
+    const message = customResult.error?.message || tripResult.error?.message || 'Payments could not be loaded.'
+    box.innerHTML = '<div class="admin-record"><h3>Payments could not be loaded</h3><p class="record-summary">'+esc(message)+'</p></div>'
     return
   }
-  if (!bookings?.length) {
-    box.innerHTML = '<div class="empty-state">No approved custom quote invoices yet.</div>'
-    return
-  }
-  box.innerHTML = bookings.map((b) => {
+
+  const sections = []
+
+  const tripBookings = tripResult.data || []
+  const tripHtml = tripBookings.map((b) => {
+    const trip = Array.isArray(b.trips) ? b.trips[0] : b.trips || {}
+    const pkg = Array.isArray(b.trip_packages) ? b.trip_packages[0] : b.trip_packages || {}
+    const traveler = Array.isArray(b.users) ? b.users[0] : b.users || {}
+    const name = [traveler.first_name, traveler.last_name].filter(Boolean).join(' ') || traveler.email || 'Traveler'
+    const payments = (b.booking_payments || []).sort((a, d) => new Date(d.created_at) - new Date(a.created_at))
+    const paymentRows = payments.length ? payments.map((p) => {
+      const when = p.paid_at ? new Date(p.paid_at).toLocaleString() : (p.scheduled_for || new Date(p.created_at).toLocaleString())
+      const amount = p.status === 'succeeded' && p.paid_amount != null ? p.paid_amount : p.scheduled_amount
+      return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+esc(String(p.kind||'payment').replaceAll('_',' '))+'</strong> · '+money(amount)+' · '+esc(p.status||'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
+    }).join('') : '<p class="hint" style="margin-top:10px">No Stripe payment attempts recorded yet.</p>'
+
+    const members = (b.travel_group_members || [])
+    const memberSummary = members.length
+      ? '<div style="margin-top:10px;padding:10px 12px;background:#faf7fc;border:1px solid #e7deef;border-radius:9px"><strong style="font-size:12px">Travelers / group payment status</strong>'+members.map(m => '<div style="font-size:12px;padding-top:6px">'+esc(m.display_name||m.invited_email||'Traveler')+' · '+esc(m.role||'member')+' · '+money(m.share_paid||0)+' paid of '+money(m.share_total||0)+' · '+esc(m.share_status||m.status||'pending')+'</div>').join('')+'</div>'
+      : ''
+
+    return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(trip.title||'Group Trip')+(pkg.name?' · '+esc(pkg.name):'')+'</p></div><span class="status-badge '+esc(b.status||'')+'">'+esc(String(b.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Booking total</span><br><strong>'+money(b.total_amount)+'</strong></div><div><span class="hint">Deposit</span><br><strong>'+(b.deposit_amount?money(b.deposit_amount):'—')+'</strong></div><div><span class="hint">Paid</span><br><strong>'+money(b.amount_paid)+'</strong></div><div><span class="hint">Balance</span><br><strong>'+money(b.balance_due)+'</strong></div></div><p class="record-summary">'+esc(traveler.email||'')+(trip.location?' · '+esc(trip.location):'')+(b.final_payment_deadline?' · Final balance due '+esc(b.final_payment_deadline):'')+'</p>'+memberSummary+paymentRows+'</article>'
+  }).join('')
+
+  sections.push('<div style="margin-bottom:24px"><h2 style="font-size:18px;margin:0 0 12px">Group Trip Bookings</h2>'+(tripHtml||'<div class="empty-state">No group-trip bookings yet.</div>')+'</div>')
+
+  const bookings = customResult.data || []
+  const customHtml = bookings.map((b) => {
     const req = Array.isArray(b.travel_requests) ? b.travel_requests[0] : b.travel_requests || {}
     const quote = Array.isArray(b.travel_quotes) ? b.travel_quotes[0] : b.travel_quotes || {}
     const opt = Array.isArray(b.travel_quote_options) ? b.travel_quote_options[0] : b.travel_quote_options || {}
     const name = [req.primary_first_name, req.primary_last_name].filter(Boolean).join(' ') || req.requester_email || 'Traveler'
-    const payments = (b.custom_booking_payments || []).sort((a, c) => new Date(c.created_at) - new Date(a.created_at))
+    const payments = (b.custom_booking_payments || []).sort((a, d) => new Date(d.created_at) - new Date(a.created_at))
     const paymentRows = payments.length ? payments.map((p) => {
       const when = p.paid_at ? new Date(p.paid_at).toLocaleString() : new Date(p.created_at).toLocaleString()
       return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+String(p.kind||'payment').replaceAll('_',' ')+'</strong> · '+money(p.amount)+' · '+esc(p.status||'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
     }).join('') : '<p class="hint" style="margin-top:10px">No Stripe payment attempts recorded yet.</p>'
     return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(quote.title||req.destination||'Custom quote')+(opt.name?' · '+esc(opt.name):'')+'</p></div><span class="status-badge '+esc(b.status||'')+'">'+esc(String(b.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Invoice total</span><br><strong>'+money(b.total_amount)+'</strong></div><div><span class="hint">Deposit</span><br><strong>'+(b.deposit_amount?money(b.deposit_amount):'—')+'</strong></div><div><span class="hint">Paid</span><br><strong>'+money(b.amount_paid)+'</strong></div><div><span class="hint">Balance</span><br><strong>'+money(b.balance_due)+'</strong></div></div><p class="record-summary">'+esc(req.requester_email||'')+(req.destination?' · '+esc(req.destination):'')+'</p>'+paymentRows+'<div class="record-actions" style="margin-top:12px"><a class="secondary-button" href="/proposal?quote='+encodeURIComponent(b.quote_id)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Approved Proposal</a></div></article>'
   }).join('')
+
+  sections.push('<div><h2 style="font-size:18px;margin:0 0 12px">Custom Quote Bookings</h2>'+(customHtml||'<div class="empty-state">No approved custom quote invoices yet.</div>')+'</div>')
+  box.innerHTML = sections.join('')
 }
 
 async function verifyStripeConnection() {
