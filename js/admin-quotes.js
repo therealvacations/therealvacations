@@ -282,7 +282,7 @@ async function syncSupplierAssignment(itemId,itemPayload){
     quote_item_id:itemId,
     service_type:itemPayload.category||null,
     description:[itemPayload.title,itemPayload.description].filter(Boolean).join(' — '),
-    supplier_subtotal:itemPayload.amount==null?0:itemPayload.amount*Math.max(1,itemPayload.quantity||1),
+    supplier_subtotal:itemPayload.amount==null?0:itemPayload.amount,
     service_fee:0,
     taxes_fees:0,
     currency:'usd',
