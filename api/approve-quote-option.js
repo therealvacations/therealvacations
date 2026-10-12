@@ -22,7 +22,7 @@ export default async function handler(req,res){
   if(!quoteId||!optionId) return res.status(422).json({error:'Quote and option are required.'});
 
   const {data:quote,error:quoteError}=await admin.from('travel_quotes')
-    .select('quote_id,request_id,status,valid_until,currency,travel_requests!inner(user_id),travel_quote_options(option_id,total_amount,deposit_amount,pricing_display_mode,package_total_amount,travel_quote_items(item_id,category,title,amount,client_visible,builder_managed,travel_quote_item_variants(variant_id,item_id,label,amount,active,is_default)))')
+    .select('quote_id,title,request_id,status,valid_until,currency,travel_requests!inner(user_id),travel_quote_options(option_id,name,total_amount,deposit_amount,pricing_display_mode,package_total_amount,travel_quote_items(item_id,category,title,amount,client_visible,builder_managed,travel_quote_item_variants(variant_id,item_id,label,amount,active,is_default)))')
     .eq('quote_id',quoteId).maybeSingle();
   if(quoteError||!quote) return res.status(404).json({error:'Quote not found'});
   const request=Array.isArray(quote.travel_requests)?quote.travel_requests[0]:quote.travel_requests;
@@ -90,6 +90,27 @@ export default async function handler(req,res){
     .select('custom_booking_id,total_amount,deposit_amount')
     .maybeSingle();
   if(bookingError||!booking?.custom_booking_id) return res.status(500).json({error:'Your quote was approved, but the booking could not be prepared.'});
+
+  await admin.from('admin_client_history').insert({
+    user_id:user.id,
+    request_id:quote.request_id,
+    quote_id:quote.quote_id,
+    entry_type:'approval',
+    note:'Traveler approved '+(option.name||'a quote option')+' for '+(quote.title||'their TRV quote')+' at '+(total/100).toLocaleString('en-US',{style:'currency',currency:'USD'})+'.',
+    metadata:{
+      option_id:optionId,
+      option_name:option.name||null,
+      pricing_display_mode:option.pricing_display_mode||'itemized',
+      total_amount:total,
+      deposit_amount:deposit,
+      booking_id:booking.custom_booking_id
+    },
+    occurred_at:now,
+    created_by:null,
+    actor_type:'client',
+    actor_user_id:user.id,
+    actor_label:'Traveler'
+  });
 
   return res.status(200).json({ok:true,booking_id:booking.custom_booking_id,total_amount:total,deposit_amount:deposit});
 }
