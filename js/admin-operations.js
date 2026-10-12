@@ -11,7 +11,7 @@ function buildWheelFields(){
   const wrap=$('#wheelPrizeFields'); if(!wrap) return;
   wrap.innerHTML=Array.from({length:8},(_,i)=>{
     const n=i+1;
-    return '<div class="field"><label for="wheelPrize'+n+'">Prize '+n+'</label><div style="display:flex;gap:8px"><input id="wheelPrize'+n+'" placeholder="Leave blank to remove this slice"/><button class="danger-button clear-wheel-prize" data-slot="'+n+'" type="button">Remove</button></div></div>';
+    return '<div class="field"><label for="wheelPrize'+n+'">Prize '+n+'</label><div style="display:grid;grid-template-columns:1fr 120px auto;gap:8px"><input id="wheelPrize'+n+'" placeholder="Leave blank to remove this slice"/><input id="wheelInventory'+n+'" type="number" min="0" step="1" placeholder="Unlimited"/><button class="danger-button clear-wheel-prize" data-slot="'+n+'" type="button">Remove</button></div><p class="hint">Inventory blank = unlimited. Set 0 to pause this prize without deleting its name.</p></div>';
   }).join('');
   document.querySelectorAll('.clear-wheel-prize').forEach(btn=>btn.onclick=()=>{const el=$('#wheelPrize'+btn.dataset.slot);if(el)el.value='';});
 }
@@ -22,7 +22,7 @@ async function loadWheel(){
   if(error) return toast(error.message,true);
   wheel=data||{};
   $('#wheelActive').checked=wheel.is_active!==false;
-  for(let i=1;i<=8;i++) $('#wheelPrize'+i).value=wheel['prize_'+i]||'';
+  for(let i=1;i<=8;i++){ $('#wheelPrize'+i).value=wheel['prize_'+i]||''; $('#wheelInventory'+i).value=wheel['inventory_'+i]==null?'':wheel['inventory_'+i]; }
   $('#wheelColor1').value=wheel.wheel_color_1||'#7c3aed';
   $('#wheelColor2').value=wheel.wheel_color_2||'#c084fc';
   $('#wheelColor3').value=wheel.wheel_color_3||'#a855f7';
@@ -31,13 +31,13 @@ async function loadWheel(){
 function renderWheelPreview(){
   const active=[]; for(let i=1;i<=8;i++){const v=$('#wheelPrize'+i)?.value.trim(); if(v)active.push(v);}
   const box=$('#wheelPreview'); if(!box)return;
-  box.innerHTML='<div class="admin-record"><h3>'+(($('#wheelActive')?.checked)?'Wheel is active':'Wheel is OFF')+'</h3><p class="record-summary">'+(active.length?active.map((v,i)=>(i+1)+'. '+esc(v)).join('<br>'):'No active prize slices.')+'</p><p>'+active.length+' active prize'+(active.length===1?'':'s')+'</p></div>';
+  box.innerHTML='<div class="admin-record"><h3>'+(($('#wheelActive')?.checked)?'Wheel is active':'Wheel is OFF')+'</h3><p class="record-summary">'+(active.length?active.map((v,i)=>{const inv=$('#wheelInventory'+(i+1))?.value;return (i+1)+'. '+esc(v)+' · '+(inv===''?'Unlimited':esc(inv)+' remaining');}).join('<br>'):'No active prize slices.')+'</p><p>'+active.length+' configured prize'+(active.length===1?'':'s')+'</p></div>';
 }
 $('#wheelForm')?.addEventListener('input',renderWheelPreview);
 $('#wheelForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
   const payload={is_active:$('#wheelActive').checked,wheel_color_1:$('#wheelColor1').value,wheel_color_2:$('#wheelColor2').value,wheel_color_3:$('#wheelColor3').value,updated_at:new Date().toISOString()};
-  for(let i=1;i<=8;i++) payload['prize_'+i]=$('#wheelPrize'+i).value.trim()||null;
+  for(let i=1;i<=8;i++){ payload['prize_'+i]=$('#wheelPrize'+i).value.trim()||null; const raw=$('#wheelInventory'+i).value.trim(); payload['inventory_'+i]=raw===''?null:Math.max(0,Math.trunc(Number(raw)||0)); }
   const id=wheel?.id||1;
   const {error}=await supabase.from('wheel_settings').upsert({id,...payload},{onConflict:'id'});
   if(error)return toast(error.message,true);
