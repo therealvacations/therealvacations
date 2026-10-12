@@ -168,7 +168,13 @@ async function loadSystemHealth(){
   const missingConfig=configEntries.filter(([,present])=>!present).map(([name])=>name);
   const stripeHealthy=stripeResponse.ok&&stripe.charges_enabled===true&&stripe.payouts_enabled===true;
   const cronRows=health.cron||[];
-  const cronHealthy=cronRows.length>0&&cronRows.every(row=>row.active===true&&row.last_status==='succeeded');
+  const jobRuns=health.job_runs||[];
+  const latestJobRun=name=>jobRuns.find(row=>row.job_name===name)||null;
+  const chargeRun=latestJobRun('charge-scheduled-payments');
+  const reminderRun=latestJobRun('send-payment-reminders');
+  const cronScheduleHealthy=cronRows.length>0&&cronRows.every(row=>row.active===true&&row.last_status==='succeeded');
+  const functionRunsHealthy=!health.job_run_error&&!!chargeRun&&!!reminderRun&&chargeRun.status==='succeeded'&&reminderRun.status==='succeeded';
+  const cronHealthy=cronScheduleHealthy&&functionRunsHealthy;
   const emailFailed=Number(health.email_summary?.failed||0);
   const emailHealthy=!health.email_error&&emailFailed===0;
   const webhookHealthy=!health.stripe_webhook_error;
@@ -177,7 +183,7 @@ async function loadSystemHealth(){
   summary.innerHTML='<div class="record-heading"><div><h3>'+esc(overall?'TRV production systems are healthy':'TRV system needs attention')+'</h3><p>Live operational snapshot · '+esc(new Date().toLocaleString())+'</p></div>'+healthBadge(overall,'Healthy','Review')+'</div>'+
     '<p class="record-summary">Configuration: '+(missingConfig.length?'Missing '+esc(missingConfig.join(', ')):'Complete')+
     '<br>Stripe: '+(stripeResponse.ok?(stripeHealthy?'Charges and payouts enabled':'Review Stripe account status'):'Stripe health check failed')+
-    '<br>Scheduled jobs: '+(cronHealthy?'Recent runs succeeded':'Review cron status')+
+    '<br>Scheduled jobs: '+(cronHealthy?'Cron and Edge Functions succeeded':'Review scheduled-function status')+
     '<br>Recent email failures: '+emailFailed+
     '<br>Webhook monitor: '+(webhookHealthy?'Available':'Unavailable')+'</p>';
 
@@ -188,10 +194,17 @@ async function loadSystemHealth(){
     (stripeResponse.ok?'<p class="record-summary">Account: '+esc(stripe.account_id||'—')+'<br>Charges: '+(stripe.charges_enabled?'Enabled':'Disabled')+' · Payouts: '+(stripe.payouts_enabled?'Enabled':'Disabled')+' · Mode: '+(stripe.livemode?'LIVE':'TEST')+'</p>':'')+'</div>';
   configBox.innerHTML=stripeCard+configCards;
 
-  cronBox.innerHTML=cronRows.map(row=>{
+  const cronCards=cronRows.map(row=>{
     const ok=row.active===true&&row.last_status==='succeeded';
-    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(row.jobname||('Job '+row.jobid))+'</h3><p>'+esc(row.schedule||'No schedule')+'</p></div>'+healthBadge(ok,'Succeeded','Review')+'</div><p class="record-summary">Active: '+(row.active?'Yes':'No')+'<br>Last run: '+esc(dt(row.last_start))+' → '+esc(dt(row.last_end))+(row.return_message?'<br>Result: '+esc(row.return_message):'')+'</p></div>';
-  }).join('')||'<div class="empty-state">No scheduled jobs were returned.</div>';
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(row.jobname||('Cron Job '+row.jobid))+'</h3><p>'+esc(row.schedule||'No schedule')+' · pg_cron trigger</p></div>'+healthBadge(ok,'Triggered','Review')+'</div><p class="record-summary">Active: '+(row.active?'Yes':'No')+'<br>Last cron trigger: '+esc(dt(row.last_start))+' → '+esc(dt(row.last_end))+(row.return_message?'<br>Cron result: '+esc(row.return_message):'')+'</p></div>';
+  }).join('');
+  const functionCards=jobRuns.slice(0,12).map(run=>{
+    const ok=run.status==='succeeded';
+    const details=run.details||{};
+    return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(run.job_name)+'</h3><p>Actual Edge Function execution · '+esc(dt(run.started_at))+'</p></div>'+healthBadge(ok,run.status==='running'?'Running':'Succeeded',run.status==='failed'?'FAILED':'Review')+'</div><p class="record-summary">Processed: '+Number(run.processed_count||0)+' · Sent: '+Number(run.sent_count||0)+(run.finished_at?'<br>Finished: '+esc(dt(run.finished_at)):'')+(run.error_message?'<br><strong>Error:</strong> '+esc(run.error_message):'')+(details.failed_payment_count!=null?'<br>Payment declines/failures handled: '+Number(details.failed_payment_count||0):'')+(details.reconciliation_pending_count?'<br>Reconciliation pending: '+Number(details.reconciliation_pending_count):'')+'</p></div>';
+  }).join('');
+  cronBox.innerHTML=(cronCards||'<div class="empty-state">No pg_cron jobs were returned.</div>')+
+    (functionCards?'<h3 style="margin:22px 0 10px">Actual Scheduled Function Runs</h3>'+functionCards:'<div class="empty-state">No scheduled-function execution records yet.</div>');
 
   const emails=health.emails||[];
   emailBox.innerHTML='<div class="admin-record"><h3>'+Number(health.email_summary?.recent||0)+' recent email deliveries</h3><p class="record-summary">Sent: '+Number(health.email_summary?.sent||0)+' · Failed: '+emailFailed+' · Pending/other: '+Number(health.email_summary?.pending||0)+'</p></div>'+
