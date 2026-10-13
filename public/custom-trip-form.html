@@ -36,13 +36,9 @@ nav{background:#1a0533;padding:15px 24px;display:flex;justify-content:space-betw
 <div class="field"><label>Destination(s) *</label><input name="destination" required placeholder="e.g. Turks & Caicos"></div>
 <div class="field"><label>Travel Dates *</label><input name="preferred_dates" required placeholder="Exact dates or flexible window"></div>
 <div class="field"><label>Approximate Budget</label><input name="budget_range" placeholder="Total budget or per-person range"></div>
-<div class="field"><label>How soon do you need this confirmed? *</label>
-<select name="urgency" id="urgency" required>
-<option value="">Choose one...</option>
-<option value="standard">Standard — more than 5 days away</option>
-<option value="within-5-days">Last-minute — travel within 3–5 days</option>
-<option value="within-72-hours">Urgent — travel within 72 hours</option>
-</select></div>
+<div class="field"><label>Planning timeline</label>
+<input type="hidden" name="urgency" id="urgency" value="standard">
+<p class="hint" style="margin:0">Full custom and group trip planning is available for travel more than 5 days away. For travel within 5 days, use <a href="/request-travel" style="font-weight:800;color:#6d28d9">Request Travel</a> for Flight, Hotel, and/or Rental Car only.</p></div>
 </section>
 
 <section class="card"><h2>Lodging</h2>
