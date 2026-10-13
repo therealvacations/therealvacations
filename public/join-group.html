@@ -58,9 +58,9 @@ if (!validCode) {
       const button = event.currentTarget;
       button.disabled = true;
       button.textContent = 'Joining...';
-      const { error } = await supabase.functions.invoke('join-group', { body: { code } });
-      if (error) {
-        showStatus('We could not accept this invitation. It may be expired, already used, or assigned to another email address.', 'error');
+      const { data, error } = await supabase.functions.invoke('join-group', { body: { code } });
+      if (error || !data?.joined || !data?.group_id) {
+        showStatus(data?.error || 'We could not accept this invitation. It may be expired, already used, or assigned to another email address.', 'error');
         button.disabled = false;
         button.textContent = 'Try Again';
         return;
