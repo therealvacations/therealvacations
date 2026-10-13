@@ -1,13 +1,66 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Search & Book | The Real Vacations</title><link rel="icon" href="/favicon.ico"/>
-<style>*{box-sizing:border-box}body{margin:0;background:#f6f4f8;color:#251b30;font-family:"Segoe UI",Arial,sans-serif}nav{background:#1a0533;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}nav img{height:46px}.links{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.links a,.links button{color:#fff;text-decoration:none;font-weight:700;font-size:14px;background:none;border:0;cursor:pointer}.hero{padding:46px 22px 26px;text-align:center}.hero h1{color:#1a0533;font-size:38px;margin:0 0 8px}.hero p{color:#6c6175;max-width:760px;margin:auto}.wrap{max-width:1000px;margin:auto;padding:20px 22px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.card{background:#fff;border:1px solid #e3d9ec;border-radius:20px;padding:24px;box-shadow:0 12px 30px rgba(40,20,60,.07)}.card h2{color:#1a0533;margin:0 0 8px}.card p{color:#6e6278;line-height:1.55}.btn{display:inline-block;margin-top:14px;background:#7c3aed;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;text-decoration:none}.tag{display:inline-block;background:#f0e7fb;color:#6d28d9;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:10px}.note{margin-top:24px;background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:16px;color:#9a3412}</style></head>
+<style>*{box-sizing:border-box}body{margin:0;background:#f6f4f8;color:#251b30;font-family:"Segoe UI",Arial,sans-serif}nav{background:#1a0533;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}nav img{height:46px}.links{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.links a,.links button{color:#fff;text-decoration:none;font-weight:700;font-size:14px;background:none;border:0;cursor:pointer}.hero{padding:46px 22px 26px;text-align:center}.hero h1{color:#1a0533;font-size:38px;margin:0 0 8px}.hero p{color:#6c6175;max-width:760px;margin:auto}.wrap{max-width:1100px;margin:auto;padding:20px 22px 60px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}.card{background:#fff;border:1px solid #e3d9ec;border-radius:20px;padding:24px;box-shadow:0 12px 30px rgba(40,20,60,.07)}.card h2,.card h3{color:#1a0533;margin:0 0 8px}.card p{color:#6e6278;line-height:1.55}.btn{display:inline-block;margin-top:14px;background:#7c3aed;color:#fff;padding:12px 20px;border-radius:999px;font-weight:800;text-decoration:none}.tag{display:inline-block;background:#f0e7fb;color:#6d28d9;padding:5px 10px;border-radius:999px;font-size:12px;font-weight:800;margin-bottom:10px}.note{margin-top:24px;background:#fff7ed;border:1px solid #fed7aa;border-radius:14px;padding:16px;color:#9a3412}.section{margin-top:34px}.section h2{color:#1a0533;margin:0 0 6px}.section-intro{color:#6c6175;margin:0 0 16px}.trip-meta{font-size:13px;color:#7a6e84;font-weight:700}.price{font-weight:800;color:#6d28d9;margin-top:10px}.empty{background:#fff;border:1px dashed #d7c9e2;border-radius:16px;padding:20px;color:#6c6175}</style></head>
 <body><nav><a href="/my-trips"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"></a><div class="links"><a href="/my-trips">Member Home</a><a href="/my-trips#travel-groups">My Trips</a><a href="/request-travel">Request a Trip</a><a href="/member-profile">Profile</a><a href="/update-payment-method">Payment Method</a><button id="logout">Logout</button></div></nav>
 <section class="hero"><h1>Search & Book</h1><p>Book simple travel yourself or send TRV a request when you want us to handle the planning and supplier coordination.</p></section>
-<main class="wrap"><div class="grid">
+<main class="wrap">
+<div class="grid">
 <section class="card"><span class="tag">Flights</span><h2>Search Flights</h2><p>Use the TRV flight search without leaving your member experience.</p><a class="btn" href="/flights">Search Flights →</a></section>
-<section class="card"><span class="tag">Hotels & Stays</span><h2>Search Hotels & Stays</h2><p>Compare hotel and resort options through a TRV travel relationship while keeping The Real Vacations as your starting point.</p><a class="btn" href="https://www.expedia.com/Hotels" target="_blank" rel="noopener sponsored">Search Hotels →</a><p style="margin:14px 0 0;font-size:12px;color:#8a7e92"><strong>Partnered with Expedia</strong></p></section>
-<section class="card"><span class="tag">Full Service</span><h2>Have TRV Handle It</h2><p>Flights, hotels, cars, cruises, tickets or a complete custom vacation can be requested from your account and will appear under My Travel Requests & Quotes.</p><a class="btn" href="/request-travel">Request a Trip →</a></section>
-</div></main>
-<script type="module">import {supabase} from '/js/supabase-client.js';import{handleLogout}from'/js/auth.js';const{data:{user}}=await supabase.auth.getUser();if(!user)location.replace('/login?next='+encodeURIComponent('/member-book'));document.getElementById('logout').onclick=()=>handleLogout();</script>
+<section class="card"><span class="tag">Full Service</span><h2>Have TRV Handle It</h2><p>Flights, hotels, cars, cruises, tickets, villas, or a complete custom vacation can be requested from your account and will appear under My Travel Requests & Quotes.</p><a class="btn" href="/request-travel">Request a Trip →</a></section>
+</div>
+<section class="section"><h2>Hotels & Stays</h2><p class="section-intro">These stay-search options are managed by TRV in Admin. If TRV changes or removes a partner/resource, this page updates automatically.</p><div class="grid" id="hotelResources"><div class="empty">Loading current stay resources…</div></div></section>
+<section class="section"><h2>Current TRV Group Trips</h2><p class="section-intro">Browse the same active trips and package pricing shown on the public Trips page, from inside your member account.</p><div class="grid" id="memberTrips"><div class="empty">Loading current trips…</div></div></section>
+</main>
+<script type="module">
+import {supabase} from '/js/supabase-client.js';
+import{handleLogout}from'/js/auth.js';
+
+const{data:{user}}=await supabase.auth.getUser();
+if(!user) location.replace('/login?next='+encodeURIComponent('/member-book'));
+document.getElementById('logout').onclick=()=>handleLogout();
+
+const esc=v=>String(v??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+const money=cents=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0}).format((Number(cents)||0)/100);
+const fmt=value=>value?new Intl.DateTimeFormat('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'}).format(new Date(value+'T00:00:00Z')):'Dates coming soon';
+const safeUrl=value=>{try{const u=new URL(value,location.origin);return ['http:','https:'].includes(u.protocol)?u.href:'#'}catch{return '#'}};
+
+const [{data:hotelResources,error:hotelError},{data:trips,error:tripError},{data:packages,error:packageError}]=await Promise.all([
+  supabase.from('resources').select('resource_id,title,description,icon,link_url,link_label,sort_order,is_featured').eq('is_active',true).eq('category','hotel').order('is_featured',{ascending:false}).order('sort_order'),
+  supabase.from('trips').select('trip_id,title,slug,dates_start,dates_end,location,description_short,is_featured,sort_order').eq('status','active').order('sort_order').order('dates_start'),
+  supabase.from('trip_packages').select('trip_id,name,total_amount,deposit_amount,sort_order').eq('is_active',true).order('sort_order')
+]);
+
+const hotelBox=document.getElementById('hotelResources');
+if(hotelError){
+  hotelBox.innerHTML='<div class="empty">Stay resources could not be loaded right now.</div>';
+}else if(!hotelResources?.length){
+  hotelBox.innerHTML='<div class="empty">No stay-search resources are currently active. Use Request a Trip and TRV can handle the search for you.</div>';
+}else{
+  hotelBox.innerHTML=hotelResources.map(item=>{
+    const url=safeUrl(item.link_url);
+    const external=new URL(url,location.origin).origin!==location.origin;
+    return '<section class="card"><span class="tag">'+esc(item.icon||'🏨')+' Hotels & Stays</span><h3>'+esc(item.title)+'</h3><p>'+esc(item.description||'Search current hotel and stay options.')+'</p><a class="btn" href="'+esc(url)+'"'+(external?' target="_blank" rel="noopener sponsored"':'')+'>'+esc(item.link_label||'Open →')+'</a></section>';
+  }).join('');
+}
+
+const memberTrips=document.getElementById('memberTrips');
+if(tripError||packageError){
+  memberTrips.innerHTML='<div class="empty">Current group trips could not be loaded right now.</div>';
+}else{
+  const byTrip=new Map();
+  for(const p of packages||[]){const list=byTrip.get(p.trip_id)||[];list.push(p);byTrip.set(p.trip_id,list);}
+  const visible=(trips||[]).filter(t=>!String(t.slug||'').startsWith('trv-internal-test-'));
+  if(!visible.length){
+    memberTrips.innerHTML='<div class="empty">New group trips are being prepared. Check back soon.</div>';
+  }else{
+    memberTrips.innerHTML=visible.map(t=>{
+      const list=byTrip.get(t.trip_id)||[];
+      const minimum=list.length?Math.min(...list.map(p=>Number(p.total_amount))):null;
+      const dates=t.dates_end&&t.dates_end!==t.dates_start?fmt(t.dates_start)+' – '+fmt(t.dates_end):fmt(t.dates_start);
+      return '<section class="card"><span class="tag">'+(t.is_featured?'Featured Trip':'TRV Group Trip')+'</span><h3>'+esc(t.title)+'</h3><p class="trip-meta">'+esc(dates)+(t.location?' · '+esc(t.location):'')+'</p><p>'+esc(t.description_short||'A curated group experience from The Real Vacations.')+'</p>'+(minimum!==null?'<div class="price">Packages from '+esc(money(minimum))+' per person</div>':'')+'<a class="btn" href="/trip?slug='+encodeURIComponent(t.slug)+'">View Details →</a></section>';
+    }).join('');
+  }
+}
+</script>
 </body></html>
