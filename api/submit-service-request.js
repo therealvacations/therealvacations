@@ -80,6 +80,11 @@ export default async function handler(req, res) {
         return res.status(422).json({ error: 'Type your full legal name as your electronic signature.' });
       }
       const expedited=/within-72-hours|within-5-days/i.test(clean(body.urgency));
+      if (serviceType === 'custom-trip' && expedited) {
+        return res.status(422).json({
+          error: 'Full custom/group planning is not available through the expedited path. For travel within 5 days, choose Flight, Hotel, and/or Rental Car from Request Travel.'
+        });
+      }
       if (expedited && !truthy(body.expedited_fee_acknowledged)) {
         return res.status(422).json({ error: 'Please acknowledge the expedited-service fee policy for last-minute travel.' });
       }
