@@ -60,71 +60,42 @@ export default async function handler(req, res) {
   const card = paymentMethod.card;
   if (!card?.last4) return res.status(409).json({ error: 'Saved card details are unavailable' });
 
-  await admin.from('user_payment_methods')
-    .update({ is_default: false })
-    .eq('user_id', user.id);
-
-  const { data: existing } = await admin.from('user_payment_methods')
-    .select('method_id')
-    .eq('user_id', user.id)
-    .eq('stripe_payment_method_id', paymentMethodId)
-    .maybeSingle();
-
-  let method;
-  if (existing) {
-    const { data, error } = await admin.from('user_payment_methods')
-      .update({
-        stripe_customer_id: customerId,
-        cardholder_name: cardholderName,
-        last4: card.last4,
-        brand: card.brand || null,
-        exp_month: card.exp_month || null,
-        exp_year: card.exp_year || null,
-        is_default: true,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('method_id', existing.method_id)
-      .select('method_id,last4,brand,exp_month,exp_year,is_default')
-      .single();
-    if (error) return res.status(500).json({ error: 'Unable to save payment method' });
-    method = data;
-  } else {
-    const { data, error } = await admin.from('user_payment_methods')
-      .insert({
-        user_id: user.id,
-        stripe_customer_id: customerId,
-        stripe_payment_method_id: paymentMethodId,
-        cardholder_name: cardholderName,
-        last4: card.last4,
-        brand: card.brand || null,
-        exp_month: card.exp_month || null,
-        exp_year: card.exp_year || null,
-        is_default: true,
-        updated_at: new Date().toISOString(),
-      })
-      .select('method_id,last4,brand,exp_month,exp_year,is_default')
-      .single();
-    if (error) return res.status(500).json({ error: 'Unable to save payment method' });
-    method = data;
-  }
-
-  const { data: autopayUpdates, error: autopayError } = await admin.rpc('replace_user_autopay_payment_method', {
+  const { data: atomicRows, error: atomicError } = await admin.rpc('save_user_payment_method_atomic', {
     p_user_id: user.id,
     p_customer_id: customerId,
     p_payment_method_id: paymentMethodId,
+    p_cardholder_name: cardholderName,
+    p_last4: card.last4,
+    p_brand: card.brand || null,
+    p_exp_month: card.exp_month || null,
+    p_exp_year: card.exp_year || null,
     p_stripe_account_id: null
   });
-  if (autopayError) {
-    console.error('Unable to replace authorized autopay method', autopayError.message);
-    return res.status(500).json({ error: 'The card was saved, but authorized installment schedules could not be updated. Please contact TRV before the next payment date.' });
+
+  if (atomicError) {
+    console.error('Unable to atomically save payment method', atomicError.message);
+    return res.status(500).json({ error: 'Your payment method could not be updated. No TRV payment schedule was changed.' });
   }
 
-  const updateSummary = Array.isArray(autopayUpdates) ? (autopayUpdates[0] || {}) : (autopayUpdates || {});
+  const savedRow = Array.isArray(atomicRows) ? atomicRows[0] : atomicRows;
+  if (!savedRow?.method_id) {
+    return res.status(500).json({ error: 'Your payment method could not be updated. No TRV payment schedule was changed.' });
+  }
+
+  const method = {
+    method_id: savedRow.method_id,
+    last4: savedRow.last4,
+    brand: savedRow.brand,
+    exp_month: savedRow.exp_month,
+    exp_year: savedRow.exp_year,
+    is_default: savedRow.is_default
+  };
+
   return res.status(200).json({
     saved: true,
     method,
     autopay_updated: true,
-    updated_booking_schedules: Number(updateSummary.updated_bookings || 0),
-    updated_traveler_schedules: Number(updateSummary.updated_group_members || 0)
+    updated_booking_schedules: Number(savedRow.updated_bookings || 0),
+    updated_traveler_schedules: Number(savedRow.updated_group_members || 0)
   });
 }
