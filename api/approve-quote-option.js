@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const isProcessing=i=>String(i.category||'').toLowerCase()==='processing_fee'||/processing convenience fee/i.test(String(i.title||''));
+const isProcessing=i=>String(i.category||'').toLowerCase()==='processing_fee'||/^(fees|processing convenience fee)$/i.test(String(i.title||''));
 
 export default async function handler(req,res){
   if(req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
