@@ -59,7 +59,7 @@ export default async function handler(req,res){
     if(!selectedIds.includes(fixed.item_id)) return res.status(422).json({error:'A required trip item is missing from your selection.'});
   }
 
-  const pricedSelected=selected.filter(i=>String(i.category||'').toLowerCase()!=='processing_fee'&&!/processing convenience fee/i.test(String(i.title||'')));
+  const pricedSelected=selected.filter(i=>String(i.category||'').toLowerCase()!=='processing_fee'&&!/^(fees|processing convenience fee)$/i.test(String(i.title||'')));
   const subtotal=pricedSelected.reduce((sum,i)=>sum+Math.max(0,Number(i.amount)||0),0);
   const processingFee=Math.round(subtotal*0.035);
   const total=subtotal+processingFee;
