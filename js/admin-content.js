@@ -727,7 +727,7 @@ async function initialize() {
   const requestedButton = requestedTab ? document.querySelector('.admin-tab[data-tab="' + CSS.escape(requestedTab) + '"]') : null
   const firstTab = (requestedButton && !requestedButton.hidden) ? requestedButton : $$('.admin-tab').find((button) => !button.hidden)
   if (!firstTab) return showMessage('This admin account has no content permissions.', 'error')
-  setTab(firstTab.dataset.tab); await loadAll(); $('#adminLoading').hidden = true; $('#adminApp').hidden = false
+  setTab(firstTab.dataset.tab); $('#adminLoading').hidden = true; $('#adminApp').hidden = false; loadAll().catch((error) => { console.error('Admin data load failed:', error); showMessage('Admin opened, but one or more sections could not finish loading.', 'error') })
 }
 
 Array.from(document.querySelectorAll('.admin-tab')).forEach((button) => button.addEventListener('click', () => setTab(button.dataset.tab)))
