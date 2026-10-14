@@ -131,7 +131,8 @@ if(user){
 
     optionsEl.innerHTML=opts.map(o=>{
       const items=(o.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false).sort((a,b)=>a.sort_order-b.sort_order);
-      const itemsHtml=items.length?'<div class="items">'+items.map(i=>{
+      const displayItems=items.filter(i=>String(i.category||'').toLowerCase()!=='processing_fee');
+      const itemsHtml=displayItems.length?'<div class="items">'+displayItems.map(i=>{
         const detailHtml=i.details&&Object.keys(i.details).length?'<div class="item-details">'+Object.entries(i.details).map(([k,v])=>'<div><strong>'+esc(k)+':</strong> '+esc(v)+'</div>').join('')+'</div>':'';
         const imageHtml=i.image_url?'<img src="'+esc(i.image_url)+'" alt="'+esc(i.title||'Travel proposal item')+'" style="width:100%;max-height:320px;object-fit:cover;border-radius:14px;margin:12px 0">':'';
         const attachments=(Array.isArray(i.attachments)?i.attachments:[]).map(a=>a.type==='image'
