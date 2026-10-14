@@ -104,7 +104,7 @@ if(user){
         const ids=[...document.querySelectorAll('.mix-choice:checked')].map(x=>x.value).filter(Boolean);
         const chosen=ids.map(id=>byId.get(id)).filter(Boolean);
         const subtotal=chosen
-          .filter(i=>String(i.category||'').toLowerCase()!=='processing_fee'&&!/processing convenience fee/i.test(String(i.title||'')))
+          .filter(i=>String(i.category||'').toLowerCase()!=='processing_fee'&&!/^(fees|processing convenience fee)$/i.test(String(i.title||'')))
           .reduce((sum,i)=>sum+(Number(i.amount)||0),0);
         const total=subtotal+Math.round(subtotal*0.035);
         const totalEl=document.getElementById('mixTotal'); if(totalEl)totalEl.textContent=money(total);
@@ -143,7 +143,7 @@ if(user){
         const variantHtml=variants.length?'<div class="item-details" style="margin-top:12px"><strong>Choose your option</strong>'+variants.map(v=>'<label class="builder-choice" style="margin-top:8px"><input class="item-variant-choice" type="radio" name="variant-'+esc(o.option_id)+'-'+esc(i.item_id)+'" data-option="'+esc(o.option_id)+'" data-item="'+esc(i.item_id)+'" data-amount="'+Number(v.amount||0)+'" value="'+esc(v.variant_id)+'" '+(chosenDefault?.variant_id===v.variant_id?'checked':'')+'><span><strong>'+esc(v.label)+'</strong>'+(o.pricing_display_mode==='package'?'':' · '+money(v.amount))+(v.description?'<br><small>'+esc(v.description)+'</small>':'')+'</span></label>').join('')+'</div>':'';
         const packageMode=o.pricing_display_mode==='package';
         const displayed=packageMode?'Included':(variants.length?(chosenDefault?money(chosenDefault.amount):'Choose an option'):(i.amount==null?'Price pending':money(i.amount)));
-        const processing=String(i.category||'').toLowerCase()==='processing_fee'||/processing convenience fee/i.test(String(i.title||''));
+        const processing=String(i.category||'').toLowerCase()==='processing_fee'||/^(fees|processing convenience fee)$/i.test(String(i.title||''));
         return '<section class="proposal-item" data-item="'+esc(i.item_id)+'"><div class="item-top"><div><div class="item-type">'+esc(String(i.category||'other').replaceAll('_',' '))+'</div><h3>'+esc(i.title)+'</h3></div><div class="item-price '+(processing?'processing-price':'')+'" data-option="'+esc(o.option_id)+'" data-item="'+esc(i.item_id)+'">'+displayed+'</div></div>'+imageHtml+'<p class="item-desc">'+esc(i.description||'')+'</p>'+variantHtml+detailHtml+attachmentHtml+'</section>';
       }).join('')+'</div>':'';
       const legacyDetails='';
@@ -179,7 +179,7 @@ if(user){
       const items=(option.travel_quote_items||[]).filter(i=>i.builder_managed===true&&i.client_visible!==false);
       let subtotal=0;
       items.forEach(i=>{
-        const processing=String(i.category||'').toLowerCase()==='processing_fee'||/processing convenience fee/i.test(String(i.title||''));
+        const processing=String(i.category||'').toLowerCase()==='processing_fee'||/^(fees|processing convenience fee)$/i.test(String(i.title||''));
         if(processing)return;
         const variants=(i.travel_quote_item_variants||[]).filter(v=>v.active!==false);
         if(variants.length){
