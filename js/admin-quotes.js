@@ -29,7 +29,7 @@ function mergeSupplierIntoAdminNotes(notes,id){
   return line+(cleaned?'\n'+cleaned:'');
 }
 function isInternalFeeItem(category,title){
-  return String(category||'').toLowerCase()==='processing_fee' || /processing convenience fee/i.test(String(title||''));
+  return String(category||'').toLowerCase()==='processing_fee' || /^(fees|processing convenience fee)$/i.test(String(title||'').trim());
 }
 function renderFulfillmentSupplierActions(){
   const id=$('#fulfillmentSupplierId')?.value||'';
@@ -328,9 +328,10 @@ async function syncSupplierAssignment(itemId,itemPayload){
 async function saveQuoteItem(){
   const optionId=currentOptionId();
   if(!optionId) return toast('Save the quote first so the proposal item has an option to attach to.',true);
-  const title=$('#quoteItemTitle')?.value.trim();
+  let title=$('#quoteItemTitle')?.value.trim();
   if(!title) return toast('Enter an item title.',true);
   const category=$('#quoteItemCategory')?.value||'other';
+  if(String(category).toLowerCase()==='processing_fee') title='Fees';
   const supplierId=$('#quoteItemSupplier')?.value||null;
   let parsedVariants=[];
   try{parsedVariants=parseItemVariants();}catch(error){return toast(error.message,true);}
