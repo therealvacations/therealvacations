@@ -58,7 +58,7 @@ if(tripError||packageError){
       const list=byTrip.get(t.trip_id)||[];
       const minimum=list.length?Math.min(...list.map(p=>Number(p.total_amount))):null;
       const dates=t.dates_end&&t.dates_end!==t.dates_start?fmt(t.dates_start)+' – '+fmt(t.dates_end):fmt(t.dates_start);
-      return '<section class="card"><span class="tag">'+(t.is_featured?'Featured Trip':'TRV Group Trip')+'</span><h3>'+esc(t.title)+'</h3><p class="trip-meta">'+esc(dates)+(t.location?' · '+esc(t.location):'')+'</p><p>'+esc(t.description_short||'A curated group experience from The Real Vacations.')+'</p>'+(minimum!==null?'<div class="price">Packages from '+esc(money(minimum))+' per person</div>':'')+'<a class="btn" href="/trip?slug='+encodeURIComponent(t.slug)+'">View Details →</a></section>';
+      return '<section class="card"><span class="tag">'+(t.is_featured?'Featured Trip':'TRV Group Trip')+'</span><h3>'+esc(t.title)+'</h3><p class="trip-meta">'+esc(dates)+(t.location?' · '+esc(t.location):'')+'</p><p>'+esc(t.description_short||'A curated group experience from The Real Vacations.')+'</p>'+(minimum!==null?'<div class="price">Packages from '+esc(money(minimum))+' per person</div>':'')+'<a class="btn" href="/trip.html?slug='+encodeURIComponent(t.slug)+'">View Details →</a></section>';
     }).join('');
   }
 }
