@@ -8,6 +8,9 @@ const publicDir = path.join(__dirname, 'public');
 const sourceJsDir = path.join(__dirname, 'js');
 const publicJsDir = path.join(publicDir, 'js');
 
+const metricoolScript = `
+<script>function loadScript(a){var b=document.getElementsByTagName("head")[0],c=document.createElement("script");c.type="text/javascript",c.src="https://tracker.metricool.com/resources/be.js",c.onreadystatechange=a,c.onload=a,b.appendChild(c)}loadScript(function(){beTracker.t({hash:"b412d375229b11c597d491a655b0a632"})});</script>`;
+
 const driveScript = `
 <script nowprocket data-noptimize="1" data-cfasync="false" data-wpfc-render="false" seraph-accel-crit="1" data-no-defer="1" data-cmp-ab="2">
   (function () {
@@ -55,7 +58,7 @@ function processHTML(filePath) {
     content = content.replace('</head>', driveScript + '\n</head>');
   }
 
-  // Keep a safe default logo in older templates; live branding is then
+  // Install Metricool website analytics globally.\n  if (!content.includes('tracker.metricool.com/resources/be.js')) {\n    content = content.replace('</head>', metricoolScript + '\\n</head>');\n  }\n\n  // Keep a safe default logo in older templates; live branding is then
   // applied from site_settings by /js/site-settings.js.
   content = content.replace(/(?:\/)?logo\.jpeg/g, '/newtrv180x180no bckgrd logo favi.jpg');
 
