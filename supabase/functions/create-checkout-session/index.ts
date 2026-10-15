@@ -463,7 +463,7 @@ Deno.serve(async (request) => {
       payment_method_types: (
         billing.payment_plan === 'installments'
           ? ['card']
-          : ['card','klarna','afterpay_clearpay','affirm']
+          : ['card','klarna','afterpay_clearpay']
       ) as Stripe.Checkout.SessionCreateParams.PaymentMethodType[],
       line_items: [{
         quantity: 1,
