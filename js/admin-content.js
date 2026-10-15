@@ -204,6 +204,11 @@ function editTrip(id) {
   $('#tripDeadline').value = trip.booking_deadline || ''
   $('#tripShort').value = trip.description_short || ''
   $('#tripFull').value = trip.description_full || ''
+  $('#tripIncluded').value = Array.isArray(trip.included_items) ? trip.included_items.join('\n') : ''
+  $('#tripExcluded').value = Array.isArray(trip.excluded_items) ? trip.excluded_items.join('\n') : ''
+  $('#tripRequirements').value = trip.traveler_requirements || ''
+  $('#tripPaymentNotes').value = trip.payment_notes || ''
+  $('#tripImportantNotes').value = trip.important_notes || ''
   $('#tripImage').value = trip.cover_image_url || ''
   if ($('#tripExternalUrl')) $('#tripExternalUrl').value = trip.external_info_url || ''
   if ($('#tripExternalLabel')) $('#tripExternalLabel').value = trip.external_info_label || ''
@@ -245,6 +250,11 @@ async function saveTrip(event) {
       booking_deadline: $('#tripDeadline').value || null,
       description_short: $('#tripShort').value.trim() || null,
       description_full: $('#tripFull').value.trim() || null,
+      included_items: $('#tripIncluded').value.split('\n').map((line) => line.trim()).filter(Boolean),
+      excluded_items: $('#tripExcluded').value.split('\n').map((line) => line.trim()).filter(Boolean),
+      traveler_requirements: $('#tripRequirements').value.trim() || null,
+      payment_notes: $('#tripPaymentNotes').value.trim() || null,
+      important_notes: $('#tripImportantNotes').value.trim() || null,
       cover_image_url: $('#tripImage').value.trim() || null,
       external_info_url: $('#tripExternalUrl')?.value.trim() || null,
       external_info_label: $('#tripExternalLabel')?.value.trim() || null,
