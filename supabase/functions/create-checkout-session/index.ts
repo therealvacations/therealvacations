@@ -114,15 +114,17 @@ Deno.serve(async (request) => {
     if (partySize > 1 && roommates.length !== partySize - 1) {
       return jsonResponse({ error: 'Add every additional traveler before continuing' }, 422)
     }
+    const travelerEmails = new Set([user.email.toLowerCase()])
     for (const roommate of roommates as Array<Record<string, unknown>>) {
       const name = String(roommate?.name ?? '').trim()
       const email = String(roommate?.email ?? '').trim().toLowerCase()
       if (name.length < 2 || name.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return jsonResponse({ error: 'Enter a valid name and email for every additional traveler' }, 422)
       }
-      if (email === user.email.toLowerCase()) {
+      if (travelerEmails.has(email)) {
         return jsonResponse({ error: 'Each traveler must use a different email address' }, 422)
       }
+      travelerEmails.add(email)
     }
 
     const { data: selectedPackage } = await admin.from('trip_packages')
@@ -133,6 +135,13 @@ Deno.serve(async (request) => {
       .eq('trips.status', 'active')
       .maybeSingle()
     if (!selectedPackage) return jsonResponse({ error: 'This trip package is not available' }, 409)
+    const configuredDeposit = Number(selectedPackage.deposit_amount ?? 0)
+    if (paymentPlan === 'installments' && configuredDeposit <= 0) {
+      return jsonResponse({ error: 'This package does not offer a TRV deposit or installment plan. Choose pay in full.' }, 422)
+    }
+    if (paymentResponsibility === 'individual' && configuredDeposit <= 0) {
+      return jsonResponse({ error: 'Separate traveler payments are available only when Admin has configured a traveler deposit for this package.' }, 422)
+    }
 
     const requestedAddons = Array.isArray(body.selected_addons) ? body.selected_addons : []
     const requestedAddonCodes = [...new Set(requestedAddons.map((item: any) => String(item?.code ?? '').trim()).filter(Boolean))]
