@@ -72,6 +72,7 @@ const addonsContainer = document.getElementById('addons');
 let availablePackages = [];
 let availableAddons = [];
 let finalPaymentDeadline = null;
+let installmentWindowOpen = false;
 const money = value => new Intl.NumberFormat('en-US', {style:'currency',currency:'USD'}).format(Number(value) / 100);
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
 
@@ -96,6 +97,7 @@ if (user) {
     finalPaymentDeadline = new Date(trip.dates_start + 'T12:00:00');
     finalPaymentDeadline.setDate(finalPaymentDeadline.getDate() - 60);
     const installmentsAvailable = finalPaymentDeadline > new Date();
+    installmentWindowOpen = installmentsAvailable;
     availablePackages = packages;
     const { data: addons } = await supabase.from('trip_addons').select('addon_id,code,name,description,amount,per_person,charge_timing,sort_order').eq('trip_id', trip.trip_id).eq('is_active', true).order('sort_order');
     availableAddons = addons || [];
@@ -104,7 +106,7 @@ if (user) {
       addonsContainer.innerHTML = availableAddons.map((item) => '<label class="plan" style="align-items:flex-start"><input type="checkbox" class="addon-choice" data-code="' + escapeHtml(item.code) + '"><span><strong>' + escapeHtml(item.name) + '</strong><br><small>' + escapeHtml(item.description || '') + '</small><br><span class="price" style="font-size:18px">' + money(item.amount) + (item.per_person ? ' per person' : '') + '</span>' + (item.per_person ? '<label style="display:block;margin-top:8px;font-size:12px;font-weight:700">Quantity <select class="addon-qty" data-code="' + escapeHtml(item.code) + '" disabled style="margin-left:6px;padding:5px"></select></label>' : '') + '</span></label>').join('');
       updateAddonQuantities();
     }
-    packageContainer.innerHTML = packages.map((item, index) => '<label class="option"><input type="radio" name="package_code" value="' + escapeHtml(item.code) + '" ' + (item.code === requestedPackage || (!packages.some(p => p.code === requestedPackage) && index === 0) ? 'checked' : '') + '><strong>' + escapeHtml(item.name) + '</strong><span class="price">' + money(item.total_amount) + '</span><small>' + (installmentsAvailable ? money(item.deposit_amount) + ' deposit' : 'Pay in full required') + '</small></label>').join('');
+    packageContainer.innerHTML = packages.map((item, index) => '<label class="option"><input type="radio" name="package_code" value="' + escapeHtml(item.code) + '" ' + (item.code === requestedPackage || (!packages.some(p => p.code === requestedPackage) && index === 0) ? 'checked' : '') + '><strong>' + escapeHtml(item.name) + '</strong><span class="price">' + money(item.total_amount) + '</span><small>' + (installmentsAvailable && Number(item.deposit_amount||0)>0 ? money(item.deposit_amount) + ' deposit available' : 'Pay in full required') + '</small></label>').join('');
     if (!installmentsAvailable) {
       const installmentInput = document.querySelector('input[value="installments"]');
       installmentInput.disabled = true;
@@ -155,12 +157,25 @@ function updateSchedulePreview() {
   const plan = form.querySelector('input[name="payment_plan"]:checked')?.value;
   const code = form.querySelector('input[name="package_code"]:checked')?.value;
   const selected = availablePackages.find(item => item.code === code);
-  const installments = plan === 'installments';
+  if (!selected || !finalPaymentDeadline) return;
+  const installmentInput=form.querySelector('input[name="payment_plan"][value="installments"]');
+  const payFullInput=form.querySelector('input[name="payment_plan"][value="pay_in_full"]');
+  const depositConfigured=Number(selected.deposit_amount||0)>0;
+  const canUseInstallments=installmentWindowOpen&&depositConfigured;
+  installmentInput.disabled=!canUseInstallments;
+  document.querySelector('#installmentPlan small').textContent=canUseInstallments
+    ? 'Stripe securely saves this card and charges the displayed monthly schedule automatically.'
+    : (depositConfigured?'Installments close 60 days before departure; pay-in-full is now required.':'This package does not include a TRV deposit/payment plan.');
+  if(plan==='installments'&&!canUseInstallments){
+    installmentInput.checked=false;
+    payFullInput.checked=true;
+  }
+  const effectivePlan=form.querySelector('input[name="payment_plan"]:checked')?.value;
+  const installments = effectivePlan === 'installments';
   consentWrap.hidden = !installments;
   consent.required = installments;
   subscriberConsentWrap.hidden = !installments;
   subscriberConsent.required = installments;
-  if (!selected || !finalPaymentDeadline) return;
   const travelerCount=Math.max(1,Number(partySize.value||1));
   const responsibility=form.querySelector('input[name="payment_responsibility"]:checked')?.value||'one_payer';
   const addOn=addonTotals();
