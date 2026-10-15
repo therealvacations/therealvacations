@@ -70,7 +70,7 @@ const ABOUT_DEFAULTS = {
     { icon: '🤝', title: 'Connection First', description: 'Every trip we design prioritizes connection and community.' },
     { icon: '💎', title: 'Quality Matters', description: 'From hotels to curated experiences, we do not cut corners.' },
     { icon: '🎯', title: 'Intentional Experiences', description: 'Every detail is chosen with purpose and respect for your time.' },
-    { icon: '💪', title: 'Accessibility & Flexibility', description: 'Flexible payment plans make unforgettable experiences more accessible.' },
+    { icon: '💪', title: 'Accessibility & Flexibility', description: 'Clear trip-specific payment options help travelers understand exactly what is available before booking.' },
     { icon: '🌍', title: 'Cultural Celebration', description: 'We honor traditions, explore new perspectives, and bring people together.' },
     { icon: '❤️', title: 'Peace of Mind', description: 'We handle the details and support you from booking through departure.' },
   ],
