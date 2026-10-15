@@ -76,7 +76,8 @@ export default async function handler(req,res){
   },{onConflict:'quote_id,user_id'});
   if(responseError) return res.status(500).json({error:'Your approval could not be saved.'});
 
-  const deposit=option.deposit_amount&&option.deposit_amount<total?option.deposit_amount:total;
+  const rawDeposit=Number(option.deposit_amount ?? 0);
+  const deposit=rawDeposit>0&&rawDeposit<total?rawDeposit:null;
   const {data:booking,error:bookingError}=await admin.from('custom_bookings')
     .upsert({
       quote_id:quoteId,
