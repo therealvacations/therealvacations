@@ -39,14 +39,14 @@ Deno.serve(async (req: Request) => {
   const name = String(body.name ?? "").trim().slice(0, 120);
   const email = String(body.email ?? "").trim().toLowerCase().slice(0, 254);
   const phone = String(body.phone ?? "").trim().slice(0, 40);
-  const source = String(body.source ?? "vip_signup").trim().slice(0, 80);
+  const source = String(body.source ?? "free_subscriber").trim().slice(0, 80);
   const tripInterest = String(body.trip_interest ?? "All TRV Group Trips").trim().slice(0, 160);
   const prize = String(body.spin_prize ?? "").trim().slice(0, 160);
   const optedIn = body.opted_in === true;
   const website = String(body.website ?? "").trim();
   if (website) return json({ ok: true }, 200, origin);
 
-  if (!optedIn) return json({ error: "VIP subscription is required to receive a prize code" }, 422, origin);
+  if (!optedIn) return json({ error: "Email subscription is required to receive a Spin & Save prize code" }, 422, origin);
   if (!name || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Name and a valid email are required" }, 422, origin);
 
   const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { autoRefreshToken: false, persistSession: false } });
@@ -75,15 +75,17 @@ Deno.serve(async (req: Request) => {
     spin_prize: prize || null,
     spin_code: code,
     spin_expires_at: code ? expiresIso : null,
-    opted_in: true
+    opted_in: true,
+    opted_in_at: now.toISOString(),
+    unsubscribed_at: null
   };
 
   if (subscriberId) {
     const { error } = await admin.from("subscribers").update(subscriberPayload).eq("subscriber_id", subscriberId);
-    if (error) return json({ error: "Could not update VIP member" }, 500, origin);
+    if (error) return json({ error: "Could not update subscriber" }, 500, origin);
   } else {
     const { data, error } = await admin.from("subscribers").insert(subscriberPayload).select("subscriber_id").single();
-    if (error) return json({ error: "Could not save VIP member" }, 500, origin);
+    if (error) return json({ error: "Could not save subscriber" }, 500, origin);
     subscriberId = data.subscriber_id;
   }
 
@@ -105,12 +107,12 @@ Deno.serve(async (req: Request) => {
     }
   }
 
-  const subject = prize ? "Your TRV prize code — valid for 24 hours" : "Welcome to The Real Vacations VIP List";
+  const subject = prize ? "Your TRV Spin & Save prize code — valid for 24 hours" : "For once, you get to enjoy the trip too.";
   const prizeBlock = prize
-    ? `<p>You won: <strong>${esc(prize)}</strong>.</p>${code ? `<p>Your prize code is <strong style="font-size:20px">${esc(code)}</strong>.</p><p><strong>Use it to book within 24 hours.</strong> It expires ${esc(expires.toLocaleString("en-US", { timeZone: "America/New_York", dateStyle: "medium", timeStyle: "short" }))} ET.</p>` : "<p>This spin did not generate a code.</p>"}<p>Prize eligibility and fulfillment are subject to the trip terms.</p>`
-    : "<p>You’re now on our VIP list for early trip announcements, special offers, and member-only updates.</p>";
+    ? `<p>The wheel landed on <strong>${esc(prize)}</strong>.</p>${code ? `<p>Your Spin & Save code is <strong style="font-size:20px">${esc(code)}</strong>.</p><p><strong>Your 24-hour claim window starts now.</strong> The code expires ${esc(expires.toLocaleString("en-US", { timeZone: "America/New_York", dateStyle: "medium", timeStyle: "short" }))} ET.</p>` : "<p>This spin did not issue a code.</p>"}<p>Spin & Save offers are subject to the terms, eligibility, inventory, and restrictions of the specific TRV trip or quote. Available payment options will be shown at checkout based on that specific trip or quote.</p>`
+    : "<p>You know the person who somehow ends up responsible for everything—the dates, the rooms, the payments, the questions, and the changes? TRV was built so that person gets to enjoy the trip too.</p><p>You’re now on the free TRV email list for trip announcements, special offers, travel ideas, and the experiences worth putting on the calendar.</p>";
 
-  const html = `<!doctype html><html><body style="margin:0;background:#f4f1f7;font-family:Arial,sans-serif;color:#30243e"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:auto;background:#fff;border-radius:16px"><tr><td style="background:#1a0533;color:#fff;padding:24px 30px;border-radius:16px 16px 0 0"><strong style="font-size:20px">The Real Vacations</strong></td></tr><tr><td style="padding:30px"><h1 style="color:#1a0533">Welcome, ${esc(name)}!</h1>${prizeBlock}<p>Trip interest: <strong>${esc(tripInterest)}</strong></p><p><a href="https://therealvacations.com/trips" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold">Browse Group Trips</a></p><p style="color:#777;font-size:12px;margin-top:28px">You subscribed to The Real Vacations VIP list to receive this offer.</p></td></tr></table></td></tr></table></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;background:#f4f1f7;font-family:Arial,sans-serif;color:#30243e"><table role="presentation" width="100%" cellspacing="0" cellpadding="0"><tr><td style="padding:32px 16px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;margin:auto;background:#fff;border-radius:16px"><tr><td style="background:#1a0533;color:#fff;padding:24px 30px;border-radius:16px 16px 0 0"><strong style="font-size:20px">The Real Vacations</strong></td></tr><tr><td style="padding:30px"><h1 style="color:#1a0533">Welcome, ${esc(name)}!</h1>${prizeBlock}<p>Trip interest: <strong>${esc(tripInterest)}</strong></p><p><a href="https://therealvacations.com/trips" style="background:#7c3aed;color:#fff;text-decoration:none;padding:12px 20px;border-radius:24px;font-weight:bold">Browse Group Trips</a></p><p style="color:#777;font-size:12px;margin-top:28px">You subscribed to The Real Vacations email list to receive this message.</p></td></tr></table></td></tr></table></body></html>`;
 
   const send = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -120,7 +122,7 @@ Deno.serve(async (req: Request) => {
       to: [email],
       subject,
       html,
-      tags: [{ name: "category", value: prize ? "wheel-prize" : "vip-signup" }]
+      tags: [{ name: "category", value: prize ? "spin-save-prize" : "subscriber-welcome" }]
     })
   });
 
