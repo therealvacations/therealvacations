@@ -75,7 +75,7 @@ async function loadTrips() {
       body.append(node('div', 'price-tag', `Packages from ${dollars(minimum)} per person`))
     }
     const link = node('a', 'trip-link', 'View Details →')
-    link.href = `/trip?slug=${encodeURIComponent(trip.slug)}`
+    link.href = `/trip.html?slug=${encodeURIComponent(trip.slug)}`
     body.append(link)
     card.append(header, body)
     return card
