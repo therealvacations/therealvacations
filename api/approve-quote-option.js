@@ -78,18 +78,23 @@ export default async function handler(req,res){
 
   const deposit=option.deposit_amount&&option.deposit_amount<total?option.deposit_amount:total;
   const {data:booking,error:bookingError}=await admin.from('custom_bookings')
-    .update({
+    .upsert({
+      quote_id:quoteId,
+      option_id:optionId,
+      request_id:quote.request_id,
+      user_id:user.id,
       total_amount:total,
       deposit_amount:deposit,
       balance_due:total,
       selection_snapshot:snapshot,
       updated_at:now
-    })
-    .eq('quote_id',quoteId)
-    .eq('user_id',user.id)
+    },{onConflict:'quote_id'})
     .select('custom_booking_id,total_amount,deposit_amount')
     .maybeSingle();
-  if(bookingError||!booking?.custom_booking_id) return res.status(500).json({error:'Your quote was approved, but the booking could not be prepared.'});
+  if(bookingError||!booking?.custom_booking_id) {
+    console.error('Unable to prepare approved booking',bookingError?.message);
+    return res.status(500).json({error:'Your quote was approved, but the booking could not be prepared.'});
+  }
 
   await admin.from('admin_client_history').insert({
     user_id:user.id,
