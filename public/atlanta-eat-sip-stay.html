@@ -76,7 +76,7 @@ form.addEventListener('submit',async e=>{
   const interest=['ATL Eat • Sip • Stay','Primary: '+fd.get('primary'),fd.get('second')?'Second: '+fd.get('second'):'','Travelers: '+fd.get('travelers'),'Package: '+fd.get('package'),extras.length?'Extras: '+extras.join(', '):''].filter(Boolean).join(' | ');
   const {data,error}=await supabase.functions.invoke('vip-signup',{body:{name:fd.get('name'),email:fd.get('email'),phone:fd.get('phone'),source:'atlanta_weekend_interest',trip_interest:interest,opted_in:true,website:fd.get('website')||''}});
   if(error||data?.error){msg.textContent=data?.error||'We could not save your choice. Please try again.';return;}
-  msg.textContent='✓ You’re in. Your weekend choice is saved, and VIP first-dibs access is on.';
+  msg.textContent='✓ You’re in. Your weekend choice is saved, and you’re on the free TRV email list for updates about this experience.';
   form.querySelector('button').disabled=true;
 });
 </script>
