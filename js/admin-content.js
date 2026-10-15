@@ -339,14 +339,15 @@ async function saveResource(event) {
 }
 
 function resetBlogForm() {
-  $('#blogForm').reset(); $('#blogId').value = ''; $('#blogPublished').checked = false; $('#blogPostType').value='article'; $('#blogTripEndDate').value=''; $('#blogFormTitle').textContent = 'Add Blog Post'
+  $('#blogForm').reset(); $('#blogId').value = ''; $('#blogPublished').checked = false; $('#blogPostType').value='article'; $('#blogTripEndDate').value=''; $('#blogPublishAt').value=''; $('#blogFormTitle').textContent = 'Add Blog Post'
 }
 
 function renderPosts() {
   const list = $('#blogList')
   list.replaceChildren(...state.posts.map((post) => {
     const card = textNode('article', 'admin-record compact')
-    card.append(textNode('h3', '', post.title), textNode('p', '', `${post.post_type==='trip_recap'?'Trip Recap':(post.category || 'Travel')} · ${post.is_published ? 'Published' : 'Draft'}`))
+    const publishState = post.is_published ? (post.published_at && new Date(post.published_at) > new Date() ? 'Scheduled' : 'Published') : 'Draft'
+    card.append(textNode('h3', '', post.title), textNode('p', '', (post.post_type==='trip_recap'?'Trip Recap':(post.category || 'Travel')) + ' · ' + publishState + (post.published_at ? ' · ' + new Date(post.published_at).toLocaleString() : '')))
     const actions = textNode('div', 'record-actions')
     const edit = textNode('button', 'secondary-button', 'Edit'); edit.type = 'button'; edit.onclick = () => editPost(post.id)
     const remove = textNode('button', 'danger-button', 'Delete'); remove.type = 'button'; remove.onclick = () => deleteRecord('blog_posts', 'id', post.id, post.title)
@@ -356,7 +357,7 @@ function renderPosts() {
 
 function editPost(id) {
   const post = state.posts.find((item) => String(item.id) === String(id)); if (!post) return
-  $('#blogFormTitle').textContent = 'Edit Blog Post'; $('#blogId').value = post.id; $('#blogTitle').value = post.title || ''; $('#blogSlug').value = post.slug || ''; $('#blogPostType').value=post.post_type||'article'; $('#blogTripEndDate').value=post.trip_end_date||''; $('#blogCategory').value = post.category || ''; $('#blogExcerpt').value = post.excerpt || ''; $('#blogContent').value = post.content || ''; $('#blogImage').value = post.featured_image_url || ''; $('#blogLink').value = post.link_url || ''; $('#blogPublished').checked = Boolean(post.is_published)
+  $('#blogFormTitle').textContent = 'Edit Blog Post'; $('#blogId').value = post.id; $('#blogTitle').value = post.title || ''; $('#blogSlug').value = post.slug || ''; $('#blogPostType').value=post.post_type||'article'; $('#blogTripEndDate').value=post.trip_end_date||''; $('#blogCategory').value = post.category || ''; $('#blogExcerpt').value = post.excerpt || ''; $('#blogContent').value = post.content || ''; $('#blogImage').value = post.featured_image_url || ''; $('#blogLink').value = post.link_url || ''; $('#blogPublished').checked = Boolean(post.is_published); $('#blogPublishAt').value = post.published_at ? new Date(new Date(post.published_at).getTime()-new Date(post.published_at).getTimezoneOffset()*60000).toISOString().slice(0,16) : ''
   $('#blogForm').scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
@@ -364,7 +365,9 @@ async function savePost(event) {
   event.preventDefault(); const id = $('#blogId').value; const published = $('#blogPublished').checked
   const postType=$('#blogPostType').value||'article';
   const tripEndDate=$('#blogTripEndDate').value||null;
-  const payload = { title: $('#blogTitle').value.trim(), slug: slugify($('#blogSlug').value || $('#blogTitle').value), post_type:postType, trip_end_date:tripEndDate, category: $('#blogCategory').value.trim() || 'Travel', excerpt: $('#blogExcerpt').value.trim() || null, content: $('#blogContent').value.trim(), featured_image_url: $('#blogImage').value.trim() || null, link_url: $('#blogLink').value.trim() || null, is_published: published, published_at: published ? new Date().toISOString() : null, updated_by: state.user.id }
+  const publishValue = $('#blogPublishAt').value
+  const publishedAt = published ? (publishValue ? new Date(publishValue).toISOString() : new Date().toISOString()) : null
+  const payload = { title: $('#blogTitle').value.trim(), slug: slugify($('#blogSlug').value || $('#blogTitle').value), post_type:postType, trip_end_date:tripEndDate, category: $('#blogCategory').value.trim() || 'Travel', excerpt: $('#blogExcerpt').value.trim() || null, content: $('#blogContent').value.trim(), featured_image_url: $('#blogImage').value.trim() || null, link_url: $('#blogLink').value.trim() || null, is_published: published, published_at: publishedAt, updated_by: state.user.id }
   if (!payload.title || !payload.slug || !payload.content) return showMessage('Blog title and content are required.', 'error')
   if(postType==='trip_recap'&&published){
     if(!tripEndDate) return showMessage('Add the trip end date before publishing a Past Trip Recap.', 'error')
