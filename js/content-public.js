@@ -160,7 +160,7 @@ async function loadBlog() {
   showState(container, 'Loading articles…')
   const { data, error } = await supabase.from('blog_posts')
     .select('id,title,slug,category,excerpt,featured_image_url,link_url,published_at,created_at,post_type,trip_end_date')
-    .eq('is_published', true).order('published_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false })
+    .eq('is_published', true).lte('published_at', new Date().toISOString()).order('published_at', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false })
 
   if (error) return showState(container, 'Articles could not be loaded. Please try again shortly.', 'error')
   if (!data?.length) return showState(container, 'New travel stories are coming soon.')
@@ -293,7 +293,7 @@ async function loadBlogDetail() {
   if (!slug) return showState(container, 'This article link is incomplete.', 'error')
   const { data: post, error } = await supabase.from('blog_posts')
     .select('title,category,content,excerpt,featured_image_url,published_at,created_at,post_type,trip_end_date')
-    .eq('slug', slug).eq('is_published', true).maybeSingle()
+    .eq('slug', slug).eq('is_published', true).lte('published_at', new Date().toISOString()).maybeSingle()
   if (error || !post) return showState(container, 'This article is not currently available.', 'error')
 
   document.title = `${post.title} | The Real Vacations`
