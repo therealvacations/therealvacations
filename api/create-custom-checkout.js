@@ -51,7 +51,6 @@ export default async function handler(req,res){
     'payment_method_types[0]':'card',
     'payment_method_types[1]':'klarna',
     'payment_method_types[2]':'afterpay_clearpay',
-    'payment_method_types[3]':'affirm',
     'consent_collection[terms_of_service]':'required',
     'line_items[0][price_data][currency]':booking.currency||'usd',
     'line_items[0][price_data][product_data][name]':title+' — '+(kind==='deposit'?'Deposit':kind==='balance'?'Remaining Balance':'Pay in Full'),
