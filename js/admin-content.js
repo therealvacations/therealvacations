@@ -24,7 +24,7 @@ const BRANDING_DEFAULTS = {
 const HOME_DEFAULTS = {
   logo_url: '/newtrv180x180no bckgrd logo favi.jpg', announcement: '✨ New group experiences are added throughout the year.', announcement_url: '/trips',
   hero_tag: '✨ GROUP TRAVEL REIMAGINED', hero_title: 'You Bring Your People.\nWe Handle Everything Else.', hero_text: 'All-inclusive group trips to concerts, wine country, and cultural celebrations. No planning stress. No logistics headaches. Just unforgettable experiences.',
-  trust_items: ['20+ Years of Group Travel', 'Flexible Payment Plans', 'Support Before, During & After'], cta_label: 'Explore Our Trips →', cta_url: '/trips',
+  trust_items: ['20+ Years of Group Travel', 'Payment Options Shown Before Booking', 'Support Before, During & After'], cta_label: 'Explore Our Trips →', cta_url: '/trips',
   perks_heading: 'Real Vacationers Get It First', perks_subheading: "We don't just plan your trip — we make sure you get the best deals on everything around it.",
   perks: [
     { icon: '✈️', title: 'Flight Deals', description: 'Book your flight for less — compare hundreds of airlines and find the best fares to any destination.', label: 'Find My Flight →', url: '/flights' },
@@ -42,7 +42,7 @@ const HOME_DEFAULTS = {
   ],
   faq_heading: "Questions? We've Got Answers",
   faqs: [
-    { question: 'How do deposits and payment plans work?', answer: "Secure your spot with a deposit, then make flexible payments on your own schedule. When you get to the booking page, it will show you exactly what's required based on when you book and the balance due date for your trip. No credit checks, no interest." },
+    { question: 'How do deposits and payment plans work?', answer: "Each trip or quote shows the payment options available for that specific booking. TRV deposits or installment plans appear only when configured in Admin; otherwise checkout shows the applicable pay-in-full or eligible Stripe payment options." },
     { question: 'How does Spin & Save work?', answer: 'Spin & Save uses the live TRV prize wheel. The server issues the result, and eligible prize codes are emailed after you opt in. Codes are subject to expiration, trip restrictions, inventory, and availability.' },
     { question: 'Can I travel solo or do I need a group?', answer: 'You can absolutely travel solo. Our group experiences are a great way to meet new people while enjoying the comfort of a fully planned trip.' },
     { question: "What's included in the trip price?", answer: 'Each trip page clearly lists its inclusions. Packages may include accommodations, transportation, activities, event tickets, and on-trip support.' },
