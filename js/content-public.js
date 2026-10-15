@@ -199,7 +199,7 @@ async function loadTripDetail() {
   if (!slug) return showState(container, 'This trip link is incomplete.', 'error')
 
   const { data: trip, error } = await supabase.from('trips')
-    .select('trip_id,title,slug,hero_kicker,dates_start,dates_end,location,description_short,description_full,cover_image_url,itinerary,booking_deadline,max_spots,external_info_url,external_info_label')
+    .select('trip_id,title,slug,hero_kicker,dates_start,dates_end,location,description_short,description_full,cover_image_url,itinerary,booking_deadline,max_spots,external_info_url,external_info_label,included_items,excluded_items,important_notes,payment_notes,traveler_requirements')
     .eq('slug', slug).eq('status', 'active').maybeSingle()
   if (error || !trip) return showState(container, 'This trip is not currently available.', 'error')
 
@@ -226,6 +226,35 @@ async function loadTripDetail() {
 
   const overview = node('section', 'detail-section')
   overview.append(node('h2', '', 'The Experience'), node('p', 'lead', trip.description_full || trip.description_short || 'A thoughtfully curated group travel experience.'))
+
+  const detailList = (title, items) => {
+    if (!Array.isArray(items) || !items.length) return null
+    const section = node('section', 'detail-subsection')
+    section.append(node('h3', '', title))
+    const list = node('ul', 'detail-list')
+    list.append(...items.map((item) => node('li', '', item)))
+    section.append(list)
+    return section
+  }
+  const includedSection = detailList("What's Included", trip.included_items)
+  const excludedSection = detailList('Not Included', trip.excluded_items)
+  if (includedSection) overview.append(includedSection)
+  if (excludedSection) overview.append(excludedSection)
+  if (trip.traveler_requirements) {
+    const section = node('section', 'detail-subsection')
+    section.append(node('h3', '', 'Traveler Requirements'), node('p', '', trip.traveler_requirements))
+    overview.append(section)
+  }
+  if (trip.payment_notes) {
+    const section = node('section', 'detail-subsection')
+    section.append(node('h3', '', 'Payment & Booking'), node('p', '', trip.payment_notes))
+    overview.append(section)
+  }
+  if (trip.important_notes) {
+    const section = node('section', 'detail-subsection')
+    section.append(node('h3', '', 'Good to Know'), node('p', '', trip.important_notes))
+    overview.append(section)
+  }
 
   const tripActions = node('div', 'trip-actions')
   const spinLink = node('a', 'book-btn', 'Spin & Save →')
