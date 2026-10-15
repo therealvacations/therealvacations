@@ -11,12 +11,12 @@
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026",
-      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": true
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
-      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": false
     },
     {
@@ -81,12 +81,12 @@
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html",
-      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": true
     },
     {
       "source": "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027.html",
-      "destination": "/trip?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
+      "destination": "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027",
       "permanent": false
     },
     {
@@ -126,12 +126,12 @@
     },
     {
       "source": "/napa-juneteenth-june-17-20-2027.html",
-      "destination": "/trip?slug=napa-valley-juneteenth-2027",
+      "destination": "/trip.html?slug=napa-valley-juneteenth-2027",
       "permanent": true
     },
     {
       "source": "/napa-juneteenth-june-17-20-2027",
-      "destination": "/trip?slug=napa-valley-juneteenth-2027",
+      "destination": "/trip.html?slug=napa-valley-juneteenth-2027",
       "permanent": true
     },
     {
@@ -168,6 +168,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/atlanta-eat-sip-stay",
+      "destination": "/atlanta-eat-sip-stay.html"
+    },
     {
       "source": "/trips",
       "destination": "/trips.html"
