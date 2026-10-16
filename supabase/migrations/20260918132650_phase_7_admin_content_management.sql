@@ -75,10 +75,10 @@ create unique index if not exists resources_title_category_unique
 insert into public.resources
   (title, description, category, icon, link_url, link_label, sort_order, is_active)
 values
-  ('Hotels.com', 'Compare thousands of hotels with flexible cancellation and rewards on eligible stays.', 'hotel', '🏨', 'https://www.hotels.com', 'Search Hotels →', 1, true),
-  ('Expedia Hotels', 'Bundle flights and hotels and compare resort properties and city stays.', 'hotel', '🌍', 'https://www.expedia.com/Hotels', 'Browse on Expedia →', 2, true),
-  ('VRBO — Vacation Rentals', 'Vacation homes can give larger groups more shared space and flexibility.', 'hotel', '🏡', 'https://www.vrbo.com', 'Find a Rental →', 3, true),
-  ('Unique Stays', 'Browse boutique properties, villas, and other distinctive accommodations.', 'hotel', '🛖', 'https://www.airbnb.com', 'Browse Unique Stays →', 4, true),
+  ('TRV Hotels & Stays', 'Search hotel and stay options through The Real Vacations and keep your lodging connected to the rest of your trip.', 'hotel', '🏨', '/stays', 'Search TRV Stays →', 1, true),
+  ('TRV Hotel Search', 'Start your hotel search inside TRV rather than being sent to another company’s homepage.', 'hotel', '🌍', '/stays', 'Search with TRV →', 2, true),
+  ('TRV Vacation Stays', 'Looking for a house, villa, or extra space? Start with TRV and keep the stay connected to your trip.', 'hotel', '🏡', '/stays', 'Find a Stay with TRV →', 3, true),
+  ('TRV Unique Stays', 'Boutique stays, villas, and distinctive accommodations—start the request inside TRV.', 'hotel', '🛖', '/stays', 'Explore TRV Stays →', 4, true),
   ('Custom & Private Trips', 'Tailored experiences designed around your dreams, budget, and timeline.', 'service', '🎯', '/custom-trip-form', 'Start Planning →', 1, true),
   ('Corporate Travel', 'Team retreats, conferences, and events with coordinated travel logistics.', 'service', '💼', '/forms-corporate-travel.html', 'Plan Your Retreat →', 2, true),
   ('Destination Weddings', 'Destination celebrations planned around your guests and chosen location.', 'service', '💍', '/forms-destination-weddings.html', 'Start Planning →', 3, true),
