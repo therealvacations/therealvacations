@@ -5,9 +5,9 @@ const hostCampaignExcluded = /^(\/admin|\/admin-login|\/login|\/signup|\/forgot-
 if (!hostCampaignExcluded) {
   const banner = document.createElement('div')
   banner.id = 'trvHostUrgencyBanner'
-  banner.innerHTML = '<strong>FORMER JOINMYTRIP TRIPLEADERS:</strong> JoinMyTrip is closing at the end of 2026. Do not let your 2027 trips lose momentum. <a href="/host">Move to TRV Host now →</a> <span>Verified former TripLeaders receive the $79 activation-fee waiver.</span>'
-  banner.style.cssText = 'background:#f4c542;color:#1a0533;padding:11px 16px;text-align:center;font:800 13px/1.45 Segoe UI,Arial,sans-serif;position:relative;z-index:9997'
-  banner.querySelector('a').style.cssText='color:#1a0533;text-decoration:underline;font-weight:900;margin:0 5px'
+  banner.innerHTML = '<strong>Still have a 2027 trip in your head—or a group already asking what’s next?</strong> If you hosted with JoinMyTrip, do not let the platform closing end the part you built. <a href="/host">Keep hosting with TRV →</a>'
+  banner.style.cssText = 'background:#f7f0ff;color:#1a0533;padding:13px 18px;text-align:center;font:800 13px/1.5 Segoe UI,Arial,sans-serif;border-bottom:1px solid #dfcff0;position:relative;z-index:9997'
+  banner.querySelector('a').style.cssText='color:#6a1b9a;text-decoration:underline;font-weight:900;margin-left:5px'
   document.body.prepend(banner)
 }
 
