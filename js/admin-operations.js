@@ -56,6 +56,15 @@ async function loadSubscribers(){
   const {data,error}=await supabase.from('subscribers').select('*').order('created_at',{ascending:false});
   if(error)return toast(error.message,true);
   subscribers=data||[];
+  const opted=subscribers.filter(s=>s.opted_in).length;
+  const spin=subscribers.filter(s=>s.source==='spin_wheel').length;
+  const summary=$('#subscriberSummary');
+  if(summary){
+    const {data:deliveries}=await supabase.from('email_deliveries').select('status,template_type,sent_at,created_at').order('created_at',{ascending:false}).limit(50);
+    const sent=(deliveries||[]).filter(d=>d.status==='sent').length;
+    const failed=(deliveries||[]).filter(d=>d.status==='failed').length;
+    summary.innerHTML='<h3>'+opted+' opted-in subscriber'+(opted===1?'':'s')+'</h3><p class="record-summary">'+spin+' from Spin & Save · '+sent+' recent email deliver'+(sent===1?'y':'ies')+' sent · '+failed+' failed</p><p>Welcome and Spin prize-code emails are automatic. Use Email Marketing for broadcasts and follow-up campaigns.</p>';
+  }
   $('#subscriberList').innerHTML=subscribers.map(s=>'<div class="admin-record"><div class="record-heading"><div><h3>'+esc(s.name||s.email)+'</h3><p>'+esc(s.email)+'</p></div><span class="status-badge '+(s.opted_in?'active':'archived')+'">'+(s.opted_in?'Opted In':'Opted Out')+'</span></div><p class="record-summary">Source: '+esc(s.source||'—')+(s.trip_interest?'<br>Interest: '+esc(s.trip_interest):'')+(s.spin_prize?'<br>Wheel: '+esc(s.spin_prize)+(s.spin_code?' · '+esc(s.spin_code):''):'')+(s.opted_in_at?'<br>Opted in: '+esc(dt(s.opted_in_at)):'')+(s.unsubscribed_at?'<br>Unsubscribed: '+esc(dt(s.unsubscribed_at)):'')+'</p><div class="record-actions"><button class="secondary-button edit-subscriber" data-id="'+s.subscriber_id+'" type="button">Edit</button><button class="secondary-button toggle-subscriber" data-id="'+s.subscriber_id+'" data-next="'+(!s.opted_in)+'" type="button">'+(s.opted_in?'Opt Out':'Reactivate')+'</button><button class="danger-button delete-subscriber" data-id="'+s.subscriber_id+'" type="button">Remove</button></div></div>').join('')||'<div class="empty-state">No subscribers yet.</div>';
   document.querySelectorAll('.edit-subscriber').forEach(b=>b.onclick=()=>editSubscriber(b.dataset.id));
   document.querySelectorAll('.toggle-subscriber').forEach(b=>b.onclick=()=>toggleSubscriber(b.dataset.id,b.dataset.next==='true'));
@@ -114,6 +123,20 @@ async function loadMarketing(){
   ]);
   if(cr.error||dr.error)return toast(cr.error?.message||dr.error?.message||'Could not load email data.',true);
   campaigns=cr.data||[];
+  const opted=(await supabase.from('subscribers').select('subscriber_id',{count:'exact',head:true}).eq('opted_in',true)).count||0;
+  const activeVip=(await supabase.from('vip_memberships').select('user_id',{count:'exact',head:true}).in('status',['active','trialing'])).count||0;
+  const sent=(dr.data||[]).filter(d=>d.status==='sent').length, failed=(dr.data||[]).filter(d=>d.status==='failed').length;
+  const summary=$('#marketingSummary');
+  if(summary)summary.innerHTML='<h3>Email system ready</h3><p class="record-summary">'+opted+' opted-in subscriber'+(opted===1?'':'s')+' · '+activeVip+' active/trialing VIP member'+(activeVip===1?'':'s')+' · '+sent+' recent sent · '+failed+' failed</p><p>Campaign sends are logged below and every marketing email includes an unsubscribe link automatically.</p>';
+  if(!campaigns.length && !$('#campaignName').value){
+    $('#campaignName').value='Real Vacationers — Welcome to the fun part';
+    $('#campaignAudience').value='subscribers';
+    $('#campaignSubject').value='For once, you get to enjoy the trip too.';
+    $('#campaignPreview').value='You planned enough. Now come be part of the memory.';
+    $('#campaignBody').value='You know the person who somehow ends up responsible for everything? The dates. The rooms. The payments. The questions. The changes. The “what time are we leaving?” texts.\n\nThat is exactly what The Real Vacations was built to change. We believe the person who brings everyone together deserves to make the memories too.\n\nYou planned enough. Now come be part of the memory. See what TRV has coming up, play Travel Trivia, or find the trip that finally makes it out of the group chat.';
+    $('#campaignCtaLabel').value='See What TRV Has Coming →';
+    $('#campaignCtaUrl').value='https://therealvacations.com/trips';
+  }
   $('#campaignList').innerHTML=campaigns.map(c=>'<div class="admin-record"><div class="record-heading"><div><h3>'+esc(c.name)+'</h3><p>'+esc(c.subject)+' · '+esc(c.audience)+'</p></div><span class="status-badge '+(c.status==='sent'?'active':c.status==='draft'?'draft':'archived')+'">'+esc(c.status)+'</span></div><p class="record-summary">Recipients: '+c.recipient_count+' · Sent: '+c.sent_count+' · Failed: '+c.failed_count+(c.sent_at?'<br>Sent: '+esc(dt(c.sent_at)):'')+'</p><div class="record-actions">'+(c.status==='draft'?'<button class="secondary-button edit-campaign" data-id="'+c.campaign_id+'" type="button">Edit</button>':'')+'</div></div>').join('')||'<div class="empty-state">No campaigns yet.</div>';
   document.querySelectorAll('.edit-campaign').forEach(b=>b.onclick=()=>{const c=campaigns.find(x=>x.campaign_id===b.dataset.id);if(!c)return;$('#campaignId').value=c.campaign_id;$('#campaignName').value=c.name||'';$('#campaignAudience').value=c.audience||'subscribers';$('#campaignSubject').value=c.subject||'';$('#campaignPreview').value=c.preview_text||'';$('#campaignBody').value=c.body_text||'';$('#campaignCtaLabel').value=c.cta_label||'';$('#campaignCtaUrl').value=c.cta_url||'';$('#marketingForm').scrollIntoView({behavior:'smooth',block:'start'});});
   $('#marketingDeliveryList').innerHTML=(dr.data||[]).map(d=>'<div class="admin-record compact"><div><h3>'+esc(d.recipient_email)+'</h3><p>'+esc(d.template_type)+' · '+esc(d.status)+(d.last_error?' · '+esc(d.last_error):'')+'</p></div></div>').join('')||'<div class="empty-state">No email deliveries yet.</div>';
