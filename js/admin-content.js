@@ -28,9 +28,9 @@ const HOME_DEFAULTS = {
   perks_heading: 'Real Vacationers Get It First', perks_subheading: "We don't just plan your trip — we make sure you get the best deals on everything around it.",
   perks: [
     { icon: '✈️', title: 'Flight Deals', description: 'Book your flight for less — compare hundreds of airlines and find the best fares to any destination.', label: 'Find My Flight →', url: '/flights' },
-    { icon: '🏨', title: 'Hotels & Stays', description: 'Extend your trip? Compare prices and book the perfect spot near every experience.', label: 'Browse Hotels →', url: 'https://www.hotels.com' },
-    { icon: '🎒', title: 'Travel Essentials', description: 'Luggage, travel pillows, packing cubes — gear we actually use, handpicked to make your journey smoother.', label: 'Shop Gear →', url: '/resources' },
-    { icon: '🎟️', title: 'Add-On Experiences', description: 'Museums, food tours, wine tastings — extend your adventure with curated local experiences.', label: 'Explore More →', url: 'https://www.klook.com' },
+    { icon: '🏨', title: 'Hotels & Stays', description: 'Search stays through TRV without being dropped onto somebody else’s homepage.', label: 'Search TRV Stays →', url: '/stays' },
+    { icon: '🎒', title: 'Travel Essentials', description: 'A short list of what is actually useful for the trips TRV has coming up.', label: 'Shop TRV Picks →', url: '/travel-essentials' },
+    { icon: '🎟️', title: 'Add-On Experiences', description: 'Start with TRV, choose the kind of experience you want, and keep the trip together.', label: 'Explore with TRV →', url: '/experiences' },
   ],
   trips_heading: 'Choose Your Next Unforgettable Adventure', trips_subheading: 'Curated trips for families, friend groups, and anyone ready to travel together',
   process_heading: 'Group Travel Without the Group Headache',
