@@ -1,6 +1,16 @@
 import { supabase } from './supabase-client.js'
 
 const { data: { session } } = await supabase.auth.getSession()
+const hostCampaignExcluded = /^(\/admin|\/admin-login|\/login|\/signup|\/forgot-password|\/reset-password|\/book-trip|\/quote-checkout|\/payment-result|\/custom-payment-result|\/request-payment-result|\/supplier-portal|\/host-center|\/member-|\/my-trips)/.test(window.location.pathname)
+if (!hostCampaignExcluded) {
+  const banner = document.createElement('div')
+  banner.id = 'trvHostUrgencyBanner'
+  banner.innerHTML = '<strong>FORMER JOINMYTRIP TRIPLEADERS:</strong> JoinMyTrip is closing at the end of 2026. Do not let your 2027 trips lose momentum. <a href="/host">Move to TRV Host now →</a> <span>Verified former TripLeaders receive the $79 activation-fee waiver.</span>'
+  banner.style.cssText = 'background:#f4c542;color:#1a0533;padding:11px 16px;text-align:center;font:800 13px/1.45 Segoe UI,Arial,sans-serif;position:relative;z-index:9997'
+  banner.querySelector('a').style.cssText='color:#1a0533;text-decoration:underline;font-weight:900;margin:0 5px'
+  document.body.prepend(banner)
+}
+
 const currentPath = window.location.pathname.replace(/\/$/, '') || '/'
 const hostReferral = new URLSearchParams(window.location.search).get('host') || ''
 if (/^[a-z0-9-]{3,120}$/.test(hostReferral)) sessionStorage.setItem('trv_host_referral', hostReferral)
@@ -26,6 +36,7 @@ if (settings) {
       { label: 'My Trips', url: '/my-trips#travel-groups' },
       { label: 'Request a Trip', url: '/request-travel' },
       { label: 'Search & Book', url: '/member-book' },
+      { label: 'Host a Trip', url: '/host' },
       { label: 'Profile', url: '/member-profile' },
       { label: 'Payment Method', url: '/update-payment-method' },
     ]
