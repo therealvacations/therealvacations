@@ -29,6 +29,7 @@ footer{background:#1a0533;color:#d8cbe4;padding:32px 22px;text-align:center;marg
 <section class="intro">
 <h2>Which Jamaica can you already see yourself in?</h2>
 <p>We are building reopening options around three travel windows. Exact travel dates, resort availability, room categories, and live pricing are confirmed in your TRV quote before you pay.</p>
+<p style="margin-top:18px;font-weight:800;color:#1a0533">December feels like “I’m not waiting until next year.” April feels like the exhale after winter. June is the one that usually starts the group chat.</p>
 </section>
 <section class="grid">
 <article class="card"><div class="season">December 2026</div><h3>Grand Reopening Escape</h3><p>End the year somewhere warm, with the meals handled and the beach waiting.</p><ul><li>4 days / 3 nights</li><li>All-inclusive</li><li>Land Only + ATL Air + Stay options</li></ul></article>
@@ -38,6 +39,7 @@ footer{background:#1a0533;color:#d8cbe4;padding:32px 22px;text-align:center;marg
 <section class="request">
 <h2>Tell TRV which escape you want.</h2>
 <p>Submit your preferred window by November 2. This request does not charge your card or lock you into a trip. TRV will send the available dates, current package pricing, and booking terms before payment.</p>
+<p style="font-weight:800;color:#4c1d95">Choosing the month is the first decision. The next email is where your Jamaica starts becoming an actual trip.</p>
 <form id="jamaicaForm">
 <div class="row"><div class="field"><label for="name">Name</label><input id="name" name="name" required autocomplete="name"></div><div class="field"><label for="email">Email</label><input id="email" name="email" type="email" required autocomplete="email"></div></div>
 <div class="field"><label>Preferred escape</label><div class="choice">
@@ -68,7 +70,7 @@ form.addEventListener('submit',async e=>{
    opted_in:true
  }});
  if(error||!data?.ok){msg.textContent=data?.error||'We could not save your request. Please try again.';button.disabled=false;button.textContent='SEND MY JAMAICA REQUEST →';return;}
- msg.textContent='✓ Your Jamaica preference is in. Watch your email for the current TRV package options.';
+ msg.textContent='✓ Your Jamaica preference is in. Watch your email—the next part is where the idea starts becoming a real trip.';
  button.textContent='REQUEST RECEIVED ✓';
 });
 </script>
