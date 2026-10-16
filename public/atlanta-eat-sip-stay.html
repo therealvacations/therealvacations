@@ -37,7 +37,7 @@ button{margin-top:20px;width:100%;border:0;border-radius:999px;background:linear
 <nav><a href="/"><img src="/newtrv180x180no bckgrd logo favi.jpg" alt="The Real Vacations"></a><div class="navlinks"><a href="/trips">Trips</a><a href="/vip">Vacationers VIP</a><a href="/contact">Contact</a></div></nav>
 <section class="hero"><div class="hero-inner"><div class="eyebrow">TRV Fall Atlanta Drop</div><h1>ATLANTA,<br><span>PICK YOUR WEEKEND.</span></h1><p>We’re building a limited Eat • Sip • Stay group experience in Atlanta — and we’re letting you tell us which weekend gets the green light first.</p><div class="deadline">⏳ Interest closes Saturday, October 17 at 8:00 PM ET</div></div></section>
 <main class="wrap">
-<section class="intro"><h2>Three weekends. One city. You choose.</h2><p>No payment is required today. Choose the date you want most, tell us how you’d like to experience it, and we’ll use the demand to secure the strongest hotel, food and group experience package.</p></section>
+<section class="intro"><h2>Three weekends. One city. You choose.</h2><p>No payment is required today. Choose the date you want most, tell us how you’d like to experience it, and we’ll use the demand to secure the strongest hotel, food and group experience package.</p><p style="margin-top:18px;color:#fff;font-weight:800">And once the date wins, that is when this gets interesting: where we eat, where we sip, where we stay, and what turns one Atlanta night into the weekend everybody keeps talking about.</p></section>
 <div class="dates">
 <div class="date-card"><span>Saturday</span><strong>OCT 24</strong><div>Atlanta, GA</div></div>
 <div class="date-card"><span>Saturday</span><strong>NOV 7</strong><div>Atlanta, GA</div></div>
@@ -65,7 +65,7 @@ button{margin-top:20px;width:100%;border:0;border-radius:999px;background:linear
 <div class="msg" id="msg" aria-live="polite"></div>
 </form></section>
 </main>
-<section class="final"><h2>ATLANTA, <span>WHICH WEEKEND?</span></h2><p>Pick it. Tell your people. VIP gets first dibs.</p></section>
+<section class="final"><h2>ATLANTA, <span>WHICH WEEKEND?</span></h2><p>Pick it. Tell your people. Then watch what the winning weekend becomes.</p><p style="max-width:720px;margin:14px auto 0;color:#cfc4d3">The date is only the first reveal. Food, stay, extras and the final experience come next.</p></section>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
 const form=document.getElementById('interestForm'),msg=document.getElementById('msg');
@@ -76,7 +76,7 @@ form.addEventListener('submit',async e=>{
   const interest=['ATL Eat • Sip • Stay','Primary: '+fd.get('primary'),fd.get('second')?'Second: '+fd.get('second'):'','Travelers: '+fd.get('travelers'),'Package: '+fd.get('package'),extras.length?'Extras: '+extras.join(', '):''].filter(Boolean).join(' | ');
   const {data,error}=await supabase.functions.invoke('vip-signup',{body:{name:fd.get('name'),email:fd.get('email'),phone:fd.get('phone'),source:'atlanta_weekend_interest',trip_interest:interest,opted_in:true,website:fd.get('website')||''}});
   if(error||data?.error){msg.textContent=data?.error||'We could not save your choice. Please try again.';return;}
-  msg.textContent='✓ You’re in. Your weekend choice is saved, and you’re on the free TRV email list for updates about this experience.';
+  msg.textContent='✓ You’re in. Your weekend choice is saved. Now watch your email—the winning date is only the first reveal.';
   form.querySelector('button').disabled=true;
 });
 </script>
