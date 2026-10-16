@@ -169,6 +169,18 @@
   ],
   "rewrites": [
     {
+      "source": "/travel-essentials",
+      "destination": "/travel-essentials.html"
+    },
+    {
+      "source": "/experiences",
+      "destination": "/experiences.html"
+    },
+    {
+      "source": "/stays",
+      "destination": "/stays.html"
+    },
+    {
       "source": "/atlanta-eat-sip-stay",
       "destination": "/atlanta-eat-sip-stay.html"
     },
