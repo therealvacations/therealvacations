@@ -38,8 +38,12 @@ $('#wheelForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
   const payload={is_active:$('#wheelActive').checked,wheel_color_1:$('#wheelColor1').value,wheel_color_2:$('#wheelColor2').value,wheel_color_3:$('#wheelColor3').value,updated_at:new Date().toISOString()};
   for(let i=1;i<=8;i++){ payload['prize_'+i]=$('#wheelPrize'+i).value.trim()||null; const raw=$('#wheelInventory'+i).value.trim(); payload['inventory_'+i]=raw===''?null:Math.max(0,Math.trunc(Number(raw)||0)); }
-  const id=wheel?.id||1;
-  const {error}=await supabase.from('wheel_settings').upsert({id,...payload},{onConflict:'id'});
+  let error=null;
+  if(wheel?.id){
+    ({error}=await supabase.from('wheel_settings').update(payload).eq('id',wheel.id));
+  }else{
+    ({error}=await supabase.from('wheel_settings').insert(payload));
+  }
   if(error)return toast(error.message,true);
   toast('Prize wheel updated.'); await loadWheel();
 });
