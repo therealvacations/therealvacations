@@ -349,7 +349,7 @@
         <div class="admin-record"><h3>$129.99/year</h3><p>TRV VIP Annual</p></div>
         <div class="admin-record"><h3>Welcome item</h3><p>Every new paid VIP member receives a TRV / The Real Vacations branded travel or lifestyle item. Item may vary: T-shirt, hat, cup/tumbler, or another nice branded item.</p></div>
       </div>
-      <div class="records"><h2>VIP Members & Welcome Items</h2><div id="vipMemberList"><p>Loading VIP members…</p></div></div>
+      <div class="records"><h2>VIP Members & Welcome Items</h2><p class="hint">Paid VIP welcome email and welcome-item instructions are sent from the live TRV email system when membership activates.</p><div id="vipMemberList"><p>Loading VIP members…</p></div></div>
 
       <form class="editor" id="vipOfferForm" style="margin-top:24px">
         <h2 id="vipOfferFormTitle">Add VIP Offer</h2>
@@ -448,7 +448,7 @@
     <label class="check"><input id="subscriberOptedIn" type="checkbox" checked/> Marketing opt-in active</label>
     <div class="form-actions"><button class="primary-button" type="submit">Save Subscriber</button><button class="secondary-button" id="subscriberReset" type="button">Clear</button></div>
   </form>
-  <div class="records"><h2>Email Subscribers</h2><p class="hint">Only opted-in subscribers are eligible for marketing campaigns.</p><div id="subscriberList"></div></div>
+  <div class="records"><h2>Email Subscribers</h2><p class="hint">New free subscribers receive the TRV welcome email automatically. Spin & Save subscribers receive their prize-code email automatically. Only opted-in subscribers are eligible for marketing campaigns.</p><div id="subscriberSummary" class="admin-record"><p>Loading subscriber email status…</p></div><div id="subscriberList"></div></div>
 </section>
 
 <section class="admin-panel" id="marketingPanel" hidden>
@@ -463,7 +463,7 @@
     <div class="field-grid"><div class="field"><label for="campaignCtaLabel">Button label</label><input id="campaignCtaLabel" placeholder="View Trips"/></div><div class="field"><label for="campaignCtaUrl">Button URL</label><input id="campaignCtaUrl" type="url" placeholder="https://therealvacations.com/trips"/></div></div>
     <div class="form-actions"><button class="secondary-button" id="saveCampaignButton" type="submit">Save Draft</button><button class="primary-button" id="sendCampaignButton" type="button">Send Campaign Now</button><button class="secondary-button" id="campaignReset" type="button">New Campaign</button></div>
   </form>
-  <div class="records"><h2>Campaigns & Delivery</h2><div id="campaignList"></div><h2 style="margin-top:30px">Recent Email Deliveries</h2><div id="marketingDeliveryList"></div></div>
+  <div class="records"><h2>Campaigns & Delivery</h2><div id="marketingSummary" class="admin-record"><p>Loading marketing status…</p></div><div id="campaignList"></div><h2 style="margin-top:30px">Recent Email Deliveries</h2><div id="marketingDeliveryList"></div></div>
 </section>
 
 <section class="admin-panel" id="triviaPanel" hidden>
