@@ -44,6 +44,7 @@ export default async function handler(req,res){
     page_title:clean(body.page_title,300)||null,
     browser_context:browserContext,
     related_context:safeContext,
+    related_record_id:clean(body.related_record_id,80)||null,
     status:'new',
     priority:'normal',
     updated_at:new Date().toISOString()
