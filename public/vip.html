@@ -13,7 +13,7 @@ nav{background:#1a0533;padding:14px 28px;display:flex;justify-content:space-betw
 .locked{text-align:center;background:#fff;border:1px solid #e6dff0;border-radius:18px;padding:32px}
 </style></head>
 <body><nav><a href="/"><img src="/logo.jpeg" alt="The Real Vacations"/></a><a href="/my-trips">My Trips</a></nav>
-<main class="wrap"><section class="hero"><h1>TRV VIP</h1><p>Private travel perks, limited-time offers, member-only experiences, and handpicked extras for travelers who want more from every escape.</p><div class="status" id="vipStatus">Checking membership…</div></section><section id="content"><p class="muted">Loading VIP access…</p></section></main>
+<main class="wrap"><section class="hero"><h1>TRV VIP</h1><p>Some trips begin with a destination. Some begin with a text that says, “Who’s coming?” VIP is where the extras, early access, and little surprises begin showing up before everybody else sees them.</p><p style="max-width:760px;line-height:1.6;color:#fff;font-weight:800">The point is not just getting more. It is knowing something good might be waiting before the next trip even opens.</p><div class="status" id="vipStatus">Checking membership…</div></section><section id="content"><p class="muted">Loading VIP access…</p></section></main>
 <script type="module">
 import { supabase } from '/js/supabase-client.js';
 const {data:{user}}=await supabase.auth.getUser();
