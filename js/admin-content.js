@@ -587,7 +587,7 @@ async function loadCustomInvoices() {
 
   const [customResult, tripResult, travelerPaymentResult] = await Promise.all([
     supabase.from('custom_bookings')
-      .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,refunded_amount,stripe_charge_id,refunded_at,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
+      .select('custom_booking_id,quote_id,option_id,request_id,user_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,selection_snapshot,created_at,updated_at,travel_quotes(title,summary),travel_quote_options(name,description),travel_requests(requester_email,primary_first_name,primary_last_name,destination),custom_booking_payments(payment_id,amount,kind,status,refunded_amount,stripe_charge_id,refunded_at,stripe_checkout_session_id,stripe_payment_intent_id,paid_at,created_at)')
       .order('created_at', { ascending: false }),
     supabase.from('bookings')
       .select('booking_id,user_id,trip_id,package_id,status,currency,total_amount,deposit_amount,amount_paid,balance_due,payment_plan,final_payment_deadline,created_at,updated_at,trips(title,dates_start,dates_end,location),trip_packages(name),users(first_name,last_name),booking_payments(payment_id,scheduled_amount,scheduled_for,status,paid_amount,refunded_amount,stripe_charge_id,refunded_at,paid_at,kind,stripe_checkout_session_id,stripe_payment_intent_id,created_at),travel_group_members(membership_id,display_name,invited_email,role,status,share_total,share_paid,share_status,deposit_required,deposit_paid_at)')
@@ -659,11 +659,64 @@ async function loadCustomInvoices() {
       const refunded=Number(p.refunded_amount||0), net=Math.max(0,Number(p.amount||0)-refunded)
       return '<div style="padding:8px 0;border-top:1px solid #ece5f3;font-size:12px"><strong>'+String(p.kind||'payment').replaceAll('_',' ')+'</strong> · '+money(net)+' net · '+esc(p.status||'')+(refunded?'<br><span class="hint">Gross '+money(p.amount)+' · Refunded '+money(refunded)+'</span>':'')+'<br><span class="hint">'+esc(when)+(p.stripe_payment_intent_id?' · '+esc(p.stripe_payment_intent_id):'')+'</span></div>'
     }).join('') : '<p class="hint" style="margin-top:10px">No Stripe payment attempts recorded yet.</p>'
-    return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(quote.title||req.destination||'Custom quote')+(opt.name?' · '+esc(opt.name):'')+'</p></div><span class="status-badge '+esc(b.status||'')+'">'+esc(String(b.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Invoice total</span><br><strong>'+money(b.total_amount)+'</strong></div><div><span class="hint">Deposit</span><br><strong>'+(b.deposit_amount?money(b.deposit_amount):'—')+'</strong></div><div><span class="hint">Paid</span><br><strong>'+money(b.amount_paid)+'</strong></div><div><span class="hint">Balance</span><br><strong>'+money(b.balance_due)+'</strong></div></div><p class="record-summary">'+esc(req.requester_email||'')+(req.destination?' · '+esc(req.destination):'')+'</p>'+paymentRows+'<div class="record-actions" style="margin-top:12px"><a class="secondary-button" href="/proposal?quote='+encodeURIComponent(b.quote_id)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Approved Proposal</a></div></article>'
+    const snap=b.selection_snapshot||{};
+    const planHtml=Number(b.amount_paid||0)===0
+      ? '<details style="margin-top:14px;border-top:1px solid #ece5f3;padding-top:12px"><summary style="cursor:pointer;font-weight:800;color:#4A1D6A">Set / Update Payment Plan</summary><div class="custom-payment-plan" data-booking-id="'+esc(b.custom_booking_id)+'" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px">'+
+        '<label class="field"><span>Trip total</span><input data-key="trip_base_amount" type="number" step="0.01" value="'+((Number(snap.trip_base_amount||0))/100).toFixed(2)+'"></label>'+
+        '<label class="field"><span>Travel down payment</span><input data-key="travel_down_payment_amount" type="number" step="0.01" value="'+((Number(snap.travel_down_payment_amount||0))/100).toFixed(2)+'"></label>'+
+        '<label class="field"><span>Extended Payment Processing</span><input data-key="extended_payment_processing_amount" type="number" step="0.01" value="'+((Number(snap.extended_payment_processing_amount||0))/100).toFixed(2)+'"></label>'+
+        '<label class="field"><span>Due now</span><input data-key="due_now_amount" type="number" step="0.01" value="'+((Number(snap.due_now_amount||0))/100).toFixed(2)+'"></label>'+
+        '<label class="field"><span>Next payment date</span><input data-key="next_payment_date" type="date" value="'+esc(snap.next_payment_date||'')+'"></label>'+
+        '<label class="field"><span>Next payment</span><input data-key="next_payment_amount" type="number" step="0.01" value="'+((Number(snap.next_payment_amount||0))/100).toFixed(2)+'"></label>'+
+        '<label class="field"><span>Final balance date</span><input data-key="final_balance_due_date" type="date" value="'+esc(snap.final_balance_due_date||'')+'"></label>'+
+        '<label class="field"><span>Final balance</span><input data-key="final_balance_amount" type="number" step="0.01" value="'+((Number(snap.final_balance_amount||0))/100).toFixed(2)+'"></label>'+
+        '<label class="field" style="grid-column:1/-1"><span>Secure external payment link</span><input data-key="external_payment_url" type="url" value="'+esc(snap.external_payment_url||'')+'" placeholder="https://..."></label>'+
+        '<div style="grid-column:1/-1"><button class="primary-button save-custom-payment-plan" type="button">Save Payment Plan</button><span class="hint custom-payment-plan-message" style="margin-left:10px"></span></div>'+
+        '</div></details>'
+      : '<p class="hint" style="margin-top:12px">Payment plan is locked because a payment is already recorded.</p>';
+    return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(name)+'</h3><p>'+esc(quote.title||req.destination||'Custom quote')+(opt.name?' · '+esc(opt.name):'')+'</p></div><span class="status-badge '+esc(b.status||'')+'">'+esc(String(b.status||'').replaceAll('_',' '))+'</span></div><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin:12px 0"><div><span class="hint">Invoice total</span><br><strong>'+money(b.total_amount)+'</strong></div><div><span class="hint">Deposit</span><br><strong>'+(b.deposit_amount?money(b.deposit_amount):'—')+'</strong></div><div><span class="hint">Paid</span><br><strong>'+money(b.amount_paid)+'</strong></div><div><span class="hint">Balance</span><br><strong>'+money(b.balance_due)+'</strong></div></div><p class="record-summary">'+esc(req.requester_email||'')+(req.destination?' · '+esc(req.destination):'')+'</p>'+paymentRows+planHtml+'<div class="record-actions" style="margin-top:12px"><a class="secondary-button" href="/proposal?quote='+encodeURIComponent(b.quote_id)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Approved Proposal</a></div></article>'
   }).join('')
 
   sections.push('<div><h2 style="font-size:18px;margin:0 0 12px">Custom Quote Bookings</h2>'+(customHtml||'<div class="empty-state">No approved custom quote invoices yet.</div>')+'</div>')
   box.innerHTML = sections.join('')
+  box.querySelectorAll('.save-custom-payment-plan').forEach(button=>{
+    button.addEventListener('click',async()=>{
+      const form=button.closest('.custom-payment-plan');
+      const message=form?.querySelector('.custom-payment-plan-message');
+      if(!form)return;
+      const get=(key)=>form.querySelector('[data-key="'+key+'"]')?.value||'';
+      const dollars=(key)=>Math.round(Number(get(key)||0)*100);
+      button.disabled=true; button.textContent='Saving…'; if(message)message.textContent='';
+      try{
+        const {data:{session}}=await supabase.auth.getSession();
+        if(!session?.access_token) throw new Error('Admin session expired. Please sign in again.');
+        const response=await fetch('/api/admin-configure-custom-payment',{
+          method:'POST',
+          headers:{'content-type':'application/json','authorization':'Bearer '+session.access_token},
+          body:JSON.stringify({
+            custom_booking_id:form.dataset.bookingId,
+            trip_base_amount:dollars('trip_base_amount'),
+            travel_down_payment_amount:dollars('travel_down_payment_amount'),
+            extended_payment_processing_amount:dollars('extended_payment_processing_amount'),
+            due_now_amount:dollars('due_now_amount'),
+            next_payment_date:get('next_payment_date'),
+            next_payment_amount:dollars('next_payment_amount'),
+            final_balance_due_date:get('final_balance_due_date'),
+            final_balance_amount:dollars('final_balance_amount'),
+            external_payment_url:get('external_payment_url')
+          })
+        });
+        const data=await response.json().catch(()=>({}));
+        if(!response.ok) throw new Error(data.error||'Payment plan could not be saved.');
+        if(message)message.textContent='Payment plan saved.';
+        await loadCustomInvoices();
+      }catch(error){
+        if(message)message.textContent=error.message||'Payment plan could not be saved.';
+      }finally{
+        button.disabled=false; button.textContent='Save Payment Plan';
+      }
+    });
+  });
 }
 
 async function verifyStripeConnection() {
