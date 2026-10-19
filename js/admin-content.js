@@ -739,23 +739,32 @@ function reportSupplierForItem(item){
 async function loadTripReportChoices(){
   const quoteSelect=$('#reportQuoteSelect');
   if(!quoteSelect)return;
-  const [quotesResult,suppliersResult]=await Promise.all([
-    supabase.from('travel_quotes')
-      .select('quote_id,title,status,workflow_status,created_at,request_id,travel_requests(primary_first_name,primary_last_name,requester_email,destination),travel_quote_options(option_id,name,total_amount,deposit_amount,pricing_display_mode,package_total_amount,sort_order,is_recommended)')
-      .order('created_at',{ascending:false}),
-    supabase.from('suppliers')
-      .select('supplier_id,company_name,display_name,supplier_code,website_url,booking_portal_url,connection_mode,status')
-      .neq('status','inactive')
-      .order('company_name')
-  ]);
-  if(quotesResult.error){quoteSelect.innerHTML='<option value="">Trips could not be loaded</option>';return;}
-  tripReportQuotes=quotesResult.data||[];
-  tripReportSuppliers=suppliersResult.data||[];
-  quoteSelect.innerHTML='<option value="">Choose a client trip…</option>'+tripReportQuotes.map(q=>{
-    const r=Array.isArray(q.travel_requests)?q.travel_requests[0]:q.travel_requests||{};
-    const n=[r.primary_first_name,r.primary_last_name].filter(Boolean).join(' ')||r.requester_email||'Traveler';
-    return '<option value="'+esc(q.quote_id)+'">'+esc(n+' — '+(q.title||r.destination||'Trip'))+'</option>';
-  }).join('');
+  const timeout=new Promise((_,reject)=>setTimeout(()=>reject(new Error('Trip report data timed out')),7000));
+  try{
+    const [quotesResult,suppliersResult]=await Promise.race([
+      Promise.all([
+        supabase.from('travel_quotes')
+          .select('quote_id,title,status,workflow_status,created_at,request_id,travel_requests(primary_first_name,primary_last_name,requester_email,destination),travel_quote_options(option_id,name,total_amount,deposit_amount,pricing_display_mode,package_total_amount,sort_order,is_recommended)')
+          .order('created_at',{ascending:false}),
+        supabase.from('suppliers')
+          .select('supplier_id,company_name,display_name,supplier_code,website_url,booking_portal_url,connection_mode,status')
+          .neq('status','inactive')
+          .order('company_name')
+      ]),
+      timeout
+    ]);
+    if(quotesResult.error){quoteSelect.innerHTML='<option value="">Trips could not be loaded</option>';return;}
+    tripReportQuotes=quotesResult.data||[];
+    tripReportSuppliers=suppliersResult.data||[];
+    quoteSelect.innerHTML='<option value="">Choose a client trip…</option>'+tripReportQuotes.map(q=>{
+      const r=Array.isArray(q.travel_requests)?q.travel_requests[0]:q.travel_requests||{};
+      const n=[r.primary_first_name,r.primary_last_name].filter(Boolean).join(' ')||r.requester_email||'Traveler';
+      return '<option value="'+esc(q.quote_id)+'">'+esc(n+' — '+(q.title||r.destination||'Trip'))+'</option>';
+    }).join('');
+  }catch(error){
+    console.error('Trip report data load failed:',error);
+    quoteSelect.innerHTML='<option value="">Trip report data unavailable — retry after admin opens</option>';
+  }
 }
 function refreshTripReportOptions(){
   const q=tripReportQuotes.find(x=>x.quote_id===$('#reportQuoteSelect')?.value);
