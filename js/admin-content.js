@@ -719,6 +719,123 @@ async function loadCustomInvoices() {
   });
 }
 
+
+let tripReportQuotes = [];
+let tripReportSuppliers = [];
+
+function reportHost(url){
+  try{return new URL(url).hostname.replace(/^www\./,'');}catch{return '';}
+}
+function reportSupplierForItem(item){
+  const direct=tripReportSuppliers.find(x=>x.supplier_id===item.supplier_id);
+  if(direct) return direct;
+  const host=reportHost(item.rate_source_url||item.supplier_payment_url||'');
+  if(!host) return null;
+  return tripReportSuppliers.find(x=>{
+    const wh=reportHost(x.website_url||''), bh=reportHost(x.booking_portal_url||'');
+    return host===wh||host===bh||host.endsWith('.'+wh)||host.endsWith('.'+bh);
+  })||null;
+}
+async function loadTripReportChoices(){
+  const quoteSelect=$('#reportQuoteSelect');
+  if(!quoteSelect)return;
+  const [quotesResult,suppliersResult]=await Promise.all([
+    supabase.from('travel_quotes')
+      .select('quote_id,title,status,workflow_status,created_at,request_id,travel_requests(primary_first_name,primary_last_name,requester_email,destination),travel_quote_options(option_id,name,total_amount,deposit_amount,pricing_display_mode,package_total_amount,sort_order,is_recommended)')
+      .order('created_at',{ascending:false}),
+    supabase.from('suppliers')
+      .select('supplier_id,company_name,display_name,supplier_code,website_url,booking_portal_url,connection_mode,status')
+      .neq('status','inactive')
+      .order('company_name')
+  ]);
+  if(quotesResult.error){quoteSelect.innerHTML='<option value="">Trips could not be loaded</option>';return;}
+  tripReportQuotes=quotesResult.data||[];
+  tripReportSuppliers=suppliersResult.data||[];
+  quoteSelect.innerHTML='<option value="">Choose a client trip…</option>'+tripReportQuotes.map(q=>{
+    const r=Array.isArray(q.travel_requests)?q.travel_requests[0]:q.travel_requests||{};
+    const n=[r.primary_first_name,r.primary_last_name].filter(Boolean).join(' ')||r.requester_email||'Traveler';
+    return '<option value="'+esc(q.quote_id)+'">'+esc(n+' — '+(q.title||r.destination||'Trip'))+'</option>';
+  }).join('');
+}
+function refreshTripReportOptions(){
+  const q=tripReportQuotes.find(x=>x.quote_id===$('#reportQuoteSelect')?.value);
+  const sel=$('#reportOptionSelect');
+  if(!sel)return;
+  const opts=(q?.travel_quote_options||[]).slice().sort((a,b)=>(a.sort_order||0)-(b.sort_order||0));
+  sel.innerHTML=opts.length?opts.map(o=>'<option value="'+esc(o.option_id)+'" '+(o.is_recommended?'selected':'')+'>'+esc(o.name)+' · '+money(o.package_total_amount??o.total_amount??0)+'</option>').join(''):'<option value="">No package options found</option>';
+}
+$('#reportQuoteSelect')?.addEventListener('change',refreshTripReportOptions);
+
+async function runSupplierReport(){
+  const quoteId=$('#reportQuoteSelect')?.value||'';
+  const optionId=$('#reportOptionSelect')?.value||'';
+  const out=$('#supplierReportOutput');
+  if(!quoteId||!optionId){if(out)out.innerHTML='<div class="empty-state">Choose a trip and package option first.</div>';return;}
+  if(out)out.innerHTML='<p>Building supplier report…</p>';
+  const q=tripReportQuotes.find(x=>x.quote_id===quoteId);
+  const opt=(q?.travel_quote_options||[]).find(x=>x.option_id===optionId)||{};
+  const [itemsResult,assignResult]=await Promise.all([
+    supabase.from('travel_quote_items')
+      .select('item_id,option_id,category,title,description,amount,quantity,supplier_id,rate_source_url,rate_checked_at,supplier_payment_url,admin_notes,details,sort_order,client_visible,builder_managed')
+      .eq('option_id',optionId)
+      .eq('builder_managed',true)
+      .order('sort_order'),
+    supabase.from('supplier_assignments')
+      .select('assignment_id,quote_item_id,supplier_id,service_type,description,supplier_reference,internal_notes,supplier_subtotal,service_fee,taxes_fees,currency,status,updated_at')
+      .eq('quote_id',quoteId)
+  ]);
+  if(itemsResult.error||assignResult.error){
+    if(out)out.innerHTML='<div class="admin-record"><h3>Report could not be loaded</h3><p class="record-summary">'+esc(itemsResult.error?.message||assignResult.error?.message||'Unknown error')+'</p></div>';
+    return;
+  }
+  const items=itemsResult.data||[], assignments=assignResult.data||[];
+  const assignmentByItem=new Map(assignments.map(a=>[a.quote_item_id,a]));
+  const r=Array.isArray(q?.travel_requests)?q.travel_requests[0]:q?.travel_requests||{};
+  const client=[r.primary_first_name,r.primary_last_name].filter(Boolean).join(' ')||r.requester_email||'Traveler';
+  let missing=0;
+  const rows=items.map(item=>{
+    const a=assignmentByItem.get(item.item_id)||{};
+    const supplier=reportSupplierForItem({...item,supplier_id:item.supplier_id||a.supplier_id});
+    const provider=item.details?.['Rental company']||(/Delta/i.test(item.title||'')?'Delta':supplier?.display_name||supplier?.company_name||'Not assigned');
+    const sourceName=supplier?.display_name||supplier?.company_name||(item.rate_source_url?reportHost(item.rate_source_url):'Not assigned');
+    const supplierRate=Number(a.supplier_subtotal||0);
+    const hasSource=Boolean(item.rate_source_url||supplier?.website_url||supplier?.booking_portal_url);
+    const hasPayment=Boolean(item.supplier_payment_url||a.supplier_reference);
+    if(!supplier||!hasSource||(!supplierRate&&item.category!=='processing_fee'))missing++;
+    const clientRate=item.amount==null
+      ? (opt.pricing_display_mode==='package'?'Included in '+money(opt.package_total_amount??opt.total_amount??0):'Not entered')
+      : money(item.amount);
+    const baseRate=supplierRate?money(supplierRate):'Not entered';
+    const rateLink=item.rate_source_url||supplier?.booking_portal_url||supplier?.website_url||'';
+    const payLink=item.supplier_payment_url||a.supplier_reference||'';
+    const links='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">'+
+      (rateLink?'<a class="secondary-button" href="'+esc(rateLink)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Rate Source ↗</a>':'<span class="status-badge draft">Rate source missing</span>')+
+      (payLink?'<a class="secondary-button" href="'+esc(payLink)+'" target="_blank" rel="noopener" style="text-decoration:none">Open Payment / Cart ↗</a>':'<span class="status-badge draft">Payment link not saved</span>')+
+      '</div>';
+    return '<article class="admin-record"><div class="record-heading"><div><h3>'+esc(item.title)+'</h3><p>'+esc(String(item.category||'').replaceAll('_',' '))+' · Qty '+esc(item.quantity||1)+'</p></div><span class="status-badge '+(supplier&&hasSource?'active':'draft')+'">'+(supplier&&hasSource?'SOURCE READY':'NEEDS INFO')+'</span></div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:12px 0">'+
+      '<div><span class="hint">Service provider</span><br><strong>'+esc(provider)+'</strong></div>'+
+      '<div><span class="hint">Booking / rate source</span><br><strong>'+esc(sourceName)+'</strong></div>'+
+      '<div><span class="hint">Client / package rate</span><br><strong>'+esc(clientRate)+'</strong></div>'+
+      '<div><span class="hint">Supplier / base rate</span><br><strong>'+esc(baseRate)+'</strong></div>'+
+      '</div>'+
+      (item.rate_checked_at?'<p class="record-summary"><strong>Rate last checked:</strong> '+esc(new Date(item.rate_checked_at).toLocaleString())+'</p>':'<p class="record-summary"><strong>Rate last checked:</strong> Not recorded</p>')+
+      (item.admin_notes?'<p class="record-summary"><strong>Admin notes:</strong> '+esc(item.admin_notes)+'</p>':'')+links+'</article>';
+  }).join('');
+  const reportHtml='<div id="supplierReportPrintable"><div class="admin-record" style="background:#faf5ff"><h3>'+esc(q?.title||'Trip Supplier Report')+'</h3><p class="record-summary"><strong>Traveler:</strong> '+esc(client)+'<br><strong>Destination:</strong> '+esc(r.destination||'')+'<br><strong>Package:</strong> '+esc(opt.name||'')+'<br><strong>Package total:</strong> '+money(opt.package_total_amount??opt.total_amount??0)+'<br><strong>Report status:</strong> '+(missing?missing+' item(s) still need supplier/rate data':'Supplier/rate data complete for all listed items')+'</p></div>'+rows+'</div>';
+  if(out)out.innerHTML=reportHtml||'<div class="empty-state">No supplier items found for this option.</div>';
+  if($('#printSupplierReportButton'))$('#printSupplierReportButton').disabled=!items.length;
+}
+$('#runSupplierReportButton')?.addEventListener('click',runSupplierReport);
+$('#printSupplierReportButton')?.addEventListener('click',()=>{
+  const report=$('#supplierReportPrintable');
+  if(!report)return;
+  const win=window.open('','_blank','noopener,noreferrer');
+  if(!win)return;
+  win.document.write('<!doctype html><html><head><title>TRV Supplier Report</title><style>body{font-family:Arial,sans-serif;color:#251b30;padding:28px}h3{color:#1a0533}.admin-record{border:1px solid #ddd;border-radius:12px;padding:16px;margin:0 0 12px}.record-heading{display:flex;justify-content:space-between;gap:12px}.record-summary{line-height:1.5}.hint{font-size:11px;color:#777}.status-badge{font-size:10px;border:1px solid #ccc;border-radius:999px;padding:4px 8px}a{color:#6d28d9}</style></head><body>'+report.innerHTML+'</body></html>');
+  win.document.close(); win.focus(); setTimeout(()=>win.print(),250);
+});
+
 async function verifyStripeConnection() {
   const button = $('#verifyStripeButton')
   const box = $('#stripeConnectionStatus')
@@ -782,7 +899,7 @@ async function initialize() {
   if (!session) return location.replace('/admin-login')
   const { data: permissions, error } = await supabase.from('admin_users').select('role,can_edit_trips,can_edit_blog,can_edit_resources,can_edit_wheel,can_edit_stories').eq('id', session.user.id).maybeSingle()
   if (error || !permissions) { await supabase.auth.signOut(); return location.replace('/admin-login?denied=1') }
-  state.user = session.user; state.permissions = permissions
+  state.user = session.user; state.permissions = permissions; await loadTripReportChoices(); if ($('#reportQuoteSelect')) { const orlando=tripReportQuotes.find(q=>String(q.title||'').includes('Orlando Family Vacation')); if(orlando){ $('#reportQuoteSelect').value=orlando.quote_id; refreshTripReportOptions(); } }
   $('#adminIdentity').textContent = session.user.email || 'Authorized administrator'
   if (!permissions.can_edit_trips) $('[data-tab="trips"]').hidden = true
   if (!permissions.can_edit_resources) $('[data-tab="resources"]').hidden = true
