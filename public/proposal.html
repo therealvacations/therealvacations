@@ -198,7 +198,7 @@ if(user){
     document.querySelectorAll('.item-variant-choice').forEach(x=>x.addEventListener('change',()=>recalcOptionTotal(x.dataset.option)));
     opts.forEach(o=>recalcOptionTotal(o.option_id));
 
-    document.querySelectorAll('.review-confirm').forEach(box=>box.addEventListener('change',()=>{const btn=box.closest('div').querySelector('.choose');if(btn)btn.disabled=!box.checked;}));
+    document.querySelectorAll('.review-confirm').forEach(box=>{const btn=box.closest('div').querySelector('.choose');const sync=()=>{if(btn)btn.disabled=!box.checked;};box.addEventListener('change',sync);box.addEventListener('input',sync);sync();});
     document.querySelectorAll('.choose').forEach(btn=>btn.addEventListener('click',async()=>{
       document.querySelectorAll('.choose').forEach(b=>b.disabled=true);
       btn.textContent='Creating your itinerary…';message.textContent='';
