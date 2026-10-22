@@ -48,9 +48,6 @@ export default async function handler(req,res){
     mode:'payment',
     customer_email:user.email,
     client_reference_id:bookingId,
-    'payment_method_types[0]':'card',
-    'payment_method_types[1]':'klarna',
-    'payment_method_types[2]':'afterpay_clearpay',
     'consent_collection[terms_of_service]':'required',
     'line_items[0][price_data][currency]':booking.currency||'usd',
     'line_items[0][price_data][product_data][name]':title+' — '+(kind==='deposit'?'Deposit':kind==='balance'?'Remaining Balance':'Pay in Full'),
@@ -74,7 +71,8 @@ export default async function handler(req,res){
   const session=await stripe.json().catch(()=>({}));
   if(!stripe.ok||!session.id||!session.url){
     await admin.from('custom_booking_payments').update({status:'failed'}).eq('payment_id',payment.payment_id);
-    return res.status(502).json({error:'Stripe checkout could not be created'});
+    console.error('Stripe custom checkout error', {type:session?.error?.type,code:session?.error?.code,message:session?.error?.message,status:stripe.status});
+    return res.status(502).json({error:session?.error?.message||'Stripe checkout could not be created'});
   }
   await admin.from('custom_booking_payments').update({stripe_checkout_session_id:session.id}).eq('payment_id',payment.payment_id);
   await admin.from('custom_bookings').update({payment_plan:kind,updated_at:new Date().toISOString()}).eq('custom_booking_id',bookingId);
