@@ -38,11 +38,30 @@ export default async function handler(req,res){
   }else if(plan==='balance'){ amount=booking.balance_due; kind='balance'; }
   else { amount=booking.balance_due; kind='pay_in_full'; }
 
-  const {data:payment,error:payErr}=await admin.from('custom_booking_payments').insert({
-    custom_booking_id:bookingId,amount,kind,status:'open'
-  }).select('payment_id').single();
-  if(payErr) return res.status(500).json({error:'Unable to prepare payment'});
-
+  // Reserve a payment row under a booking lock. Stripe's stable idempotency
+  // key ensures that simultaneous requests reuse the SAME Checkout Session.
+  let payment;
+  for(let attempt=0;attempt<2;attempt++){
+    const {data:rows,error:reserveError}=await admin.rpc('reserve_custom_checkout_payment',{
+      p_booking_id:bookingId,p_user_id:user.id,p_plan:plan
+    });
+    if(reserveError||!rows?.length) return res.status(409).json({error:'Unable to prepare payment'});
+    payment=rows[0];
+    if(!payment.checkout_session_id) break;
+    const existingResponse=await fetch('https://api.stripe.com/v1/checkout/sessions/'+encodeURIComponent(payment.checkout_session_id),{
+      headers:{authorization:'Bearer '+stripeKey}
+    });
+    const existing=await existingResponse.json().catch(()=>({}));
+    if(!existingResponse.ok) return res.status(502).json({error:'Unable to check existing checkout'});
+    if(existing.status==='open'&&existing.url) return res.status(200).json({url:existing.url});
+    if(existing.payment_status==='paid') return res.status(409).json({error:'This payment is complete or awaiting booking confirmation'});
+    const {error:expireError}=await admin.from('custom_booking_payments')
+      .update({status:'expired',updated_at:new Date().toISOString()})
+      .eq('payment_id',payment.payment_id).eq('stripe_checkout_session_id',existing.id).eq('status','open');
+    if(expireError) return res.status(500).json({error:'Unable to refresh expired checkout'});
+    payment=null;
+  }
+  if(!payment) return res.status(409).json({error:'Please retry checkout'});
   const title=booking.travel_quotes?.title||booking.travel_quotes?.travel_requests?.destination||'The Real Vacations Custom Trip';
   const form=encodeForm({
     mode:'payment',
@@ -65,16 +84,19 @@ export default async function handler(req,res){
   });
   const stripe=await fetch('https://api.stripe.com/v1/checkout/sessions',{
     method:'POST',
-    headers:{authorization:'Bearer '+stripeKey,'content-type':'application/x-www-form-urlencoded'},
+    headers:{authorization:'Bearer '+stripeKey,'content-type':'application/x-www-form-urlencoded','Idempotency-Key':'trv-custom-checkout-'+payment.payment_id},
     body:form
   });
   const session=await stripe.json().catch(()=>({}));
   if(!stripe.ok||!session.id||!session.url){
-    await admin.from('custom_booking_payments').update({status:'failed'}).eq('payment_id',payment.payment_id);
+    // Leave reservation available for a safe retry; do not create another payment row.
     console.error('Stripe custom checkout error', {type:session?.error?.type,code:session?.error?.code,message:session?.error?.message,status:stripe.status});
     return res.status(502).json({error:session?.error?.message||'Stripe checkout could not be created'});
   }
-  await admin.from('custom_booking_payments').update({stripe_checkout_session_id:session.id}).eq('payment_id',payment.payment_id);
+  const {error:sessionSaveError}=await admin.from('custom_booking_payments')
+    .update({stripe_checkout_session_id:session.id})
+    .eq('payment_id',payment.payment_id).eq('status','open');
+  if(sessionSaveError) return res.status(500).json({error:'Checkout created but could not be linked. Please retry.'});
   await admin.from('custom_bookings').update({payment_plan:kind,updated_at:new Date().toISOString()}).eq('custom_booking_id',bookingId);
   return res.status(200).json({url:session.url});
 }
