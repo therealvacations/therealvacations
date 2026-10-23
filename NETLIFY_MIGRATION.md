@@ -30,3 +30,11 @@ This branch is for testing only. Do not merge or move production DNS until check
 ## Notes
 - The adapter maps existing Vercel request/response handlers into Netlify Functions. This is an initial compatibility layer, not a production certification. Test each endpoint; further changes may be required for streamed responses or specialized headers.
 - Keep Vercel serving the production domain until the full preview checklist passes.
+
+## Additional staged payment fixes (not deployed)
+- Apply Supabase migrations `20261023095000_atomic_group_member_deposit.sql` and `20261023095500_reserve_custom_checkout_payment.sql` to a **staging Supabase project first**.
+- Deploy staging versions of `supabase/functions/stripe-webhook` and `supabase/functions/create-group-deposit-checkout`; the group deposit webhook now requires the new database RPC.
+- Custom checkout API now requires `reserve_custom_checkout_payment` RPC before requests work. Never ship API changes without its migration.
+- Stripe test mode: repeated same-session webhooks; two simultaneous checkout requests; invalid/mismatched amount; expired checkout retry; different group members paying simultaneously; post-payment confirmation after webhook.
+- Check existing historical open payment records and group member session links before production rollout.
+- No production changes should happen until Netlify staging and Supabase staging tests pass.
