@@ -234,48 +234,19 @@ Deno.serve(async (request) => {
         if (!membershipId || !bookingId) return jsonResponse({ error: 'Group deposit metadata is incomplete' }, 422)
         if (session.payment_status !== 'paid') return jsonResponse({ received: true, group_member_deposit: true })
 
-        const { data: member } = await admin.from('travel_group_members')
-          .select('membership_id,group_id,deposit_required,deposit_paid_at,share_paid,share_total')
-          .eq('membership_id', membershipId)
-          .eq('booking_id', bookingId)
-          .maybeSingle()
-        if (!member) return jsonResponse({ error: 'Group traveler was not found' }, 404)
-
-        if (!member.deposit_paid_at) {
-          const paidAmount = Number(session.amount_total ?? member.deposit_required ?? 0)
-          const { data: claimedMember } = await admin.from('travel_group_members').update({
-            deposit_paid_at: new Date().toISOString(),
-            share_paid: Number(member.share_paid ?? 0) + paidAmount,
-            share_status: Number(member.share_total ?? 0) <= Number(member.share_paid ?? 0) + paidAmount ? 'paid' : 'partial',
-            stripe_deposit_session_id: session.id,
-            updated_at: new Date().toISOString(),
-          }).eq('membership_id', membershipId).is('deposit_paid_at', null).select('membership_id').maybeSingle()
-
-          if (claimedMember) {
-            const { data: booking } = await admin.from('bookings')
-              .select('total_amount,amount_paid,balance_due')
-              .eq('booking_id', bookingId).maybeSingle()
-            if (booking) {
-              const nextPaid = Math.min(Number(booking.total_amount ?? 0), Number(booking.amount_paid ?? 0) + paidAmount)
-              await admin.from('bookings').update({
-                amount_paid: nextPaid,
-                balance_due: Math.max(0, Number(booking.total_amount ?? 0) - nextPaid),
-                updated_at: new Date().toISOString(),
-              }).eq('booking_id', bookingId)
-            }
-          }
+        if (session.currency?.toLowerCase() !== 'usd' || !Number.isSafeInteger(session.amount_total) || (session.amount_total ?? 0) <= 0) {
+          return jsonResponse({ error: 'Invalid group deposit currency or amount' }, 422)
         }
 
-        const { data: unpaidMembers } = await admin.from('travel_group_members')
-          .select('membership_id')
-          .eq('group_id', member.group_id)
-          .gt('deposit_required', 0)
-          .is('deposit_paid_at', null)
-
-        if ((unpaidMembers || []).length === 0) {
-          await admin.from('travel_groups').update({ status: 'confirmed', updated_at: new Date().toISOString() }).eq('group_id', member.group_id)
-          await admin.from('bookings').update({ status: 'confirmed', updated_at: new Date().toISOString() }).eq('booking_id', bookingId)
-        }
+        // One DB transaction locks the booking, verifies the saved Stripe session
+        // and applies a member deposit only once (including webhook retries).
+        const { error: depositError } = await admin.rpc('complete_group_member_deposit', {
+          p_membership_id: membershipId,
+          p_booking_id: bookingId,
+          p_checkout_session_id: session.id,
+          p_amount_total: session.amount_total,
+        })
+        if (depositError) throw depositError
 
         return jsonResponse({ received: true, group_member_deposit: true })
       }

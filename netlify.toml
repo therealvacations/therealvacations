@@ -1,0 +1,409 @@
+# Staging migration. Do not associate production domain until payment flow is verified.
+[build]
+  command = "node build-nav-safe.js"
+  publish = "public"
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Netlify functions replace Vercel's /api serverless routes.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/my-trips"
+  status = 301
+
+[[redirects]]
+  from = "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026"
+  to = "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027"
+  status = 301
+
+[[redirects]]
+  from = "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027"
+  to = "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027"
+  status = 302
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms-of-service"
+  status = 301
+
+[[redirects]]
+  from = "/terms.html"
+  to = "/terms-of-service"
+  status = 301
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy-policy"
+  status = 301
+
+[[redirects]]
+  from = "/privacy.html"
+  to = "/privacy-policy"
+  status = 301
+
+[[redirects]]
+  from = "/services/custom-trips"
+  to = "/custom-trip-form"
+  status = 302
+
+[[redirects]]
+  from = "/services/last-minute-travel"
+  to = "/request-travel"
+  status = 302
+
+[[redirects]]
+  from = "/napa-juneteenth-june-18-21-2026"
+  to = "/real-stories"
+  status = 301
+
+[[redirects]]
+  from = "/napa-juneteenth-june-18-21-2026.html"
+  to = "/real-stories"
+  status = 301
+
+[[redirects]]
+  from = "/essence-festival-new-orleans-july-3-5-2026"
+  to = "/real-stories"
+  status = 301
+
+[[redirects]]
+  from = "/essence-festival-new-orleans-july-3-5-2026.html"
+  to = "/real-stories"
+  status = 301
+
+[[redirects]]
+  from = "/keith-sweat-r-and-b-tour-atlanta-august-29-2026"
+  to = "/real-stories"
+  status = 301
+
+[[redirects]]
+  from = "/keith-sweat-r-and-b-tour-atlanta-august-29-2026.html"
+  to = "/real-stories"
+  status = 301
+
+[[redirects]]
+  from = "/mary-j-blige-my-life-my-story-las-vegas-oct-22-24-2026.html"
+  to = "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027"
+  status = 301
+
+[[redirects]]
+  from = "/mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027.html"
+  to = "/trip.html?slug=mary-j-blige-my-life-my-story-las-vegas-feb-16-18-2027"
+  status = 302
+
+[[redirects]]
+  from = "/quote-builder.html"
+  to = "/admin?tab=quotes"
+  status = 301
+
+[[redirects]]
+  from = "/real_vacations_quote_tool.html"
+  to = "/admin?tab=quotes"
+  status = 301
+
+[[redirects]]
+  from = "/travel-quote-builder.jsx"
+  to = "/admin?tab=quotes"
+  status = 301
+
+[[redirects]]
+  from = "/trv-travel-system.jsx"
+  to = "/admin?tab=quotes"
+  status = 301
+
+[[redirects]]
+  from = "/forms-custom-trips.html"
+  to = "/custom-trip-form"
+  status = 301
+
+[[redirects]]
+  from = "/forms-last-minute-travel.html"
+  to = "/request-travel"
+  status = 301
+
+[[redirects]]
+  from = "/dashboard.html"
+  to = "/my-trips"
+  status = 301
+
+[[redirects]]
+  from = "/napa-juneteenth-june-17-20-2027.html"
+  to = "/trip.html?slug=napa-valley-juneteenth-2027"
+  status = 301
+
+[[redirects]]
+  from = "/napa-juneteenth-june-17-20-2027"
+  to = "/trip.html?slug=napa-valley-juneteenth-2027"
+  status = 301
+
+[[redirects]]
+  from = "/on-tour-travel-management-form.html"
+  to = "/services/on-tour-travel-management"
+  status = 301
+
+[[redirects]]
+  from = "/travel-essentials"
+  to = "/travel-essentials.html"
+  status = 200
+
+[[redirects]]
+  from = "/experiences"
+  to = "/experiences.html"
+  status = 200
+
+[[redirects]]
+  from = "/stays"
+  to = "/stays.html"
+  status = 200
+
+[[redirects]]
+  from = "/atlanta-eat-sip-stay"
+  to = "/atlanta-eat-sip-stay.html"
+  status = 200
+
+[[redirects]]
+  from = "/trips"
+  to = "/trips.html"
+  status = 200
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 200
+
+[[redirects]]
+  from = "/flights"
+  to = "/flights.html"
+  status = 200
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog"
+  to = "/blog.html"
+  status = 200
+
+[[redirects]]
+  from = "/blog-post"
+  to = "/blog-post.html"
+  status = 200
+
+[[redirects]]
+  from = "/real-stories"
+  to = "/real-stories.html"
+  status = 200
+
+[[redirects]]
+  from = "/how-it-works"
+  to = "/how-it-works.html"
+  status = 200
+
+[[redirects]]
+  from = "/resources"
+  to = "/resources.html"
+  status = 200
+
+[[redirects]]
+  from = "/trip"
+  to = "/trip.html"
+  status = 200
+
+[[redirects]]
+  from = "/deals"
+  to = "/deals.html"
+  status = 200
+
+[[redirects]]
+  from = "/login"
+  to = "/login.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin-login"
+  to = "/admin-login.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin.html"
+  status = 200
+
+[[redirects]]
+  from = "/signup"
+  to = "/signup.html"
+  status = 200
+
+[[redirects]]
+  from = "/account-confirmed"
+  to = "/account-confirmed.html"
+  status = 200
+
+[[redirects]]
+  from = "/my-trips"
+  to = "/my-trips.html"
+  status = 200
+
+[[redirects]]
+  from = "/join-group"
+  to = "/join-group.html"
+  status = 200
+
+[[redirects]]
+  from = "/book-trip"
+  to = "/book-trip.html"
+  status = 200
+
+[[redirects]]
+  from = "/payment-result"
+  to = "/payment-result.html"
+  status = 200
+
+[[redirects]]
+  from = "/privacy-policy"
+  to = "/privacy-policy.html"
+  status = 200
+
+[[redirects]]
+  from = "/terms-of-service"
+  to = "/terms-of-service.html"
+  status = 200
+
+[[redirects]]
+  from = "/forgot-password"
+  to = "/forgot-password.html"
+  status = 200
+
+[[redirects]]
+  from = "/reset-password"
+  to = "/reset-password.html"
+  status = 200
+
+[[redirects]]
+  from = "/update-payment-method"
+  to = "/update-payment-method.html"
+  status = 200
+
+[[redirects]]
+  from = "/custom-trip-form"
+  to = "/custom-trip-form.html"
+  status = 200
+
+[[redirects]]
+  from = "/request-received"
+  to = "/request-received.html"
+  status = 200
+
+[[redirects]]
+  from = "/services/corporate-travel"
+  to = "/forms-corporate-travel.html"
+  status = 200
+
+[[redirects]]
+  from = "/services/destination-weddings"
+  to = "/forms-destination-weddings.html"
+  status = 200
+
+[[redirects]]
+  from = "/services/on-tour-travel-management"
+  to = "/forms-on-tour-travel-management.html"
+  status = 200
+
+[[redirects]]
+  from = "/services/travel-consulting"
+  to = "/forms-travel-consulting.html"
+  status = 200
+
+[[redirects]]
+  from = "/quote-checkout"
+  to = "/quote-checkout.html"
+  status = 200
+
+[[redirects]]
+  from = "/custom-payment-result"
+  to = "/custom-payment-result.html"
+  status = 200
+
+[[redirects]]
+  from = "/vip"
+  to = "/vip.html"
+  status = 200
+
+[[redirects]]
+  from = "/request-travel"
+  to = "/request-travel.html"
+  status = 200
+
+[[redirects]]
+  from = "/spin"
+  to = "/spin.html"
+  status = 200
+
+[[redirects]]
+  from = "/proposal"
+  to = "/proposal.html"
+  status = 200
+
+[[redirects]]
+  from = "/travel-trivia"
+  to = "/travel-trivia.html"
+  status = 200
+
+[[redirects]]
+  from = "/supplier-portal"
+  to = "/supplier-portal.html"
+  status = 200
+
+[[redirects]]
+  from = "/request-payment-result"
+  to = "/request-payment-result.html"
+  status = 200
+
+[[redirects]]
+  from = "/member-profile"
+  to = "/member-profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/member-book"
+  to = "/member-book.html"
+  status = 200
+
+[[redirects]]
+  from = "/host"
+  to = "/host.html"
+  status = 200
+
+[[redirects]]
+  from = "/host-center"
+  to = "/host-center.html"
+  status = 200
+
+[[redirects]]
+  from = "/hosts/:slug"
+  to = "/host-profile.html"
+  status = 200
+
+[[redirects]]
+  from = "/group-deposit"
+  to = "/group-deposit.html"
+  status = 200
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+  "X-Content-Type-Options" = "nosniff"
+  "X-Frame-Options" = "SAMEORIGIN"
+  "Referrer-Policy" = "strict-origin-when-cross-origin"
+  "Permissions-Policy" = "camera=(), microphone=(), geolocation=(), payment=(self)"
+  "Content-Security-Policy" = "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https:; style-src 'self' 'unsafe-inline' https:; img-src 'self' data: blob: https:; font-src 'self' data: https:; connect-src 'self' https: wss:; frame-src 'self' https://flights.therealvacations.com https://www.youtube.com https://js.stripe.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'; upgrade-insecure-requests"
