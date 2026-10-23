@@ -49,6 +49,20 @@ export default async function handler(req,res){
   if(bookingError||!booking) return res.status(404).json({error:'Approved booking not found.'});
   if(Number(booking.amount_paid||0)>0) return res.status(409).json({error:'This payment setup cannot replace a booking that already has a recorded payment.'});
 
+  // Do not replace an existing active Stripe checkout. Its webhook can still
+  // arrive after an administrator edits the booking, corrupting reconciliation.
+  const {data:activeCheckouts,error:activeError}=await admin.from('custom_booking_payments')
+    .select('payment_id,stripe_checkout_session_id,status')
+    .eq('custom_booking_id',bookingId)
+    .in('status',['open','succeeded']);
+  if(activeError) return res.status(500).json({error:'Unable to verify existing payment requests.'});
+  if((activeCheckouts||[]).some(p=>p.status==='succeeded')){
+    return res.status(409).json({error:'This booking already has a completed payment.'});
+  }
+  if((activeCheckouts||[]).some(p=>p.stripe_checkout_session_id)){
+    return res.status(409).json({error:'An existing checkout session must be expired or reconciled before changing this booking.'});
+  }
+
   const totalWithProcessing=travelBase+processing;
   const snapshot={
     payment_provider:'paypal_external',
