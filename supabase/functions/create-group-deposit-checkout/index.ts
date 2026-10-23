@@ -54,6 +54,7 @@ Deno.serve(async (request) => {
     try {
       const existing = await stripe.checkout.sessions.retrieve(member.stripe_deposit_session_id)
       if (existing.status === 'open' && existing.url) return jsonResponse({ url: existing.url })
+      if (existing.payment_status === 'paid') return jsonResponse({ error: 'Payment is already processing. Check your booking before paying again.' }, 409)
     } catch {}
   }
 
@@ -87,12 +88,13 @@ Deno.serve(async (request) => {
     },
     success_url: `${siteUrl}/group-deposit?group=${encodeURIComponent(groupId)}&status=success`,
     cancel_url: `${siteUrl}/group-deposit?group=${encodeURIComponent(groupId)}&status=cancelled`,
-  })
+  }, { idempotencyKey: `trv-group-deposit-${member.membership_id}-${member.stripe_deposit_session_id || 'initial'}` })
 
-  await admin.from('travel_group_members').update({
+  const { error: sessionError } = await admin.from('travel_group_members').update({
     stripe_deposit_session_id: session.id,
     updated_at: new Date().toISOString(),
-  }).eq('membership_id', member.membership_id)
+  }).eq('membership_id', member.membership_id).is('deposit_paid_at', null)
+  if (sessionError) return jsonResponse({ error: 'Unable to link traveler checkout' }, 500)
 
   return jsonResponse({ url: session.url })
 })
