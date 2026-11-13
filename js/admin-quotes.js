@@ -310,6 +310,7 @@ async function syncSupplierAssignment(itemId,itemPayload){
       itemPayload.supplier_payment_url ? '[Supplier payment URL] '+itemPayload.supplier_payment_url : null
     ].filter(Boolean).join('\n')||null,
     supplier_subtotal:itemPayload.amount==null?0:itemPayload.amount,
+    total_amount:itemPayload.amount==null?0:itemPayload.amount,
     service_fee:0,
     taxes_fees:0,
     currency:'usd',

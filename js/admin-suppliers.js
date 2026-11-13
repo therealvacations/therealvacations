@@ -116,16 +116,41 @@ function resetAssignment(){
   $('#supplierAssignmentForm')?.reset();
   if($('#supplierAssignmentId')) $('#supplierAssignmentId').value='';
   if($('#supplierAssignmentSummary')) $('#supplierAssignmentSummary').value='';
+  if($('#supplierAssignmentSourceType')) $('#supplierAssignmentSourceType').disabled=false;
+  if($('#supplierAssignmentSourceRecord')) $('#supplierAssignmentSourceRecord').disabled=false;
+  if($('#supplierAssignmentSourceType')) $('#supplierAssignmentSourceType').value='group_trip';
+  if($('#supplierAssignmentSupplier')) $('#supplierAssignmentSupplier').value='';
+  if($('#supplierAssignmentServiceType')) $('#supplierAssignmentServiceType').value='';
+  if($('#supplierAssignmentDescription')) $('#supplierAssignmentDescription').value='';
   if($('#supplierAssignmentStatus')) $('#supplierAssignmentStatus').value='planned';
   if($('#supplierAssignmentVisible')) $('#supplierAssignmentVisible').value='true';
   if($('#supplierPaymentStatus')) $('#supplierPaymentStatus').value='unpaid';
+  if($('#supplierAssignmentSave')) $('#supplierAssignmentSave').textContent='Create Supplier Assignment';
+  renderAssignmentSourceChoices();
 }
 
+function assignmentSourceType(a){
+  if(a.context_type==='client_booking') return 'client_booking';
+  if(a.context_type==='custom_booking') return 'custom_booking';
+  return a.context_type||'group_trip';
+}
+function assignmentSourceId(a){
+  return a.trip_id||a.booking_id||a.custom_booking_id||a.request_id||a.quote_id||'';
+}
 function editAssignment(id){
   const a=assignments.find(x=>x.assignment_id===id); if(!a)return;
   const s=suppliers.find(x=>x.supplier_id===a.supplier_id);
+  const sourceType=assignmentSourceType(a);
   $('#supplierAssignmentId').value=a.assignment_id;
   $('#supplierAssignmentSummary').value=(s?.display_name||s?.company_name||'Supplier')+' · '+(a.description||a.service_type||'Assignment');
+  $('#supplierAssignmentSourceType').value=sourceType;
+  renderAssignmentSourceChoices();
+  $('#supplierAssignmentSourceRecord').value=assignmentSourceId(a);
+  $('#supplierAssignmentSourceType').disabled=true;
+  $('#supplierAssignmentSourceRecord').disabled=true;
+  $('#supplierAssignmentSupplier').value=a.supplier_id||'';
+  $('#supplierAssignmentServiceType').value=a.service_type||'';
+  $('#supplierAssignmentDescription').value=a.description||'';
   $('#supplierAssignmentStatus').value=a.status||'planned';
   $('#supplierAssignmentVisible').value=String(a.visible_to_supplier!==false);
   $('#supplierAssignmentSubtotal').value=dollars(a.supplier_subtotal);
@@ -136,18 +161,63 @@ function editAssignment(id){
   $('#supplierPaymentStatus').value=a.supplier_payment_status||'unpaid';
   $('#supplierAmountPaid').value=dollars(a.supplier_amount_paid);
   $('#supplierPaymentReference').value=a.supplier_payment_reference||'';
+  if($('#supplierAssignmentSave')) $('#supplierAssignmentSave').textContent='Save Assignment';
   $('#supplierAssignmentForm').scrollIntoView({behavior:'smooth',block:'start'});
 }
+
+const assignmentSources={group_trip:[],client_booking:[],custom_booking:[],travel_request:[],travel_quote:[]};
+const sourceLabel=(type,row)=>{
+  if(type==='group_trip') return row.title||'Group trip';
+  if(type==='client_booking') return [row.trips?.title||'Client group trip',[row.users?.first_name,row.users?.last_name].filter(Boolean).join(' ')].filter(Boolean).join(' · ');
+  if(type==='custom_booking') return [row.travel_quotes?.title||'Custom trip',[row.travel_requests?.primary_first_name,row.travel_requests?.primary_last_name].filter(Boolean).join(' ')||row.travel_requests?.requester_email,row.travel_requests?.destination].filter(Boolean).join(' · ');
+  if(type==='travel_request') return [row.destination||'Travel request',[row.primary_first_name,row.primary_last_name].filter(Boolean).join(' ')||row.requester_email].filter(Boolean).join(' · ');
+  return row.title||'Client quote';
+};
+function sourceIdField(type){
+  return ({group_trip:'trip_id',client_booking:'booking_id',custom_booking:'custom_booking_id',travel_request:'request_id',travel_quote:'quote_id'})[type];
+}
+function renderAssignmentSourceChoices(){
+  const type=$('#supplierAssignmentSourceType')?.value||'group_trip';
+  const select=$('#supplierAssignmentSourceRecord'); if(!select)return;
+  const rows=assignmentSources[type]||[];
+  select.innerHTML='<option value="">Choose a trip or client record</option>'+rows.map(row=>{
+    const id=row[sourceIdField(type)];
+    return '<option value="'+esc(id)+'">'+esc(sourceLabel(type,row))+'</option>';
+  }).join('');
+}
+async function loadAssignmentSources(){
+  const [trips,bookings,customBookings,requests,quotes]=await Promise.all([
+    supabase.from('trips').select('trip_id,title,location,dates_start,dates_end').order('created_at',{ascending:false}),
+    supabase.from('bookings').select('booking_id,trip_id,status,created_at,trips(title,location,dates_start,dates_end),users(first_name,last_name)').order('created_at',{ascending:false}),
+    supabase.from('custom_bookings').select('custom_booking_id,quote_id,request_id,status,created_at,travel_quotes(title),travel_requests(primary_first_name,primary_last_name,requester_email,destination)').order('created_at',{ascending:false}),
+    supabase.from('travel_requests').select('request_id,requester_email,primary_first_name,primary_last_name,destination,created_at').order('created_at',{ascending:false}),
+    supabase.from('travel_quotes').select('quote_id,title,request_id,created_at').order('created_at',{ascending:false})
+  ]);
+  const failed=[trips,bookings,customBookings,requests,quotes].find(r=>r.error);
+  if(failed) throw failed.error;
+  assignmentSources.group_trip=trips.data||[];
+  assignmentSources.client_booking=bookings.data||[];
+  assignmentSources.custom_booking=customBookings.data||[];
+  assignmentSources.travel_request=requests.data||[];
+  assignmentSources.travel_quote=quotes.data||[];
+  const supplierSelect=$('#supplierAssignmentSupplier');
+  if(supplierSelect) supplierSelect.innerHTML='<option value="">Choose supplier</option>'+suppliers.map(s=>'<option value="'+esc(s.supplier_id)+'">'+esc(s.display_name||s.company_name)+'</option>').join('');
+  renderAssignmentSourceChoices();
+}
+$('#supplierAssignmentSourceType')?.addEventListener('change',renderAssignmentSourceChoices);
 
 function renderAssignments(){
   const list=$('#supplierAssignmentList'); if(!list)return;
   list.innerHTML=assignments.map(a=>{
     const s=suppliers.find(x=>x.supplier_id===a.supplier_id);
     const supplier=s?.display_name||s?.company_name||'Supplier';
-    const context=a.context_type==='travel_quote'?'Quote':a.context_type==='travel_request'?'Request':'Group Trip';
+    const context=({travel_quote:'Quote',travel_request:'Request',group_trip:'Group Trip',client_booking:'Client Booking',custom_booking:'Custom Booking'})[a.context_type]||a.context_type||'Assignment';
+    const sourceType=assignmentSourceType(a);
+    const source=(assignmentSources[sourceType]||[]).find(row=>row[sourceIdField(sourceType)]===assignmentSourceId(a));
+    const sourceText=source?sourceLabel(sourceType,source):'Linked trip/client record';
     const payment=a.supplier_payment_status||'unpaid';
     return '<div class="admin-record"><div class="record-heading"><div><h3>'+esc(supplier)+'</h3><p>'+esc(a.description||a.service_type||'Supplier assignment')+' · '+esc(context)+'</p></div><span class="status-badge '+(a.status==='confirmed'||a.status==='paid'?'active':a.status==='cancelled'?'archived':'draft')+'">'+esc(a.status||'planned')+'</span></div>'+
-      '<p class="record-summary"><strong>Supplier total:</strong> '+money(a.total_amount)+' · subtotal '+money(a.supplier_subtotal)+' · taxes/fees '+money(a.taxes_fees)+
+      '<p class="record-summary"><strong>Trip / client:</strong> '+esc(sourceText)+'<br><strong>Supplier total:</strong> '+money(a.total_amount)+' · subtotal '+money(a.supplier_subtotal)+' · taxes/fees '+money(a.taxes_fees)+
       '<br><strong>TRV→Supplier:</strong> '+money(a.supplier_amount_paid)+' · '+esc(payment)+
       (a.confirmation_details?'<br><strong>Confirmation:</strong> '+esc(a.confirmation_details):'')+
       (a.supplier_reference?'<br><strong>Supplier ref:</strong> '+esc(a.supplier_reference):'')+
@@ -160,6 +230,7 @@ function renderAssignments(){
 
 async function loadAssignments(){
   if(!$('#supplierAssignmentList')) return;
+  try{await loadAssignmentSources();}catch(error){toast('Trip/client sources could not be loaded: '+error.message,true);return;}
   const {data,error}=await supabase.from('supplier_assignments').select('*').order('created_at',{ascending:false});
   if(error){toast(error.message,true);return;}
   assignments=data||[];
@@ -169,31 +240,51 @@ async function loadAssignments(){
 $('#supplierAssignmentForm')?.addEventListener('submit',async e=>{
   e.preventDefault();
   const id=$('#supplierAssignmentId').value;
-  if(!id) return toast('Choose a supplier assignment from the ledger first.',true);
+  const sourceType=$('#supplierAssignmentSourceType').value;
+  const sourceId=$('#supplierAssignmentSourceRecord').value;
+  const supplierId=$('#supplierAssignmentSupplier').value;
+  if(!id&&(!sourceType||!sourceId)) return toast('Choose the trip or client record first.',true);
+  if(!supplierId) return toast('Choose a supplier.',true);
   const existing=assignments.find(x=>x.assignment_id===id);
   const paymentStatus=$('#supplierPaymentStatus').value;
-  const amountPaid=cents($('#supplierAmountPaid').value);
   const payload={
+    supplier_id:supplierId,
+    service_type:$('#supplierAssignmentServiceType').value.trim()||null,
+    description:$('#supplierAssignmentDescription').value.trim()||null,
     status:$('#supplierAssignmentStatus').value,
     visible_to_supplier:$('#supplierAssignmentVisible').value==='true',
     supplier_subtotal:cents($('#supplierAssignmentSubtotal').value),
     taxes_fees:cents($('#supplierAssignmentTaxes').value),
     service_fee:cents($('#supplierAssignmentServiceFee').value),
+    total_amount:cents($('#supplierAssignmentSubtotal').value)+cents($('#supplierAssignmentTaxes').value)+cents($('#supplierAssignmentServiceFee').value),
     confirmation_details:$('#supplierAssignmentConfirmation').value.trim()||null,
     supplier_reference:$('#supplierAssignmentReference').value.trim()||null,
     supplier_payment_status:paymentStatus,
-    supplier_amount_paid:amountPaid,
+    supplier_amount_paid:cents($('#supplierAmountPaid').value),
     supplier_payment_reference:$('#supplierPaymentReference').value.trim()||null,
     supplier_paid_at:paymentStatus==='paid' ? (existing?.supplier_paid_at||new Date().toISOString()) : null,
     updated_at:new Date().toISOString()
   };
-  const {error}=await supabase.from('supplier_assignments').update(payload).eq('assignment_id',id);
-  if(error)return toast(error.message,true);
-  toast('Supplier assignment updated.');
+  let result;
+  if(id){
+    result=await supabase.from('supplier_assignments').update(payload).eq('assignment_id',id);
+  }else{
+    const sourceFields={
+      group_trip:{context_type:'group_trip',trip_id:sourceId},
+      client_booking:{context_type:'client_booking',booking_id:sourceId},
+      custom_booking:{context_type:'custom_booking',custom_booking_id:sourceId},
+      travel_request:{context_type:'travel_request',request_id:sourceId},
+      travel_quote:{context_type:'travel_quote',quote_id:sourceId}
+    };
+    result=await supabase.from('supplier_assignments').insert({...payload,...sourceFields[sourceType],currency:'usd',created_by:(await supabase.auth.getUser()).data?.user?.id||null});
+  }
+  if(result.error)return toast(result.error.message,true);
+  toast(id?'Supplier assignment updated.':'Supplier assignment created.');
   resetAssignment();
   await loadAssignments();
 });
 $('#supplierAssignmentReset')?.addEventListener('click',resetAssignment);
+resetAssignment();
 
 document.querySelectorAll('.admin-tab').forEach(btn=>btn.addEventListener('click',()=>{
   if(btn.dataset.tab==='suppliers'){loadSuppliers().then(loadAssignments);}
