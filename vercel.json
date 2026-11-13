@@ -1,6 +1,32 @@
 {
   "buildCommand": "",
   "outputDirectory": "public",
+  "rewrites": [
+    { "source": "/api/admin-configure-custom-payment", "destination": "/api/admin/configure-custom-payment" },
+    { "source": "/api/admin-create-confirmed-payment-link", "destination": "/api/admin/create-confirmed-payment-link" },
+    { "source": "/api/admin-invite-supplier", "destination": "/api/admin/invite-supplier" },
+    { "source": "/api/admin-record-log", "destination": "/api/admin/record-log" },
+    { "source": "/api/admin-request-email-change", "destination": "/api/admin/request-email-change" },
+    { "source": "/api/admin-reset-quote-response", "destination": "/api/admin/reset-quote-response" },
+    { "source": "/api/admin-stripe-account", "destination": "/api/admin/stripe-account" },
+    { "source": "/api/create-custom-checkout", "destination": "/api/checkout/custom" },
+    { "source": "/api/create-customer-portal", "destination": "/api/checkout/portal" },
+    { "source": "/api/create-host-checkout", "destination": "/api/checkout/host" },
+    { "source": "/api/create-vip-checkout", "destination": "/api/checkout/vip" },
+    { "source": "/api/create-payment-method-setup", "destination": "/api/checkout/payment-method-setup" },
+    { "source": "/api/confirm-custom-payment", "destination": "/api/payment/confirm-custom" },
+    { "source": "/api/confirm-request-payment", "destination": "/api/payment/confirm-request" },
+    { "source": "/api/save-payment-method", "destination": "/api/payment/save-method" },
+    { "source": "/api/update-vip-gift", "destination": "/api/payment/update-vip-gift" },
+    { "source": "/api/submit-contact", "destination": "/api/submit/contact" },
+    { "source": "/api/submit-quote-selection", "destination": "/api/submit/quote-selection" },
+    { "source": "/api/submit-service-request", "destination": "/api/submit/service-request" },
+    { "source": "/api/submit-trivia-entry", "destination": "/api/submit/trivia-entry" },
+    { "source": "/api/report-problem", "destination": "/api/submit/report-problem" },
+    { "source": "/api/approve-quote-option", "destination": "/api/quote/approve-option" },
+    { "source": "/api/send-quote-ready", "destination": "/api/quote/send-ready" },
+    { "source": "/api/config-health", "destination": "/api/health" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -20,4 +46,4 @@
       ]
     }
   ]
-}
+}   
