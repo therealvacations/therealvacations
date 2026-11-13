@@ -256,6 +256,7 @@ $('#supplierAssignmentForm')?.addEventListener('submit',async e=>{
     supplier_subtotal:cents($('#supplierAssignmentSubtotal').value),
     taxes_fees:cents($('#supplierAssignmentTaxes').value),
     service_fee:cents($('#supplierAssignmentServiceFee').value),
+    total_amount:cents($('#supplierAssignmentSubtotal').value)+cents($('#supplierAssignmentTaxes').value)+cents($('#supplierAssignmentServiceFee').value),
     confirmation_details:$('#supplierAssignmentConfirmation').value.trim()||null,
     supplier_reference:$('#supplierAssignmentReference').value.trim()||null,
     supplier_payment_status:paymentStatus,
