@@ -201,7 +201,7 @@ async function loadAssignmentSources(){
   assignmentSources.travel_request=requests.data||[];
   assignmentSources.travel_quote=quotes.data||[];
   const supplierSelect=$('#supplierAssignmentSupplier');
-  if(supplierSelect) supplierSelect.innerHTML='<option value="">Choose supplier</option>'+suppliers.filter(s=>s.status!=='inactive').map(s=>'<option value="'+esc(s.supplier_id)+'">'+esc(s.display_name||s.company_name)+'</option>').join('');
+  if(supplierSelect) supplierSelect.innerHTML='<option value="">Choose supplier</option>'+suppliers.map(s=>'<option value="'+esc(s.supplier_id)+'">'+esc(s.display_name||s.company_name)+'</option>').join('');
   renderAssignmentSourceChoices();
 }
 $('#supplierAssignmentSourceType')?.addEventListener('change',renderAssignmentSourceChoices);
