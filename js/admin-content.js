@@ -898,7 +898,28 @@ async function loadAll() {
   const failed = [tripsResult, packagesResult, addonsResult, resourcesResult, postsResult, settingsResult].find((result) => result.error)
   if (failed) return showMessage(failed.error.message, 'error')
   state.trips = tripsResult.data || []; state.packages = packagesResult.data || []; state.addons = addonsResult.data || []; state.resources = resourcesResult.data || []; state.posts = postsResult.data || []; state.settings = settingsResult.data
-  renderTrips(); renderResources(); renderPosts(); renderBrandingSettings(); renderPageHeadings(); renderHomeSettings(); renderAboutSettings(); renderContactSettings(); await loadCustomInvoices()
+  const renderSteps = [
+    ['Trips', renderTrips],
+    ['Resources', renderResources],
+    ['Blog', renderPosts],
+    ['Branding', renderBrandingSettings],
+    ['Page headings', renderPageHeadings],
+    ['Home page', renderHomeSettings],
+    ['About page', renderAboutSettings],
+    ['Contact page', renderContactSettings],
+  ]
+  for (const [section, renderSection] of renderSteps) {
+    try { renderSection() }
+    catch (error) {
+      console.error('Admin section failed to render: ' + section, error)
+      showMessage(section + ' section could not finish loading: ' + (error.message || 'Unknown error'), 'error')
+    }
+  }
+  try { await loadCustomInvoices() }
+  catch (error) {
+    console.error('Admin invoices failed to render', error)
+    showMessage('Invoices section could not finish loading: ' + (error.message || 'Unknown error'), 'error')
+  }
 }
 
 ensureTripAddonsField()

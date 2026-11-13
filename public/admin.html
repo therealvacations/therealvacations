@@ -213,8 +213,13 @@
     </section>
     
 <section class="admin-panel" id="suppliersPanel" hidden>
-  <form class="editor" id="supplierForm">
+  <form class="editor" id="supplierForm" style="position:static">
     <h2 id="supplierFormTitle">Add Supplier / Vendor</h2>
+    <p class="hint">This saves a supplier profile to your Supplier / Vendor Accounts list. It does not create a trip assignment.</p>
+    <div class="form-actions" style="background:#f3eefe;border:1px solid #c4b5fd;border-radius:12px;padding:14px;margin:0 0 18px">
+      <button class="primary-button" id="supplierSaveButton" type="submit" style="font-size:16px;padding:13px 20px">Add Supplier to List</button>
+      <span class="hint" style="margin:0;align-self:center">Save the supplier profile independently. Assign it to trips afterward.</span>
+    </div>
     <input id="supplierId" type="hidden"/>
     <div class="field"><label for="supplierCompany">Company name</label><input id="supplierCompany" required/></div>
     <div class="field"><label for="supplierDisplay">Display name</label><input id="supplierDisplay" placeholder="Optional shorter name"/></div>
@@ -242,9 +247,9 @@
     <div class="field"><label for="supplierTravelerRequirements">Required traveler information</label><textarea id="supplierTravelerRequirements" placeholder="Example: legal name, DOB, gender, passport, citizenship, weights, loyalty number..."></textarea></div>
     <div class="field"><label for="supplierNotes">Internal notes</label><textarea id="supplierNotes"></textarea></div>
     <div class="field"><label for="supplierStatus">Status</label><select id="supplierStatus"><option value="active">Active</option><option value="inactive">Inactive</option><option value="invited">Invited</option><option value="connected">Connected</option></select></div>
-    <div class="form-actions">
-      <button class="primary-button" type="submit">Save Supplier</button>
-      <button class="secondary-button" id="supplierReset" type="button">Clear</button>
+    <div class="form-actions" style="border-top:1px solid var(--border);padding-top:16px;margin-top:8px">
+      <button class="primary-button" id="supplierSaveButtonBottom" type="submit">Add Supplier to List</button>
+      <button class="secondary-button" id="supplierReset" type="button">Clear Form</button>
     </div>
   </form>
   <div class="records">
