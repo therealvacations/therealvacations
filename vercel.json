@@ -1,5 +1,5 @@
 {
-  "buildCommand": "",
+  "buildCommand": "node build.js",
   "outputDirectory": "public",
   "rewrites": [
     { "source": "/api/admin-configure-custom-payment", "destination": "/api/admin/configure-custom-payment" },
