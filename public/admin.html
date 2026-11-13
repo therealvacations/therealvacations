@@ -256,9 +256,18 @@
   <div style="grid-column:1/-1;display:grid;grid-template-columns:minmax(300px,.8fr) minmax(0,1.2fr);gap:22px;align-items:start">
     <form class="editor" id="supplierAssignmentForm">
       <h2>Supplier Assignment / Fulfillment</h2>
-      <p class="hint">Assignments are created from quotes, requests, and group trips. Update supplier cost, taxes/fees, confirmation, and what TRV has paid the supplier here.</p>
+      <p class="hint">Create and manage supplier fulfillment for group trips, individual client bookings, custom bookings, requests, and quotes. Each trip or booking can have multiple supplier assignments.</p>
       <input id="supplierAssignmentId" type="hidden"/>
-      <div class="field"><label for="supplierAssignmentSummary">Assignment</label><input id="supplierAssignmentSummary" readonly placeholder="Choose an assignment from the list"/></div>
+      <div class="field-grid">
+        <div class="field"><label for="supplierAssignmentSourceType">Trip / client record type</label><select id="supplierAssignmentSourceType"><option value="group_trip">Group Trip</option><option value="client_booking">Confirmed Client Booking</option><option value="custom_booking">Custom Client Booking</option><option value="travel_request">Travel Request</option><option value="travel_quote">Client Quote</option></select></div>
+        <div class="field"><label for="supplierAssignmentSourceRecord">Trip / client record</label><select id="supplierAssignmentSourceRecord" required><option value="">Loading trips and client records…</option></select></div>
+      </div>
+      <div class="field-grid">
+        <div class="field"><label for="supplierAssignmentSupplier">Supplier / vendor</label><select id="supplierAssignmentSupplier" required><option value="">Loading suppliers…</option></select></div>
+        <div class="field"><label for="supplierAssignmentServiceType">Service type</label><input id="supplierAssignmentServiceType" placeholder="Hotel, flight, transfer, tickets, excursion…"/></div>
+      </div>
+      <div class="field"><label for="supplierAssignmentDescription">Assignment description</label><input id="supplierAssignmentDescription" placeholder="Hotel rooms, round-trip transfers, concert tickets…"/></div>
+      <div class="field"><label for="supplierAssignmentSummary">Selected assignment</label><input id="supplierAssignmentSummary" readonly placeholder="New supplier assignment or choose one from the ledger"/></div>
       <div class="field-grid">
         <div class="field"><label for="supplierAssignmentStatus">Booking status</label><select id="supplierAssignmentStatus"><option value="planned">Planned</option><option value="quoted">Quoted</option><option value="confirmed">Confirmed</option><option value="paid">Paid / ticketed</option><option value="cancelled">Cancelled</option></select></div>
         <div class="field"><label for="supplierAssignmentVisible">Supplier visibility</label><select id="supplierAssignmentVisible"><option value="true">Visible in Supplier Portal</option><option value="false">Admin only</option></select></div>
@@ -276,7 +285,7 @@
         <div class="field"><label for="supplierAmountPaid">Amount paid to supplier ($)</label><input id="supplierAmountPaid" type="number" min="0" step="0.01"/></div>
       </div>
       <div class="field"><label for="supplierPaymentReference">Supplier payment reference</label><input id="supplierPaymentReference" placeholder="Transaction, invoice, card, ACH, or payment reference"/></div>
-      <div class="form-actions"><button class="primary-button" type="submit">Save Assignment</button><button class="secondary-button" id="supplierAssignmentReset" type="button">Clear</button></div>
+      <div class="form-actions"><button class="primary-button" id="supplierAssignmentSave" type="submit">Create Supplier Assignment</button><button class="secondary-button" id="supplierAssignmentReset" type="button">Clear</button></div>
     </form>
     <div class="records"><h2>Supplier Assignment Ledger</h2><p class="hint">This is Admin-only operational history. Supplier portal users see only assignments explicitly marked visible and cannot change financial fields.</p><div id="supplierAssignmentList"><p>Loading supplier assignments…</p></div></div>
   </div>
