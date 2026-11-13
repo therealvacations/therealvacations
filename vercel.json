@@ -1,4 +1,6 @@
 {
+  "buildCommand": "",
+  "outputDirectory": "public",
   "headers": [
     {
       "source": "/(.*)",
@@ -18,4 +20,4 @@
       ]
     }
   ]
-}
+}   
