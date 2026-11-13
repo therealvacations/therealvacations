@@ -228,7 +228,7 @@
         button.disabled=true; button.textContent='Sending…'; status.textContent='';
         try{
           const payload=Object.fromEntries(new FormData(contactForm).entries());
-          const response=await fetch('/api/submit-contact',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
+          const response=await fetch('/api/submit/contact',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});
           const data=await response.json().catch(()=>({}));
           if(!response.ok) throw new Error(data.error||'Your message could not be sent.');
           contactForm.reset();
